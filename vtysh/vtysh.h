@@ -40,7 +40,7 @@
 
 void vtysh_init_vty (void);
 void vtysh_init_cmd (void);
-extern int vtysh_connect_all (const char *optional_daemon_name);
+extern int vtysh_connect_all (const char *optional_daemon_name, const char *optional_post_fix);
 void vtysh_readline_init (void);
 void vtysh_user_init (void);
 

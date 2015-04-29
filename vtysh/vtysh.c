@@ -2114,19 +2114,33 @@ vtysh_install_default (enum node_type node)
 
 /* Making connection to protocol daemon. */
 static int
-vtysh_connect (struct vtysh_client *vclient)
+vtysh_connect (struct vtysh_client *vclient, const char *post_fix)
 {
   int ret;
   int sock, len;
   struct sockaddr_un addr;
   struct stat s_stat;
+  char *new_path, array[64], name[64], ext[5];
+
+  if (post_fix) {
+    len = strlen(vclient->path);
+    strncpy(name, vclient->path, len - 4);
+    name[len-4] = '\0';
+    strncpy(ext, vclient->path + len - 4, 4);
+    ext[4] = '\0';
+    sprintf(array, "%s_%s%s", name, post_fix, ext);
+    array[len + 1 + strlen(post_fix)] = '\0';
+    new_path = array;
+  } else
+    new_path = vclient->path;
+
 
   /* Stat socket to see if we have permission to access it. */
-  ret = stat (vclient->path, &s_stat);
+  ret = stat (new_path, &s_stat);
   if (ret < 0 && errno != ENOENT)
     {
       fprintf  (stderr, "vtysh_connect(%s): stat = %s\n", 
-		vclient->path, safe_strerror(errno)); 
+		new_path, safe_strerror(errno)); 
       exit(1);
     }
   
@@ -2135,7 +2149,7 @@ vtysh_connect (struct vtysh_client *vclient)
       if (! S_ISSOCK(s_stat.st_mode))
 	{
 	  fprintf (stderr, "vtysh_connect(%s): Not a socket\n",
-		   vclient->path);
+		   new_path);
 	  exit (1);
 	}
       
@@ -2145,7 +2159,7 @@ vtysh_connect (struct vtysh_client *vclient)
   if (sock < 0)
     {
 #ifdef DEBUG
-      fprintf(stderr, "vtysh_connect(%s): socket = %s\n", vclient->path,
+      fprintf(stderr, "vtysh_connect(%s): socket = %s\n", new_path,
 	      safe_strerror(errno));
 #endif /* DEBUG */
       return -1;
@@ -2153,7 +2167,7 @@ vtysh_connect (struct vtysh_client *vclient)
 
   memset (&addr, 0, sizeof (struct sockaddr_un));
   addr.sun_family = AF_UNIX;
-  strncpy (addr.sun_path, vclient->path, strlen (vclient->path));
+  strncpy (addr.sun_path, new_path, strlen (new_path));
 #ifdef HAVE_STRUCT_SOCKADDR_UN_SUN_LEN
   len = addr.sun_len = SUN_LEN(&addr);
 #else
@@ -2164,7 +2178,7 @@ vtysh_connect (struct vtysh_client *vclient)
   if (ret < 0)
     {
 #ifdef DEBUG
-      fprintf(stderr, "vtysh_connect(%s): connect = %s\n", vclient->path,
+      fprintf(stderr, "vtysh_connect(%s): connect = %s\n", new_path,
 	      safe_strerror(errno));
 #endif /* DEBUG */
       close (sock);
@@ -2176,7 +2190,7 @@ vtysh_connect (struct vtysh_client *vclient)
 }
 
 int
-vtysh_connect_all(const char *daemon_name)
+vtysh_connect_all(const char *daemon_name, const char *post_fix)
 {
   u_int i;
   int rc = 0;
@@ -2187,7 +2201,7 @@ vtysh_connect_all(const char *daemon_name)
       if (!daemon_name || !strcmp(daemon_name, vtysh_client[i].name))
 	{
 	  matches++;
-	  if (vtysh_connect(&vtysh_client[i]) == 0)
+	  if (vtysh_connect(&vtysh_client[i], post_fix) == 0)
 	    rc++;
 	  /* We need direct access to ripd in vtysh_exit_ripd_only. */
 	  if (vtysh_client[i].flag == VTYSH_RIPD)
