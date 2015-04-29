@@ -218,7 +218,7 @@ main (int argc, char **argv, char **env)
   int opt;
   int dryrun = 0;
   int boot_flag = 0;
-  const char *daemon_name = NULL;
+  const char *daemon_name = NULL, *post_fix = NULL;
   struct cmd_rec {
     const char *line;
     struct cmd_rec *next;
@@ -237,7 +237,7 @@ main (int argc, char **argv, char **env)
   /* Option handling. */
   while (1) 
     {
-      opt = getopt_long (argc, argv, "be:c:d:nEhC", longopts, 0);
+      opt = getopt_long (argc, argv, "be:c:d:p:nEhC", longopts, 0);
     
       if (opt == EOF)
 	break;
@@ -263,6 +263,9 @@ main (int argc, char **argv, char **env)
 	    tail = cr;
 	  }
 	  break;
+ 	case 'p':
+ 	  post_fix = optarg;
+ 	  break;
 	case 'd':
 	  daemon_name = optarg;
 	  break;
@@ -314,7 +317,7 @@ main (int argc, char **argv, char **env)
   vtysh_auth ();
 
   /* Do not connect until we have passed authentication. */
-  if (vtysh_connect_all (daemon_name) <= 0)
+  if (vtysh_connect_all (daemon_name, post_fix) <= 0)
     {
       fprintf(stderr, "Exiting: failed to connect to any daemons.\n");
       exit(1);

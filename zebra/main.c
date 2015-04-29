@@ -76,6 +76,7 @@ struct option longopts[] =
   { "help",        no_argument,       NULL, 'h'},
   { "vty_addr",    required_argument, NULL, 'A'},
   { "vty_port",    required_argument, NULL, 'P'},
+  { "vty_file",    required_argument, NULL, 'V'},
   { "retain",      no_argument,       NULL, 'r'},
   { "dryrun",      no_argument,       NULL, 'C'},
 #ifdef HAVE_NETLINK
@@ -115,6 +116,9 @@ char config_default[] = SYSCONFDIR DEFAULT_CONFIG_FILE;
 /* Process ID saved for use by init system */
 const char *pid_file = PATH_ZEBRA_PID;
 
+/* default VTY file name */
+const char *vty_file = ZEBRA_VTYSH_PATH;
+
 /* Help information display. */
 static void
 usage (char *progname, int status)
@@ -133,6 +137,7 @@ usage (char *progname, int status)
 	      "-z, --socket       Set path of zebra socket\n"\
 	      "-k, --keep_kernel  Don't delete old routes which installed by "\
 				  "zebra.\n"\
+ 	      "-V, --vty_file     Set vty's file name\n"\
 	      "-C, --dryrun       Check configuration for validity and exit\n"\
 	      "-A, --vty_addr     Set vty's bind address\n"\
 	      "-P, --vty_port     Set vty's port number\n"\
@@ -233,9 +238,9 @@ main (int argc, char **argv)
       int opt;
   
 #ifdef HAVE_NETLINK  
-      opt = getopt_long (argc, argv, "bdkf:i:z:hA:P:ru:g:vs:C", longopts, 0);
+      opt = getopt_long (argc, argv, "bdkf:i:z:hA:V:P:ru:g:vs:C", longopts, 0);
 #else
-      opt = getopt_long (argc, argv, "bdkf:i:z:hA:P:ru:g:vC", longopts, 0);
+      opt = getopt_long (argc, argv, "bdkf:i:z:hA:V:P:ru:g:vC", longopts, 0);
 #endif /* HAVE_NETLINK */
 
       if (opt == EOF)
@@ -280,6 +285,9 @@ main (int argc, char **argv)
 	  if (vty_port <= 0 || vty_port > 0xffff)
 	    vty_port = ZEBRA_VTY_PORT;
 	  break;
+        case 'V':
+          vty_file = optarg;
+          break;
 	case 'r':
 	  retain_mode = 1;
 	  break;
