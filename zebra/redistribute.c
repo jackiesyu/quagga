@@ -393,3 +393,24 @@ zebra_interface_address_delete_update (struct interface *ifp,
     if (client->ifinfo && CHECK_FLAG (ifc->conf, ZEBRA_IFC_REAL))
       zsend_interface_address (ZEBRA_INTERFACE_ADDRESS_DELETE, client, ifp, ifc);
 }
+
+#if defined(HAVE_BFD)
+void
+zebra_interface_bfd_update (struct interface *ifp, struct prefix *p)
+{
+  struct listnode *node, *nnode;
+  struct zserv *client;
+
+  for (ALL_LIST_ELEMENTS (zebrad.client_list, node, nnode, client))
+    {
+#ifdef cherry_merge_bfd_fix
+      /* Supporting for OSPF and BGP */
+      if (client->proto != ZEBRA_ROUTE_OSPF && client->proto != ZEBRA_ROUTE_BGP)
+        continue;
+#endif
+
+      /* Notify to the protocol daemons. */
+      zsend_interface_bfd_update (ZEBRA_INTERFACE_BFD_DEST_DOWN, client, ifp, p);
+    }
+}
+#endif

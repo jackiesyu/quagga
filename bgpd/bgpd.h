@@ -394,6 +394,20 @@ struct peer
 #define PEER_FLAG_LOCAL_AS_NO_PREPEND       (1 << 7) /* local-as no-prepend */
 #define PEER_FLAG_LOCAL_AS_REPLACE_AS       (1 << 8) /* local-as no-prepend replace-as */
 
+#ifdef cherry_merge_bfd
+#define PEER_FLAG_DELETE		    (1 << 9) /* mark the peer for deleting */
+#define PEER_FLAG_CONFIG_NODE		    (1 << 10) /* the node to update configs on */
+#endif
+
+#if defined(HAVE_BFD)
+#define PEER_FLAG_BFD                       (1 << 11) /* bfd */
+#endif
+
+#ifdef cherry_merge_bfd
+#define PEER_FLAG_LONESOUL                  (1 << 12)
+#define PEER_FLAG_DYNAMIC_NEIGHBOR          (1 << 13) /* dynamic neighbor */
+#endif
+
   /* NSF mode (graceful restart) */
   u_char nsf[AFI_MAX][SAFI_MAX];
 
