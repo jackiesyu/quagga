@@ -6944,10 +6944,6 @@ bgp_show_summary (struct vty *vty, struct bgp *bgp, int afi, int safi, u_char us
   json_object *json_boolean_true;
 
   /* Header string for each address family. */
-<<<<<<< HEAD
-  static char header[] = "Neighbor        V         AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd";
-  
-=======
   static char header[] = "Neighbor        V    AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd";
 
   if (use_json)
@@ -6957,7 +6953,6 @@ bgp_show_summary (struct vty *vty, struct bgp *bgp, int afi, int safi, u_char us
       json_boolean_true = json_object_new_boolean(1);
     }
 
->>>>>>> 9cb9d8f... bgpd-show-json.patch
   for (ALL_LIST_ELEMENTS (bgp->peer, node, nnode, peer))
     {
       if (peer->afc[afi][safi])
@@ -6968,11 +6963,6 @@ bgp_show_summary (struct vty *vty, struct bgp *bgp, int afi, int safi, u_char us
               char memstrbuf[MTYPE_MEMSTR_LEN];
               
               /* Usage summary and header */
-<<<<<<< HEAD
-              vty_out (vty,
-                       "BGP router identifier %s, local AS number %u%s",
-                       inet_ntoa (bgp->router_id), bgp->as, VTY_NEWLINE);
-=======
               if (use_json)
                 {
                   json_string = json_object_new_string(inet_ntoa (bgp->router_id));
@@ -6988,6 +6978,7 @@ bgp_show_summary (struct vty *vty, struct bgp *bgp, int afi, int safi, u_char us
                            inet_ntoa (bgp->router_id), bgp->as, VTY_NEWLINE);
                 }
 
+#ifdef cherry_merge_json
               if (bgp_update_delay_configured(bgp))
                 {
                   if (use_json)
@@ -7056,12 +7047,14 @@ bgp_show_summary (struct vty *vty, struct bgp *bgp, int afi, int safi, u_char us
                         }
                     }
                 }
+#endif
 
               if (use_json)
                 {
+#ifdef cherry_merge_json
                   if (bgp_maxmed_onstartup_configured(bgp) && bgp->maxmed_active)
                     json_object_object_add(json, "max-med-on-startup", json_boolean_true);
-
+#endif
                   ents = bgp_table_count (bgp->rib[afi][safi]);
                   json_int = json_object_new_int(ents);
                   json_object_object_add(json, "rib-count", json_int);
@@ -7081,7 +7074,6 @@ bgp_show_summary (struct vty *vty, struct bgp *bgp, int afi, int safi, u_char us
                       json_int = json_object_new_int(ents * sizeof (struct peer));
                       json_object_object_add(json, "rsclient-memory", json_int);
                     }
->>>>>>> 9cb9d8f... bgpd-show-json.patch
 
                   if ((ents = listcount (bgp->group)))
                     {
@@ -7096,8 +7088,10 @@ bgp_show_summary (struct vty *vty, struct bgp *bgp, int afi, int safi, u_char us
                 }
               else
                 {
+#ifdef cherry_merge_json
                   if (bgp_maxmed_onstartup_configured(bgp) && bgp->maxmed_active)
                     vty_out (vty, "Max-med on-startup active%s", VTY_NEWLINE);
+#endif
 
                   ents = bgp_table_count (bgp->rib[afi][safi]);
                   vty_out (vty, "RIB entries %ld, using %s of memory%s", ents,
@@ -7146,21 +7140,10 @@ bgp_show_summary (struct vty *vty, struct bgp *bgp, int afi, int safi, u_char us
               json_int = json_object_new_int(4);
               json_object_object_add(json_peer, "version", json_int);
 
-<<<<<<< HEAD
-	  vty_out (vty, "%5u %7d %7d %8d %4d %4lu ",
-		   peer->as,
-		   peer->open_in + peer->update_in + peer->keepalive_in
-		   + peer->notify_in + peer->refresh_in + peer->dynamic_cap_in,
-		   peer->open_out + peer->update_out + peer->keepalive_out
-		   + peer->notify_out + peer->refresh_out
-		   + peer->dynamic_cap_out,
-		   0, 0, (unsigned long) peer->obuf->count);
-=======
               json_int = json_object_new_int(peer->open_in + peer->update_in + peer->keepalive_in
                                              + peer->notify_in + peer->refresh_in
                                              + peer->dynamic_cap_in);
               json_object_object_add(json_peer, "msgrcvd", json_int);
->>>>>>> 9cb9d8f... bgpd-show-json.patch
 
               json_int = json_object_new_int(peer->open_out + peer->update_out + peer->keepalive_out
                                              + peer->notify_out + peer->refresh_out
@@ -7195,6 +7178,9 @@ bgp_show_summary (struct vty *vty, struct bgp *bgp, int afi, int safi, u_char us
             }
           else
             {
+              len = vty_out (vty, "%s", peer->host);
+              len = 16 - len;
+ 
               if (len < 1)
                 vty_out (vty, "%s%*s", VTY_NEWLINE, 16, " ");
               else
@@ -7202,17 +7188,14 @@ bgp_show_summary (struct vty *vty, struct bgp *bgp, int afi, int safi, u_char us
 
               vty_out (vty, "4 ");
 
-              vty_out (vty, "%5u %7d %7d %8lu %4d %4u ",
-                       peer->as,
-                       peer->open_in + peer->update_in + peer->keepalive_in
-                       + peer->notify_in + peer->refresh_in
-                       + peer->dynamic_cap_in,
-                       peer->open_out + peer->update_out + peer->keepalive_out
-                       + peer->notify_out + peer->refresh_out
-                       + peer->dynamic_cap_out,
-                       //peer->version[afi][safi],
-                       0, 0,
-                       (unsigned long) peer->obuf->count);
+	      vty_out (vty, "%5u %7d %7d %8d %4d %4lu ",
+		       peer->as,
+		       peer->open_in + peer->update_in + peer->keepalive_in
+		       + peer->notify_in + peer->refresh_in + peer->dynamic_cap_in,
+		       peer->open_out + peer->update_out + peer->keepalive_out
+		       + peer->notify_out + peer->refresh_out
+		       + peer->dynamic_cap_out,
+		       0, 0, (unsigned long) peer->obuf->count);
 
               vty_out (vty, "%8s",
                        peer_uptime (peer->uptime, timebuf, BGP_UPTIME_LEN));
@@ -7233,14 +7216,6 @@ bgp_show_summary (struct vty *vty, struct bgp *bgp, int afi, int safi, u_char us
 	}
     }
 
-<<<<<<< HEAD
-  if (count)
-    vty_out (vty, "%sTotal number of neighbors %d%s", VTY_NEWLINE,
-	     count, VTY_NEWLINE);
-  else
-    vty_out (vty, "No %s neighbor is configured%s",
-	     afi == AFI_IP ? "IPv4" : "IPv6", VTY_NEWLINE);
-=======
   if (use_json)
     {
       json_object_object_add(json, "peers", json_peers);
@@ -7261,7 +7236,6 @@ bgp_show_summary (struct vty *vty, struct bgp *bgp, int afi, int safi, u_char us
         vty_out (vty, "No %s neighbor is configured%s",
                 afi == AFI_IP ? "IPv4" : "IPv6", VTY_NEWLINE);
     }
->>>>>>> 9cb9d8f... bgpd-show-json.patch
   return CMD_SUCCESS;
 }
 
@@ -8503,7 +8477,7 @@ community_show_all_iterator (struct hash_backet *backet, struct vty *vty)
   struct community *com;
 
   com = (struct community *) backet->data;
-  vty_out (vty, "[%p] (%ld) %s%s", backet, com->refcnt,
+  vty_out (vty, "[%p] (%ld) %s%s", (void *)backet, com->refcnt,
 	   community_str (com), VTY_NEWLINE);
 }
 

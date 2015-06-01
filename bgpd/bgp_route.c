@@ -1667,9 +1667,10 @@ bgp_process_queue_init (void)
   bm->process_main_queue->spec.max_retries = 0;
   bm->process_main_queue->spec.hold = 50;
   
-  memcpy (bm->process_rsclient_queue, bm->process_main_queue,
-          sizeof (struct work_queue *));
   bm->process_rsclient_queue->spec.workfunc = &bgp_process_rsclient;
+  bm->process_rsclient_queue->spec.del_item_data = &bgp_processq_del;
+  bm->process_rsclient_queue->spec.max_retries = 0;
+  bm->process_rsclient_queue->spec.hold = 50;
 }
 
 void
@@ -6299,17 +6300,21 @@ route_vty_out_detail (struct vty *vty, struct bgp *bgp, struct prefix *p,
               json_string = json_object_new_string(sockunion2str (&binfo->peer->su, buf, SU_ADDRSTRLEN));
               json_object_object_add(json_path, "peer-id", json_string);
 
+#ifdef cherry_merge_json
               if (binfo->peer->conf_if)
                 {
                   json_string = json_object_new_string(binfo->peer->conf_if);
                   json_object_object_add(json_path, "peer-interface", json_string);
                 }
+#endif
             }
           else
             {
+#ifdef cherry_merge_json
               if (binfo->peer->conf_if)
                 vty_out (vty, " from %s", binfo->peer->conf_if);
               else
+#endif
                 vty_out (vty, " from %s", sockunion2str (&binfo->peer->su, buf, SU_ADDRSTRLEN));
 
 	      if (attr->flag & ATTR_FLAG_BIT(BGP_ATTR_ORIGINATOR_ID))
@@ -6351,11 +6356,11 @@ route_vty_out_detail (struct vty *vty, struct bgp *bgp, struct prefix *p,
 	}
 #endif /* HAVE_IPV6 */
 
-<<<<<<< HEAD
+#ifndef cherry_merge_json
       /* Line 3 display Origin, Med, Locpref, Weight, valid, Int/Ext/Local, Atomic, best */
-      vty_out (vty, "      Origin %s", bgp_origin_long_str[attr->origin]);
-=======
+#else
       /* Line 3 display Origin, Med, Locpref, Weight, Tag, valid, Int/Ext/Local, Atomic, best */
+#endif
       if (json_paths)
         {
           json_string = json_object_new_string(bgp_origin_long_str[attr->origin]);
@@ -6365,7 +6370,6 @@ route_vty_out_detail (struct vty *vty, struct bgp *bgp, struct prefix *p,
         {
           vty_out (vty, "      Origin %s", bgp_origin_long_str[attr->origin]);
         }
->>>>>>> 9cb9d8f... bgpd-show-json.patch
 	  
       if (attr->flag & ATTR_FLAG_BIT(BGP_ATTR_MULTI_EXIT_DISC))
         {
@@ -6406,12 +6410,6 @@ route_vty_out_detail (struct vty *vty, struct bgp *bgp, struct prefix *p,
         }
 
       if (attr->extra && attr->extra->weight != 0)
-<<<<<<< HEAD
-	vty_out (vty, ", weight %u", attr->extra->weight);
-	
-      if (! CHECK_FLAG (binfo->flags, BGP_INFO_HISTORY))
-	vty_out (vty, ", valid");
-=======
         {
           if (json_paths)
             {
@@ -6423,7 +6421,7 @@ route_vty_out_detail (struct vty *vty, struct bgp *bgp, struct prefix *p,
 	      vty_out (vty, ", weight %u", attr->extra->weight);
             }
         }
-
+#ifdef cherry_merge_json
       if (attr->extra && attr->extra->tag != 0)
         {
           if (json_paths)
@@ -6445,13 +6443,15 @@ route_vty_out_detail (struct vty *vty, struct bgp *bgp, struct prefix *p,
 	    vty_out (vty, ", invalid");
         }
       else if (! CHECK_FLAG (binfo->flags, BGP_INFO_HISTORY))
+#else
+      if (! CHECK_FLAG (binfo->flags, BGP_INFO_HISTORY))
+#endif
         {
           if (json_paths)
 	    json_object_object_add(json_path, "valid", json_boolean_true);
           else
 	    vty_out (vty, ", valid");
         }
->>>>>>> 9cb9d8f... bgpd-show-json.patch
 
       if (binfo->peer != bgp->peer_self)
 	{
@@ -6622,9 +6622,7 @@ route_vty_out_detail (struct vty *vty, struct bgp *bgp, struct prefix *p,
       if (binfo->extra && binfo->extra->damp_info)
 	bgp_damp_info_vty (vty, binfo, json_path);
 
-<<<<<<< HEAD
-      /* Line 7 display Uptime */
-=======
+#ifdef cherry_merge_json
       /* Line 7 display Addpath IDs */
       if (binfo->addpath_rx_id || binfo->addpath_tx_id)
         {
@@ -6645,7 +6643,10 @@ route_vty_out_detail (struct vty *vty, struct bgp *bgp, struct prefix *p,
         }
 
       /* Line 8 display Uptime */
->>>>>>> 9cb9d8f... bgpd-show-json.patch
+#else
+      /* Line 7 display Uptime */
+#endif
+
 #ifdef HAVE_CLOCK_MONOTONIC
       tbuf = time(NULL) - (bgp_clock() - binfo->uptime);
       if (json_paths)
@@ -7087,13 +7088,9 @@ route_vty_out_detail_header (struct vty *vty, struct bgp *bgp,
     {
       if (bgp_adj_out_lookup (peer, p, afi, safi, rn))
 	{
-<<<<<<< HEAD
-	  if (! first)
-	    vty_out (vty, "  Advertised to non peer-group peers:%s ", VTY_NEWLINE);
-	  vty_out (vty, " %s", sockunion2str (&peer->su, buf1, SU_ADDRSTRLEN));
-=======
           if (json)
             {
+#ifdef cherry_merge_json
               if (peer->conf_if)
                 {
                   json_string = json_object_new_string(peer->conf_if);
@@ -7101,20 +7098,24 @@ route_vty_out_detail_header (struct vty *vty, struct bgp *bgp,
                 }
               else
                 {
+#endif
                   json_string = json_object_new_string(sockunion2str (&peer->su, buf1, SU_ADDRSTRLEN));
                   json_object_array_add(json_adv_to, json_string);
+#ifdef cherry_merge_json
                 }
+#endif
             }
 	  else
 	    {
 	      if (! first)
 	        vty_out (vty, "  Advertised to non peer-group peers:%s ", VTY_NEWLINE);
+#ifdef cherry_merge_json
 	      if (peer->conf_if)
                 vty_out (vty, " %s", peer->conf_if);
               else
+#endif
 		vty_out (vty, " %s", sockunion2str (&peer->su, buf1, SU_ADDRSTRLEN));
 	    }
->>>>>>> 9cb9d8f... bgpd-show-json.patch
 	  first = 1;
 	}
     }
@@ -7138,12 +7139,12 @@ static int
 bgp_show_route_in_table (struct vty *vty, struct bgp *bgp, 
                          struct bgp_table *rib, const char *ip_str,
                          afi_t afi, safi_t safi, struct prefix_rd *prd,
-<<<<<<< HEAD
-                         int prefix_check)
-=======
+#ifdef cherry_merge_json
                          int prefix_check, enum bgp_path_type pathtype,
                          u_char use_json)
->>>>>>> 9cb9d8f... bgpd-show-json.patch
+#else
+                         int prefix_check, u_char use_json)
+#endif
 {
   int ret;
   int header;
@@ -7201,16 +7202,15 @@ bgp_show_route_in_table (struct vty *vty, struct bgp *bgp,
                           header = 0;
                         }
                       display++;
-<<<<<<< HEAD
-                      route_vty_out_detail (vty, bgp, &rm->p, ri, AFI_IP, SAFI_MPLS_VPN);
-=======
-
+#ifdef cherry_merge_json
                       if (pathtype == BGP_PATH_ALL ||
                           (pathtype == BGP_PATH_BESTPATH && CHECK_FLAG (ri->flags, BGP_INFO_SELECTED)) ||
                           (pathtype == BGP_PATH_MULTIPATH &&
                            (CHECK_FLAG (ri->flags, BGP_INFO_MULTIPATH) || CHECK_FLAG (ri->flags, BGP_INFO_SELECTED))))
 			route_vty_out_detail (vty, bgp, &rm->p, ri, AFI_IP, SAFI_MPLS_VPN, json_paths);
->>>>>>> 9cb9d8f... bgpd-show-json.patch
+#else
+		      route_vty_out_detail (vty, bgp, &rm->p, ri, AFI_IP, SAFI_MPLS_VPN, json_paths);
+#endif
                     }
 
                   bgp_unlock_node (rm);
@@ -7234,16 +7234,15 @@ bgp_show_route_in_table (struct vty *vty, struct bgp *bgp,
                       header = 0;
                     }
                   display++;
-<<<<<<< HEAD
-                  route_vty_out_detail (vty, bgp, &rn->p, ri, afi, safi);
-=======
-
+#ifdef cherry_merge_json
                   if (pathtype == BGP_PATH_ALL ||
                       (pathtype == BGP_PATH_BESTPATH && CHECK_FLAG (ri->flags, BGP_INFO_SELECTED)) ||
                       (pathtype == BGP_PATH_MULTIPATH &&
                        (CHECK_FLAG (ri->flags, BGP_INFO_MULTIPATH) || CHECK_FLAG (ri->flags, BGP_INFO_SELECTED))))
 		    route_vty_out_detail (vty, bgp, &rn->p, ri, afi, safi, json_paths);
->>>>>>> 9cb9d8f... bgpd-show-json.patch
+#else
+		  route_vty_out_detail (vty, bgp, &rn->p, ri, afi, safi, json_paths);
+#endif
                 }
             }
 
@@ -7277,12 +7276,12 @@ bgp_show_route_in_table (struct vty *vty, struct bgp *bgp,
 static int
 bgp_show_route (struct vty *vty, const char *view_name, const char *ip_str,
 		afi_t afi, safi_t safi, struct prefix_rd *prd,
-<<<<<<< HEAD
-		int prefix_check)
-=======
+#ifdef cherry_merge_json
 		int prefix_check, enum bgp_path_type pathtype,
                 u_char use_json)
->>>>>>> 9cb9d8f... bgpd-show-json.patch
+#else
+		int prefix_check, u_char use_json)
+#endif
 {
   struct bgp *bgp;
 
@@ -7305,16 +7304,14 @@ bgp_show_route (struct vty *vty, const char *view_name, const char *ip_str,
 	  return CMD_WARNING;
 	}
     }
-<<<<<<< HEAD
- 
-  return bgp_show_route_in_table (vty, bgp, bgp->rib[afi][safi], ip_str, 
-                                   afi, safi, prd, prefix_check);
-=======
-
+#ifdef cherry_merge_json
   return bgp_show_route_in_table (vty, bgp, bgp->rib[afi][safi], ip_str,
                                   afi, safi, prd, prefix_check, pathtype,
                                   use_json);
->>>>>>> 9cb9d8f... bgpd-show-json.patch
+#else
+  return bgp_show_route_in_table (vty, bgp, bgp->rib[afi][safi], ip_str,
+                                  afi, safi, prd, prefix_check, use_json);
+#endif
 }
 
 /* BGP route print out function. */
@@ -7370,14 +7367,15 @@ DEFUN (show_ip_bgp_route,
        "Network in the BGP routing table to display\n"
        JSON_HELP_STR)
 {
-<<<<<<< HEAD
-  return bgp_show_route (vty, NULL, argv[0], AFI_IP, SAFI_UNICAST, NULL, 0);
-=======
   u_char use_json = JSON_VALUE(argv[1]);
-
+#ifndef cherry_merge_json
+  return bgp_show_route (vty, NULL, argv[0], AFI_IP, SAFI_UNICAST, NULL, 0, use_json);
+#else
   return bgp_show_route (vty, NULL, argv[0], AFI_IP, SAFI_UNICAST, NULL, 0, BGP_PATH_ALL, use_json);
+#endif
 }
 
+#ifdef cherry_merge_json
 DEFUN (show_ip_bgp_route_pathtype,
        show_ip_bgp_route_pathtype_cmd,
        "show ip bgp A.B.C.D (bestpath|multipath)" JSON_STR,
@@ -7422,8 +7420,8 @@ DEFUN (show_bgp_ipv4_safi_route_pathtype,
       return bgp_show_route (vty, NULL, argv[1], AFI_IP, SAFI_UNICAST, NULL, 0, BGP_PATH_BESTPATH, use_json);
     else
       return bgp_show_route (vty, NULL, argv[1], AFI_IP, SAFI_UNICAST, NULL, 0, BGP_PATH_MULTIPATH, use_json);
->>>>>>> 9cb9d8f... bgpd-show-json.patch
 }
+#endif /* cherry_merge_json */
 
 DEFUN (show_ip_bgp_ipv4_route,
        show_ip_bgp_ipv4_route_cmd,
@@ -7440,15 +7438,15 @@ DEFUN (show_ip_bgp_ipv4_route,
   u_char use_json = JSON_VALUE(argv[2]);
 
   if (strncmp (argv[0], "m", 1) == 0)
-<<<<<<< HEAD
-    return bgp_show_route (vty, NULL, argv[1], AFI_IP, SAFI_MULTICAST, NULL, 0);
+#ifndef cherry_merge_json
+    return bgp_show_route (vty, NULL, argv[1], AFI_IP, SAFI_MULTICAST, NULL, 0, use_json);
 
-  return bgp_show_route (vty, NULL, argv[1], AFI_IP, SAFI_UNICAST, NULL, 0);
-=======
+  return bgp_show_route (vty, NULL, argv[1], AFI_IP, SAFI_UNICAST, NULL, 0, use_json);
+#else
     return bgp_show_route (vty, NULL, argv[1], AFI_IP, SAFI_MULTICAST, NULL, 0, BGP_PATH_ALL, use_json);
 
   return bgp_show_route (vty, NULL, argv[1], AFI_IP, SAFI_UNICAST, NULL, 0, BGP_PATH_ALL, use_json);
->>>>>>> 9cb9d8f... bgpd-show-json.patch
+#endif
 }
 
 ALIAS (show_ip_bgp_ipv4_route,
@@ -7473,13 +7471,12 @@ DEFUN (show_ip_bgp_vpnv4_all_route,
        "Network in the BGP routing table to display\n"
        JSON_HELP_STR)
 {
-<<<<<<< HEAD
-  return bgp_show_route (vty, NULL, argv[0], AFI_IP, SAFI_MPLS_VPN, NULL, 0);
-=======
   u_char use_json = JSON_VALUE(argv[1]);
-
+#ifndef cherry_merge_json
+  return bgp_show_route (vty, NULL, argv[0], AFI_IP, SAFI_MPLS_VPN, NULL, 0, use_json);
+#else
   return bgp_show_route (vty, NULL, argv[0], AFI_IP, SAFI_MPLS_VPN, NULL, 0, BGP_PATH_ALL, use_json);
->>>>>>> 9cb9d8f... bgpd-show-json.patch
+#endif
 }
 
 DEFUN (show_ip_bgp_vpnv4_rd_route,
@@ -7504,11 +7501,11 @@ DEFUN (show_ip_bgp_vpnv4_rd_route,
       vty_out (vty, "%% Malformed Route Distinguisher%s", VTY_NEWLINE);
       return CMD_WARNING;
     }
-<<<<<<< HEAD
-  return bgp_show_route (vty, NULL, argv[1], AFI_IP, SAFI_MPLS_VPN, &prd, 0);
-=======
+#ifndef cherry_merge_json
+  return bgp_show_route (vty, NULL, argv[1], AFI_IP, SAFI_MPLS_VPN, &prd, 0, use_json);
+#else
   return bgp_show_route (vty, NULL, argv[1], AFI_IP, SAFI_MPLS_VPN, &prd, 0, BGP_PATH_ALL, use_json);
->>>>>>> 9cb9d8f... bgpd-show-json.patch
+#endif
 }
 
 DEFUN (show_ip_bgp_prefix,
@@ -7520,14 +7517,16 @@ DEFUN (show_ip_bgp_prefix,
        "IP prefix <network>/<length>, e.g., 35.0.0.0/8\n"
        JSON_HELP_STR)
 {
-<<<<<<< HEAD
-  return bgp_show_route (vty, NULL, argv[0], AFI_IP, SAFI_UNICAST, NULL, 1);
-=======
   u_char use_json = JSON_VALUE(argv[1]);
 
+#ifndef cherry_merge_json
+  return bgp_show_route (vty, NULL, argv[0], AFI_IP, SAFI_UNICAST, NULL, 1, use_json);
+#else
   return bgp_show_route (vty, NULL, argv[0], AFI_IP, SAFI_UNICAST, NULL, 1, BGP_PATH_ALL, use_json);
+#endif
 }
 
+#ifdef cherry_merge_json
 DEFUN (show_ip_bgp_prefix_pathtype,
        show_ip_bgp_prefix_pathtype_cmd,
        "show ip bgp A.B.C.D/M (bestpath|multipath)" JSON_STR,
@@ -7545,8 +7544,8 @@ DEFUN (show_ip_bgp_prefix_pathtype,
     return bgp_show_route (vty, NULL, argv[0], AFI_IP, SAFI_UNICAST, NULL, 1, BGP_PATH_BESTPATH, use_json);
   else
     return bgp_show_route (vty, NULL, argv[0], AFI_IP, SAFI_UNICAST, NULL, 1, BGP_PATH_MULTIPATH, use_json);
->>>>>>> 9cb9d8f... bgpd-show-json.patch
 }
+#endif
 
 DEFUN (show_ip_bgp_ipv4_prefix,
        show_ip_bgp_ipv4_prefix_cmd,
@@ -7563,15 +7562,15 @@ DEFUN (show_ip_bgp_ipv4_prefix,
   u_char use_json = JSON_VALUE(argv[2]);
 
   if (strncmp (argv[0], "m", 1) == 0)
-<<<<<<< HEAD
-    return bgp_show_route (vty, NULL, argv[1], AFI_IP, SAFI_MULTICAST, NULL, 1);
+#ifndef cherry_merge_json
+    return bgp_show_route (vty, NULL, argv[1], AFI_IP, SAFI_MULTICAST, NULL, 1, use_json);
 
-  return bgp_show_route (vty, NULL, argv[1], AFI_IP, SAFI_UNICAST, NULL, 1);
-=======
+  return bgp_show_route (vty, NULL, argv[1], AFI_IP, SAFI_UNICAST, NULL, 1, use_json);
+#else
     return bgp_show_route (vty, NULL, argv[1], AFI_IP, SAFI_MULTICAST, NULL, 1, BGP_PATH_ALL, use_json);
 
   return bgp_show_route (vty, NULL, argv[1], AFI_IP, SAFI_UNICAST, NULL, 1, BGP_PATH_ALL, use_json);
->>>>>>> 9cb9d8f... bgpd-show-json.patch
+#endif
 }
 
 ALIAS (show_ip_bgp_ipv4_prefix,
@@ -7585,8 +7584,7 @@ ALIAS (show_ip_bgp_ipv4_prefix,
        "IP prefix <network>/<length>, e.g., 35.0.0.0/8\n"
        JSON_HELP_STR)
 
-<<<<<<< HEAD
-=======
+#ifdef cherry_merge_json
 DEFUN (show_ip_bgp_ipv4_prefix_pathtype,
        show_ip_bgp_ipv4_prefix_pathtype_cmd,
        "show ip bgp ipv4 (unicast|multicast) A.B.C.D/M (bestpath|multipath)" JSON_STR,
@@ -7629,7 +7627,7 @@ ALIAS (show_ip_bgp_ipv4_prefix_pathtype,
        "Display only multipaths\n"
        JSON_HELP_STR)
 
->>>>>>> 9cb9d8f... bgpd-show-json.patch
+#endif
 DEFUN (show_ip_bgp_vpnv4_all_prefix,
        show_ip_bgp_vpnv4_all_prefix_cmd,
        "show ip bgp vpnv4 all A.B.C.D/M" JSON_STR,
@@ -7641,13 +7639,12 @@ DEFUN (show_ip_bgp_vpnv4_all_prefix,
        "IP prefix <network>/<length>, e.g., 35.0.0.0/8\n"
        JSON_HELP_STR)
 {
-<<<<<<< HEAD
-  return bgp_show_route (vty, NULL, argv[0], AFI_IP, SAFI_MPLS_VPN, NULL, 1);
-=======
   u_char use_json = JSON_VALUE(argv[1]);
-
+#ifndef cherry_merge_json
+  return bgp_show_route (vty, NULL, argv[0], AFI_IP, SAFI_MPLS_VPN, NULL, 1, use_json);
+#else
   return bgp_show_route (vty, NULL, argv[0], AFI_IP, SAFI_MPLS_VPN, NULL, 1, BGP_PATH_ALL, use_json);
->>>>>>> 9cb9d8f... bgpd-show-json.patch
+#endif
 }
 
 DEFUN (show_ip_bgp_vpnv4_rd_prefix,
@@ -7672,11 +7669,11 @@ DEFUN (show_ip_bgp_vpnv4_rd_prefix,
       vty_out (vty, "%% Malformed Route Distinguisher%s", VTY_NEWLINE);
       return CMD_WARNING;
     }
-<<<<<<< HEAD
-  return bgp_show_route (vty, NULL, argv[1], AFI_IP, SAFI_MPLS_VPN, &prd, 1);
-=======
+#ifndef cherry_merge_json
+  return bgp_show_route (vty, NULL, argv[1], AFI_IP, SAFI_MPLS_VPN, &prd, 1, use_json);
+#else
   return bgp_show_route (vty, NULL, argv[1], AFI_IP, SAFI_MPLS_VPN, &prd, 0, BGP_PATH_ALL, use_json);
->>>>>>> 9cb9d8f... bgpd-show-json.patch
+#endif
 }
 
 DEFUN (show_ip_bgp_view,
@@ -7714,13 +7711,12 @@ DEFUN (show_ip_bgp_view_route,
        "Network in the BGP routing table to display\n"
        JSON_HELP_STR)
 {
-<<<<<<< HEAD
-  return bgp_show_route (vty, argv[0], argv[1], AFI_IP, SAFI_UNICAST, NULL, 0);
-=======
   u_char use_json = JSON_VALUE(argv[2]);
-
+#ifndef cherry_merge_json
+  return bgp_show_route (vty, argv[0], argv[1], AFI_IP, SAFI_UNICAST, NULL, 0, use_json);
+#else
   return bgp_show_route (vty, argv[0], argv[1], AFI_IP, SAFI_UNICAST, NULL, 0, BGP_PATH_ALL, use_json);
->>>>>>> 9cb9d8f... bgpd-show-json.patch
+#endif
 }
 
 DEFUN (show_ip_bgp_view_prefix,
@@ -7734,13 +7730,12 @@ DEFUN (show_ip_bgp_view_prefix,
        "IP prefix <network>/<length>, e.g., 35.0.0.0/8\n"
        JSON_HELP_STR)
 {
-<<<<<<< HEAD
-  return bgp_show_route (vty, argv[0], argv[1], AFI_IP, SAFI_UNICAST, NULL, 1);
-=======
   u_char use_json = JSON_VALUE(argv[2]);
-
+#ifndef cherry_merge_json
+  return bgp_show_route (vty, argv[0], argv[1], AFI_IP, SAFI_UNICAST, NULL, 1, use_json);
+#else
   return bgp_show_route (vty, argv[0], argv[1], AFI_IP, SAFI_UNICAST, NULL, 1, BGP_PATH_ALL, use_json);
->>>>>>> 9cb9d8f... bgpd-show-json.patch
+#endif
 }
 
 #ifdef HAVE_IPV6
@@ -7801,27 +7796,6 @@ DEFUN (show_ipv6_bgp,
 
 DEFUN (show_bgp_route,
        show_bgp_route_cmd,
-<<<<<<< HEAD
-       "show bgp X:X::X:X",
-       SHOW_STR
-       BGP_STR
-       "Network in the BGP routing table to display\n")
-{
-  return bgp_show_route (vty, NULL, argv[0], AFI_IP6, SAFI_UNICAST, NULL, 0);
-}
-
-ALIAS (show_bgp_route,
-       show_bgp_ipv6_route_cmd,
-       "show bgp ipv6 X:X::X:X",
-       SHOW_STR
-       BGP_STR
-       "Address family\n"
-       "Network in the BGP routing table to display\n")
-
-DEFUN (show_bgp_ipv6_safi_route,
-       show_bgp_ipv6_safi_route_cmd,
-       "show bgp ipv6 (unicast|multicast) X:X::X:X",
-=======
        "show bgp X:X::X:X" JSON_STR,
        SHOW_STR
        BGP_STR
@@ -7829,8 +7803,11 @@ DEFUN (show_bgp_ipv6_safi_route,
        "JavaScript Object Notation\n")
 {
   u_char use_json = JSON_VALUE(argv[1]);
-
+#ifndef cherry_merge_json
+  return bgp_show_route (vty, NULL, argv[0], AFI_IP6, SAFI_UNICAST, NULL, 0, use_json);
+#else
   return bgp_show_route (vty, NULL, argv[0], AFI_IP6, SAFI_UNICAST, NULL, 0, BGP_PATH_ALL, use_json);
+#endif
 }
 
 ALIAS (show_bgp_route,
@@ -7856,11 +7833,18 @@ DEFUN (show_bgp_ipv6_safi_route,
   u_char use_json = JSON_VALUE(argv[2]);
 
   if (strncmp (argv[0], "m", 1) == 0)
+#ifndef cherry_merge_json
+    return bgp_show_route (vty, NULL, argv[1], AFI_IP6, SAFI_MULTICAST, NULL, 0, use_json);
+
+  return bgp_show_route (vty, NULL, argv[1], AFI_IP6, SAFI_UNICAST, NULL, 0, use_json);
+#else
     return bgp_show_route (vty, NULL, argv[1], AFI_IP6, SAFI_MULTICAST, NULL, 0, BGP_PATH_ALL, use_json);
 
   return bgp_show_route (vty, NULL, argv[1], AFI_IP6, SAFI_UNICAST, NULL, 0, BGP_PATH_ALL, use_json);
+#endif
 }
 
+#ifdef cherry_merge_json
 DEFUN (show_bgp_route_pathtype,
        show_bgp_route_pathtype_cmd,
        "show bgp X:X::X:X (bestpath|multipath)" JSON_STR,
@@ -7893,30 +7877,20 @@ ALIAS (show_bgp_route_pathtype,
 DEFUN (show_bgp_ipv6_safi_route_pathtype,
        show_bgp_ipv6_safi_route_pathtype_cmd,
        "show bgp ipv6 (unicast|multicast) X:X::X:X (bestpath|multipath)" JSON_STR,
->>>>>>> 9cb9d8f... bgpd-show-json.patch
        SHOW_STR
        BGP_STR
        "Address family\n"
        "Address Family modifier\n"
        "Address Family modifier\n"
-<<<<<<< HEAD
-       "Network in the BGP routing table to display\n")
-=======
        "Network in the BGP routing table to display\n"
        "Display only the bestpath\n"
        "Display only multipaths\n"
        JSON_HELP_STR)
->>>>>>> 9cb9d8f... bgpd-show-json.patch
 {
 
   u_char use_json = JSON_VALUE(argv[3]);
 
   if (strncmp (argv[0], "m", 1) == 0)
-<<<<<<< HEAD
-    return bgp_show_route (vty, NULL, argv[1], AFI_IP6, SAFI_MULTICAST, NULL, 0);
-
-  return bgp_show_route (vty, NULL, argv[1], AFI_IP6, SAFI_UNICAST, NULL, 0);
-=======
     if (strncmp (argv[2], "b", 1) == 0)
       return bgp_show_route (vty, NULL, argv[1], AFI_IP6, SAFI_MULTICAST, NULL, 0, BGP_PATH_BESTPATH, use_json);
     else
@@ -7926,8 +7900,8 @@ DEFUN (show_bgp_ipv6_safi_route_pathtype,
       return bgp_show_route (vty, NULL, argv[1], AFI_IP6, SAFI_UNICAST, NULL, 0, BGP_PATH_BESTPATH, use_json);
     else
       return bgp_show_route (vty, NULL, argv[1], AFI_IP6, SAFI_UNICAST, NULL, 0, BGP_PATH_MULTIPATH, use_json);
->>>>>>> 9cb9d8f... bgpd-show-json.patch
 }
+#endif
 
 /* old command */
 DEFUN (show_ipv6_bgp_route,
@@ -7939,13 +7913,12 @@ DEFUN (show_ipv6_bgp_route,
        "Network in the BGP routing table to display\n"
        JSON_HELP_STR)
 {
-<<<<<<< HEAD
-  return bgp_show_route (vty, NULL, argv[0], AFI_IP6, SAFI_UNICAST, NULL, 0);
-=======
   u_char use_json = JSON_VALUE(argv[1]);
-
+#ifndef cherry_merge_json
+  return bgp_show_route (vty, NULL, argv[0], AFI_IP6, SAFI_UNICAST, NULL, 0, use_json);
+#else
   return bgp_show_route (vty, NULL, argv[0], AFI_IP6, SAFI_UNICAST, NULL, 0, BGP_PATH_ALL, use_json);
->>>>>>> 9cb9d8f... bgpd-show-json.patch
+#endif
 }
 
 DEFUN (show_bgp_prefix,
@@ -7956,13 +7929,12 @@ DEFUN (show_bgp_prefix,
        "IPv6 prefix <network>/<length>\n"
        JSON_HELP_STR)
 {
-<<<<<<< HEAD
-  return bgp_show_route (vty, NULL, argv[0], AFI_IP6, SAFI_UNICAST, NULL, 1);
-=======
   u_char use_json = JSON_VALUE(argv[1]);
-
+#ifndef cherry_merge_json
+  return bgp_show_route (vty, NULL, argv[0], AFI_IP6, SAFI_UNICAST, NULL, 1, use_json);
+#else
   return bgp_show_route (vty, NULL, argv[0], AFI_IP6, SAFI_UNICAST, NULL, 1, BGP_PATH_ALL, use_json);
->>>>>>> 9cb9d8f... bgpd-show-json.patch
+#endif
 }
 
 ALIAS (show_bgp_prefix,
@@ -7988,16 +7960,18 @@ DEFUN (show_bgp_ipv6_safi_prefix,
   u_char use_json = JSON_VALUE(argv[2]);
 
   if (strncmp (argv[0], "m", 1) == 0)
-<<<<<<< HEAD
-    return bgp_show_route (vty, NULL, argv[1], AFI_IP6, SAFI_MULTICAST, NULL, 1);
+#ifndef cherry_merge_json
+    return bgp_show_route (vty, NULL, argv[1], AFI_IP6, SAFI_MULTICAST, NULL, 1, use_json);
 
-  return bgp_show_route (vty, NULL, argv[1], AFI_IP6, SAFI_UNICAST, NULL, 1);
-=======
+  return bgp_show_route (vty, NULL, argv[1], AFI_IP6, SAFI_UNICAST, NULL, 1, use_json);
+#else
     return bgp_show_route (vty, NULL, argv[1], AFI_IP6, SAFI_MULTICAST, NULL, 1, BGP_PATH_ALL, use_json);
 
   return bgp_show_route (vty, NULL, argv[1], AFI_IP6, SAFI_UNICAST, NULL, 1, BGP_PATH_ALL, use_json);
+#endif
 }
 
+#ifdef cherry_merge_json
 DEFUN (show_bgp_prefix_pathtype,
        show_bgp_prefix_pathtype_cmd,
        "show bgp X:X::X:X/M (bestpath|multipath)" JSON_STR,
@@ -8052,8 +8026,8 @@ DEFUN (show_bgp_ipv6_safi_prefix_pathtype,
       return bgp_show_route (vty, NULL, argv[1], AFI_IP6, SAFI_UNICAST, NULL, 1, BGP_PATH_BESTPATH, use_json);
     else
       return bgp_show_route (vty, NULL, argv[1], AFI_IP6, SAFI_UNICAST, NULL, 1, BGP_PATH_MULTIPATH, use_json);
->>>>>>> 9cb9d8f... bgpd-show-json.patch
 }
+#endif
 
 /* old command */
 DEFUN (show_ipv6_bgp_prefix,
@@ -8065,13 +8039,12 @@ DEFUN (show_ipv6_bgp_prefix,
        "IPv6 prefix <network>/<length>, e.g., 3ffe::/16\n"
        JSON_HELP_STR)
 {
-<<<<<<< HEAD
-  return bgp_show_route (vty, NULL, argv[0], AFI_IP6, SAFI_UNICAST, NULL, 1);
-=======
   u_char use_json = JSON_VALUE(argv[1]);
-
+#ifndef cherry_merge_json
+  return bgp_show_route (vty, NULL, argv[0], AFI_IP6, SAFI_UNICAST, NULL, 1, use_json);
+#else
   return bgp_show_route (vty, NULL, argv[0], AFI_IP6, SAFI_UNICAST, NULL, 1, BGP_PATH_ALL, use_json);
->>>>>>> 9cb9d8f... bgpd-show-json.patch
+#endif
 }
 
 DEFUN (show_bgp_view,
@@ -8117,13 +8090,12 @@ DEFUN (show_bgp_view_route,
        "Network in the BGP routing table to display\n"
        JSON_HELP_STR)
 {
-<<<<<<< HEAD
-  return bgp_show_route (vty, argv[0], argv[1], AFI_IP6, SAFI_UNICAST, NULL, 0);
-=======
   u_char use_json = JSON_VALUE(argv[2]);
-
+#ifndef cherry_merge_json
+  return bgp_show_route (vty, argv[0], argv[1], AFI_IP6, SAFI_UNICAST, NULL, 0, use_json);
+#else
   return bgp_show_route (vty, argv[0], argv[1], AFI_IP6, SAFI_UNICAST, NULL, 0, BGP_PATH_ALL, use_json);
->>>>>>> 9cb9d8f... bgpd-show-json.patch
+#endif
 }
 
 ALIAS (show_bgp_view_route,
@@ -8147,13 +8119,12 @@ DEFUN (show_bgp_view_prefix,
        "IPv6 prefix <network>/<length>\n"
        JSON_HELP_STR)
 {
-<<<<<<< HEAD
-  return bgp_show_route (vty, argv[0], argv[1], AFI_IP6, SAFI_UNICAST, NULL, 1); 
-=======
   u_char use_json = JSON_VALUE(argv[2]);
-
+#ifndef cherry_merge_json
+  return bgp_show_route (vty, argv[0], argv[1], AFI_IP6, SAFI_UNICAST, NULL, 1, use_json); 
+#else
   return bgp_show_route (vty, argv[0], argv[1], AFI_IP6, SAFI_UNICAST, NULL, 1, BGP_PATH_ALL, use_json);
->>>>>>> 9cb9d8f... bgpd-show-json.patch
+#endif
 }
 
 ALIAS (show_bgp_view_prefix,
@@ -8192,13 +8163,12 @@ DEFUN (show_ipv6_mbgp_route,
        "Network in the MBGP routing table to display\n"
        JSON_HELP_STR)
 {
-<<<<<<< HEAD
-  return bgp_show_route (vty, NULL, argv[0], AFI_IP6, SAFI_MULTICAST, NULL, 0);
-=======
   u_char use_json = JSON_VALUE(argv[1]);
-
+#ifndef cherry_merge_json
+  return bgp_show_route (vty, NULL, argv[0], AFI_IP6, SAFI_MULTICAST, NULL, 0, use_json);
+#else
   return bgp_show_route (vty, NULL, argv[0], AFI_IP6, SAFI_MULTICAST, NULL, 0, BGP_PATH_ALL, use_json);
->>>>>>> 9cb9d8f... bgpd-show-json.patch
+#endif
 }
 
 /* old command */
@@ -8211,15 +8181,14 @@ DEFUN (show_ipv6_mbgp_prefix,
        "IPv6 prefix <network>/<length>, e.g., 3ffe::/16\n"
        JSON_HELP_STR)
 {
-<<<<<<< HEAD
-  return bgp_show_route (vty, NULL, argv[0], AFI_IP6, SAFI_MULTICAST, NULL, 1);
-=======
   u_char use_json = JSON_VALUE(argv[1]);
-
+#ifndef cherry_merge_json
+  return bgp_show_route (vty, NULL, argv[0], AFI_IP6, SAFI_MULTICAST, NULL, 1, use_json);
+#else
   return bgp_show_route (vty, NULL, argv[0], AFI_IP6, SAFI_MULTICAST, NULL, 1, BGP_PATH_ALL, use_json);
->>>>>>> 9cb9d8f... bgpd-show-json.patch
-}
 #endif
+}
+#endif /* HAVE_IPV6 */
 
 
 static int
@@ -9031,19 +9000,13 @@ ALIAS (show_ip_bgp_ipv4_community,
 
 DEFUN (show_bgp_view_afi_safi_community_all,
        show_bgp_view_afi_safi_community_all_cmd,
-#ifdef HAVE_IPV6
        "show bgp view WORD (ipv4|ipv6) (unicast|multicast) community",
-#else
-       "show bgp view WORD ipv4 (unicast|multicast) community",
-#endif
        SHOW_STR
        BGP_STR
        "BGP view\n"
        "View name\n"
        "Address family\n"
-#ifdef HAVE_IPV6
        "Address family\n"
-#endif
        "Address Family modifier\n"
        "Address Family modifier\n"
        "Display routes matching the communities\n")
@@ -9060,31 +9023,20 @@ DEFUN (show_bgp_view_afi_safi_community_all,
       return CMD_WARNING;
     }
 
-#ifdef HAVE_IPV6
   afi = (strncmp (argv[1], "ipv6", 4) == 0) ? AFI_IP6 : AFI_IP;
   safi = (strncmp (argv[2], "m", 1) == 0) ? SAFI_MULTICAST : SAFI_UNICAST;
-#else
-  afi = AFI_IP;
-  safi = (strncmp (argv[1], "m", 1) == 0) ? SAFI_MULTICAST : SAFI_UNICAST;
-#endif
   return bgp_show (vty, bgp, afi, safi, bgp_show_type_community_all, NULL, 0);
 }
 
 DEFUN (show_bgp_view_afi_safi_community,
        show_bgp_view_afi_safi_community_cmd,
-#ifdef HAVE_IPV6
        "show bgp view WORD (ipv4|ipv6) (unicast|multicast) community (AA:NN|local-AS|no-advertise|no-export)",
-#else
-       "show bgp view WORD ipv4 (unicast|multicast) community (AA:NN|local-AS|no-advertise|no-export)",
-#endif
        SHOW_STR
        BGP_STR
        "BGP view\n"
        "View name\n"
        "Address family\n"
-#ifdef HAVE_IPV6
        "Address family\n"
-#endif
        "Address family modifier\n"
        "Address family modifier\n"
        "Display routes matching the communities\n"
@@ -9096,32 +9048,20 @@ DEFUN (show_bgp_view_afi_safi_community,
   int afi;
   int safi;
 
-#ifdef HAVE_IPV6
   afi = (strncmp (argv[1], "ipv6", 4) == 0) ? AFI_IP6 : AFI_IP;
   safi = (strncmp (argv[2], "m", 1) == 0) ? SAFI_MULTICAST : SAFI_UNICAST;
   return bgp_show_community (vty, argv[0], argc-3, &argv[3], 0, afi, safi);
-#else
-  afi = AFI_IP;
-  safi = (strncmp (argv[1], "m", 1) == 0) ? SAFI_MULTICAST : SAFI_UNICAST;
-  return bgp_show_community (vty, argv[0], argc-2, &argv[2], 0, afi, safi);
-#endif
 }
 
 ALIAS (show_bgp_view_afi_safi_community,
        show_bgp_view_afi_safi_community2_cmd,
-#ifdef HAVE_IPV6
        "show bgp view WORD (ipv4|ipv6) (unicast|multicast) community (AA:NN|local-AS|no-advertise|no-export) (AA:NN|local-AS|no-advertise|no-export)",
-#else
-       "show bgp view WORD ipv4 (unicast|multicast) community (AA:NN|local-AS|no-advertise|no-export) (AA:NN|local-AS|no-advertise|no-export)",
-#endif
        SHOW_STR
        BGP_STR
        "BGP view\n"
        "View name\n"
        "Address family\n"
-#ifdef HAVE_IPV6
        "Address family\n"
-#endif
        "Address family modifier\n"
        "Address family modifier\n"
        "Display routes matching the communities\n"
@@ -9136,19 +9076,13 @@ ALIAS (show_bgp_view_afi_safi_community,
 
 ALIAS (show_bgp_view_afi_safi_community,
        show_bgp_view_afi_safi_community3_cmd,
-#ifdef HAVE_IPV6
        "show bgp view WORD (ipv4|ipv6) (unicast|multicast) community (AA:NN|local-AS|no-advertise|no-export) (AA:NN|local-AS|no-advertise|no-export) (AA:NN|local-AS|no-advertise|no-export)",
-#else
-       "show bgp view WORD ipv4 (unicast|multicast) community (AA:NN|local-AS|no-advertise|no-export) (AA:NN|local-AS|no-advertise|no-export) (AA:NN|local-AS|no-advertise|no-export)",
-#endif
        SHOW_STR
        BGP_STR
        "BGP view\n"
        "View name\n"
        "Address family\n"
-#ifdef HAVE_IPV6
        "Address family\n"
-#endif
        "Address family modifier\n"
        "Address family modifier\n"
        "Display routes matching the communities\n"
@@ -9167,19 +9101,13 @@ ALIAS (show_bgp_view_afi_safi_community,
 
 ALIAS (show_bgp_view_afi_safi_community,
        show_bgp_view_afi_safi_community4_cmd,
-#ifdef HAVE_IPV6
        "show bgp view WORD (ipv4|ipv6) (unicast|multicast) community (AA:NN|local-AS|no-advertise|no-export) (AA:NN|local-AS|no-advertise|no-export) (AA:NN|local-AS|no-advertise|no-export) (AA:NN|local-AS|no-advertise|no-export)",
-#else
-       "show bgp view WORD ipv4 (unicast|multicast) community (AA:NN|local-AS|no-advertise|no-export) (AA:NN|local-AS|no-advertise|no-export) (AA:NN|local-AS|no-advertise|no-export) (AA:NN|local-AS|no-advertise|no-export)",
-#endif
        SHOW_STR
        BGP_STR
        "BGP view\n"
        "View name\n"
        "Address family\n"
-#ifdef HAVE_IPV6
        "Address family\n"
-#endif
        "Address family modifier\n"
        "Address family modifier\n"
        "Display routes matching the communities\n"
@@ -11325,19 +11253,13 @@ DEFUN (show_ip_bgp_ipv4_neighbor_received_routes,
 
 DEFUN (show_bgp_view_afi_safi_neighbor_adv_recd_routes,
        show_bgp_view_afi_safi_neighbor_adv_recd_routes_cmd,
-#ifdef HAVE_IPV6
        "show bgp view WORD (ipv4|ipv6) (unicast|multicast) neighbors (A.B.C.D|X:X::X:X) (advertised-routes|received-routes)",
-#else
-       "show bgp view WORD ipv4 (unicast|multicast) neighbors (A.B.C.D|X:X::X:X) (advertised-routes|received-routes)",
-#endif
        SHOW_STR
        BGP_STR
        "BGP view\n"
        "View name\n"
        "Address family\n"
-#ifdef HAVE_IPV6
        "Address family\n"
-#endif
        "Address family modifier\n"
        "Address family modifier\n"
        "Detailed information on TCP and BGP neighbor connections\n"
@@ -11351,24 +11273,14 @@ DEFUN (show_bgp_view_afi_safi_neighbor_adv_recd_routes,
   int in;
   struct peer *peer;
 
-#ifdef HAVE_IPV6
-    peer = peer_lookup_in_view (vty, argv[0], argv[3]);
-#else
-    peer = peer_lookup_in_view (vty, argv[0], argv[2]);
-#endif
+  peer = peer_lookup_in_view (vty, argv[0], argv[3]);
 
   if (! peer)
     return CMD_WARNING;
 
-#ifdef HAVE_IPV6
   afi = (strncmp (argv[1], "ipv6", 4) == 0) ? AFI_IP6 : AFI_IP;
   safi = (strncmp (argv[2], "m", 1) == 0) ? SAFI_MULTICAST : SAFI_UNICAST;
   in = (strncmp (argv[4], "r", 1) == 0) ? 1 : 0;
-#else
-  afi = AFI_IP;
-  safi = (strncmp (argv[1], "m", 1) == 0) ? SAFI_MULTICAST : SAFI_UNICAST;
-  in = (strncmp (argv[3], "r", 1) == 0) ? 1 : 0;
-#endif
 
   return peer_adj_routes (vty, peer, afi, safi, in);
 }
@@ -11911,11 +11823,11 @@ DEFUN (show_ip_bgp_view_rsclient_route,
  
   return bgp_show_route_in_table (vty, bgp, peer->rib[AFI_IP][SAFI_UNICAST], 
                                   (argc == 3) ? argv[2] : argv[1],
-<<<<<<< HEAD
-                                  AFI_IP, SAFI_UNICAST, NULL, 0);
-=======
+#ifndef cherry_merge_json
+                                  AFI_IP, SAFI_UNICAST, NULL, 0, 0);
+#else
                                   AFI_IP, SAFI_UNICAST, NULL, 0, BGP_PATH_ALL, 0);
->>>>>>> 9cb9d8f... bgpd-show-json.patch
+#endif
 }
 
 ALIAS (show_ip_bgp_view_rsclient_route,
@@ -11994,11 +11906,11 @@ DEFUN (show_bgp_view_ipv4_safi_rsclient_route,
 
   return bgp_show_route_in_table (vty, bgp, peer->rib[AFI_IP][safi],
                                   (argc == 4) ? argv[3] : argv[2],
-<<<<<<< HEAD
-                                  AFI_IP, safi, NULL, 0);
-=======
+#ifndef cherry_merge_json
+                                  AFI_IP, safi, NULL, 0, 0);
+#else
                                   AFI_IP, safi, NULL, 0, BGP_PATH_ALL, 0);
->>>>>>> 9cb9d8f... bgpd-show-json.patch
+#endif
 }
 
 ALIAS (show_bgp_view_ipv4_safi_rsclient_route,
@@ -12073,11 +11985,11 @@ DEFUN (show_ip_bgp_view_rsclient_prefix,
     
   return bgp_show_route_in_table (vty, bgp, peer->rib[AFI_IP][SAFI_UNICAST], 
                                   (argc == 3) ? argv[2] : argv[1],
-<<<<<<< HEAD
-                                  AFI_IP, SAFI_UNICAST, NULL, 1);
-=======
+#ifndef cherry_merge_json
+                                  AFI_IP, SAFI_UNICAST, NULL, 1, 0);
+#else
                                   AFI_IP, SAFI_UNICAST, NULL, 1, BGP_PATH_ALL, 0);
->>>>>>> 9cb9d8f... bgpd-show-json.patch
+#endif
 }
 
 ALIAS (show_ip_bgp_view_rsclient_prefix,
@@ -12156,11 +12068,11 @@ DEFUN (show_bgp_view_ipv4_safi_rsclient_prefix,
 
   return bgp_show_route_in_table (vty, bgp, peer->rib[AFI_IP][safi],
                                   (argc == 4) ? argv[3] : argv[2],
-<<<<<<< HEAD
-                                  AFI_IP, safi, NULL, 1);
-=======
+#ifndef cherry_merge_json
+                                  AFI_IP, safi, NULL, 1, 0);
+#else
                                   AFI_IP, safi, NULL, 1, BGP_PATH_ALL, 0);
->>>>>>> 9cb9d8f... bgpd-show-json.patch
+#endif
 }
 
 ALIAS (show_bgp_view_ipv4_safi_rsclient_prefix,
@@ -12560,11 +12472,11 @@ DEFUN (show_bgp_view_rsclient_route,
 
   return bgp_show_route_in_table (vty, bgp, peer->rib[AFI_IP6][SAFI_UNICAST],
                                   (argc == 3) ? argv[2] : argv[1],
-<<<<<<< HEAD
-                                  AFI_IP6, SAFI_UNICAST, NULL, 0);
-=======
+#ifndef cherry_merge_json
+                                  AFI_IP6, SAFI_UNICAST, NULL, 0, 0);
+#else
                                   AFI_IP6, SAFI_UNICAST, NULL, 0, BGP_PATH_ALL, 0);
->>>>>>> 9cb9d8f... bgpd-show-json.patch
+#endif
 }
 
 ALIAS (show_bgp_view_rsclient_route,
@@ -12642,11 +12554,11 @@ DEFUN (show_bgp_view_ipv6_safi_rsclient_route,
 
   return bgp_show_route_in_table (vty, bgp, peer->rib[AFI_IP6][safi],
                                   (argc == 4) ? argv[3] : argv[2],
-<<<<<<< HEAD
-                                  AFI_IP6, safi, NULL, 0);
-=======
+#ifndef cherry_merge_json
+                                  AFI_IP6, safi, NULL, 0, 0);
+#else
                                   AFI_IP6, safi, NULL, 0, BGP_PATH_ALL, 0);
->>>>>>> 9cb9d8f... bgpd-show-json.patch
+#endif
 }
 
 ALIAS (show_bgp_view_ipv6_safi_rsclient_route,
@@ -12720,11 +12632,11 @@ DEFUN (show_bgp_view_rsclient_prefix,
 
   return bgp_show_route_in_table (vty, bgp, peer->rib[AFI_IP6][SAFI_UNICAST],
                                   (argc == 3) ? argv[2] : argv[1],
-<<<<<<< HEAD
-                                  AFI_IP6, SAFI_UNICAST, NULL, 1);
-=======
+#ifndef cherry_merge_json
+                                  AFI_IP6, SAFI_UNICAST, NULL, 1, 0);
+#else
                                   AFI_IP6, SAFI_UNICAST, NULL, 1, BGP_PATH_ALL, 0);
->>>>>>> 9cb9d8f... bgpd-show-json.patch
+#endif
 }
 
 ALIAS (show_bgp_view_rsclient_prefix,
@@ -12802,11 +12714,11 @@ DEFUN (show_bgp_view_ipv6_safi_rsclient_prefix,
 
   return bgp_show_route_in_table (vty, bgp, peer->rib[AFI_IP6][safi],
                                   (argc == 4) ? argv[3] : argv[2],
-<<<<<<< HEAD
-                                  AFI_IP6, safi, NULL, 1);
-=======
+#ifndef cherry_merge_json
+                                  AFI_IP6, safi, NULL, 1, 0);
+#else
                                   AFI_IP6, safi, NULL, 1, BGP_PATH_ALL, 0);
->>>>>>> 9cb9d8f... bgpd-show-json.patch
+#endif
 }
 
 ALIAS (show_bgp_view_ipv6_safi_rsclient_prefix,
@@ -13136,6 +13048,14 @@ DEFUN (bgp_damp_set,
     }
 
   bgp = vty->index;
+
+  if (suppress < reuse)
+    {
+      vty_out (vty, "Suppress value cannot be less than reuse value %s",
+                    VTY_NEWLINE);
+      return 0;
+    }
+
   return bgp_damp_enable (bgp, bgp_node_afi (vty), bgp_node_safi (vty),
 			  half, reuse, suppress, max);
 }
