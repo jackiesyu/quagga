@@ -66,6 +66,44 @@ struct zserv
 
   /* Router-id information. */
   u_char ridinfo;
+#ifdef cherry_merge_bfd
+  /* client's protocol */
+  u_char proto;
+  u_short instance;
+
+  /* Statistics */
+  u_int32_t redist_v4_add_cnt;
+  u_int32_t redist_v4_del_cnt;
+  u_int32_t redist_v6_add_cnt;
+  u_int32_t redist_v6_del_cnt;
+  u_int32_t v4_route_add_cnt;
+  u_int32_t v4_route_upd8_cnt;
+  u_int32_t v4_route_del_cnt;
+  u_int32_t v6_route_add_cnt;
+  u_int32_t v6_route_del_cnt;
+  u_int32_t v6_route_upd8_cnt;
+  u_int32_t connected_rt_add_cnt;
+  u_int32_t connected_rt_del_cnt;
+  u_int32_t ifup_cnt;
+  u_int32_t ifdown_cnt;
+  u_int32_t ifadd_cnt;
+  u_int32_t ifdel_cnt;
+#endif
+#if defined(HAVE_BFD)
+  u_int32_t if_bfd_cnt;
+#endif
+
+#ifdef cherry_merge_bfd
+  time_t connect_time;
+  time_t last_read_time;
+  time_t last_write_time;
+  time_t nh_reg_time;
+  time_t nh_dereg_time;
+  time_t nh_last_upd_time;
+
+  int last_read_cmd;
+  int last_write_cmd;
+#endif
 };
 
 /* Zebra instance */
@@ -107,7 +145,10 @@ extern int zsend_interface_update (int, struct zserv *, struct interface *);
 extern int zsend_route_multipath (int, struct zserv *, struct prefix *, 
                                   struct rib *);
 extern int zsend_router_id_update(struct zserv *, struct prefix *);
-
+#if defined(HAVE_BFD)
+extern int zsend_interface_bfd_update(int, struct zserv *, struct interface *,
+                                      struct prefix *);
+#endif
 extern pid_t pid;
 
 #endif /* _ZEBRA_ZEBRA_H */

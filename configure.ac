@@ -277,6 +277,12 @@ AC_ARG_ENABLE(pcreposix,
   AS_HELP_STRING([--enable-pcreposix], [enable using PCRE Posix libs for regex functions]))
 AC_ARG_ENABLE(fpm,
   AS_HELP_STRING([--enable-fpm], [enable Forwarding Plane Manager support]))
+#ifdef cherry_merge_bfd
+AC_ARG_ENABLE(ptm,
+[  --enable-ptm            enable PTM support])
+#endif
+AC_ARG_ENABLE(bfd,
+[  --enable-bfd            enable BFD support])
 
 if test x"${enable_gcc_ultra_verbose}" = x"yes" ; then
   CFLAGS="${CFLAGS} -W -Wcast-qual -Wstrict-prototypes"
@@ -297,6 +303,16 @@ if test x"${enable_time_check}" != x"no" ; then
   else
     AC_DEFINE_UNQUOTED(CONSUMED_TIME_CHECK,$enable_time_check,Consumed Time Check)
   fi
+fi
+
+#ifdef cherry_merge_bfd
+if test "${enable_ptm}" = "yes"; then
+   AC_DEFINE(HAVE_PTM,,PTM support)
+fi
+#endif
+
+if test "${enable_bfd}" = "yes"; then
+   AC_DEFINE(HAVE_BFD,,BFD Support)
 fi
 
 if test "${enable_fpm}" = "yes"; then
