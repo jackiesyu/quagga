@@ -1,0 +1,5 @@
+quagga (0.99.24-1) UNRELEASED; urgency=medium
+
+  * Initial release.
+
+ -- dev <jacqueline.yu@bigswitch.com>  Tue, 23 Jun 2015 14:21:25 -0700
