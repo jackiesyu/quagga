@@ -61,6 +61,7 @@ static const struct option longopts[] =
   { "listenon",    required_argument, NULL, 'l'},
   { "vty_addr",    required_argument, NULL, 'A'},
   { "vty_port",    required_argument, NULL, 'P'},
+  { "vty_file",    required_argument, NULL, 'V'},
   { "retain",      no_argument,       NULL, 'r'},
   { "no_kernel",   no_argument,       NULL, 'n'},
   { "user",        required_argument, NULL, 'u'},
@@ -112,6 +113,7 @@ char *config_file = NULL;
 
 /* Process ID saved for use by init system */
 static const char *pid_file = PATH_BGPD_PID;
+const char *vty_file = BGP_VTYSH_PATH;
 
 /* VTY port number and address.  */
 int vty_port = BGP_VTY_PORT;
@@ -158,6 +160,7 @@ redistribution between different routing protocols.\n\n\
 -l, --listenon     Listen on specified address (implies -n)\n\
 -A, --vty_addr     Set vty's bind address\n\
 -P, --vty_port     Set vty's port number\n\
+-V, --vty_file     Set vty socket file name\n\
 -r, --retain       When program terminates, retain added route by bgpd.\n\
 -n, --no_kernel    Do not install route to kernel.\n\
 -u, --user         User to run as\n\
@@ -343,7 +346,7 @@ main (int argc, char **argv)
   /* Command line argument treatment. */
   while (1) 
     {
-      opt = getopt_long (argc, argv, "df:i:z:hp:l:A:P:rnu:g:vC", longopts, 0);
+      opt = getopt_long (argc, argv, "df:i:z:hp:l:A:P:V:rnu:g:vC", longopts, 0);
     
       if (opt == EOF)
 	break;
@@ -386,6 +389,9 @@ main (int argc, char **argv)
 	  if (vty_port <= 0 || vty_port > 0xffff)
 	    vty_port = BGP_VTY_PORT;
 	  break;
+        case 'V':
+          vty_file = optarg;
+          break;
 	case 'r':
 	  retain_mode = 1;
 	  break;
@@ -450,7 +456,7 @@ main (int argc, char **argv)
   pid_output (pid_file);
 
   /* Make bgp vty socket. */
-  vty_serv_sock (vty_addr, vty_port, BGP_VTYSH_PATH);
+  vty_serv_sock (vty_addr, vty_port, vty_file);
 
   /* Print banner. */
   zlog_notice ("BGPd %s starting: vty@%d, bgp@%s:%d", QUAGGA_VERSION,

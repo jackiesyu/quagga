@@ -1,0 +1,13 @@
+Source: quagga
+Section: admin
+Priority: standard
+Maintainer: Support <support@bigswitch.com>
+Build-Depends: debhelper (>= 7.0.50~), libjson0-dev, autoconf, automake, libtool, gawk, libreadline6, libreadline6-dev, texinfo, libjson0
+Standards-Version: 3.9.5
+Homepage: http://www.bigswitch.com
+
+Package: dynamic-routing
+Version: __VERSION__
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Quagga routing stack 
