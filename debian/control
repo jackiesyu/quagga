@@ -6,7 +6,7 @@ Build-Depends: debhelper (>= 7.0.50~), libjson0-dev, autoconf, automake, libtool
 Standards-Version: 3.9.5
 Homepage: http://www.bigswitch.com
 
-Package: dynamic-routing
+Package: quagga
 Version: __VERSION__
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
