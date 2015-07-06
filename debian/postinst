@@ -6,7 +6,7 @@ case "$1" in
     configure)
         if ! id $NAME > /dev/null 2>&1 ; then
             addgroup --quiet $NAME
-            adduser --quiet --group --system --disabled-password \
+            adduser --quiet --system --disabled-password \
                 --no-create-home --home /dev/null $NAME --ingroup $NAME
         fi
 
