@@ -7,7 +7,7 @@ case "$1" in
         if ! id $NAME > /dev/null 2>&1 ; then
             addgroup --quiet $NAME
             adduser --quiet --group --system --disabled-password \
-                --no-create-home --home /dev/null $NAME --group $NAME
+                --no-create-home --home /dev/null $NAME --ingroup $NAME
         fi
 
         # Maintain alphabetical order
