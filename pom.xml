@@ -19,9 +19,6 @@
   <!-- Project Information -->
   <groupId>org.projectfloodlight</groupId>
   <version>0.99.24-master-SNAPSHOT</version>
-  <!--<parent>
-    <artifactId>dynamic-routing-protocol</artifactId>
-  </parent> -->
   <artifactId>quagga</artifactId>
   <packaging>jar</packaging>
 
@@ -82,7 +79,7 @@
                   <environmentVariables>
                     <ARCH>${arch}</ARCH>
                     <SUITE>${suite}</SUITE>
-                    <PKG>dynamic-routing</PKG>
+                    <PKG>quagga</PKG>
                     <VER>${deb.version}</VER>
                   </environmentVariables>
                   <arguments>
