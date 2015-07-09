@@ -41,7 +41,7 @@ case "$1" in
 	DST_FILE=/etc/quagga/zebra.conf
 	cp $SRC_FILE $DST_FILE
 
-	SRC_FILE=/etc/bgpd.conf.sample2
+	SRC_FILE=/etc/bgpd.conf.sample
 	DST_FILE=/etc/quagga/bgpd.conf
 	cp $SRC_FILE $DST_FILE
     ;;
