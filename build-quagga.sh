@@ -40,9 +40,6 @@ dpkg-buildpackage -S -d -us -uc
 popd
 
 sudo /bin/cp -al "$BASEPATH" "$cowdir"
-sudo /bin/rm -rf "$cowdir/etc/pam.d"
-sudo /bin/cp -a "$BASEPATH/etc/pam.d" "$cowdir/etc"
-sudo /bin/chmod 0777 "$cowdir/etc/pam.d"
 
 sudo cowbuilder --build $workdir/*.dsc --basepath "$cowdir" --buildresult "$workdir" --debbuildopts -b
 
