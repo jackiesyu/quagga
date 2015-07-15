@@ -6728,6 +6728,7 @@ bgp_show_table (struct vty *vty, struct bgp_table *table, struct in_addr *router
 
   if (use_json)
     {
+      json = json_object_new_object();
       json_string = json_object_new_string(inet_ntoa (*router_id));
       json_object_object_add(json, "router-id", json_string);
 
