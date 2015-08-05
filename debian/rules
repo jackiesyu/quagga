@@ -21,7 +21,8 @@ override_dh_auto_configure:
 	dh_auto_configure -- --enable-fpm \
 			--enable-vtysh \
 			--localstatedir=/var/state/quagga \
-			--enable-bfd
+			--enable-bfd \
+			--enable-multipath=0
 
 #override_dh_auto_install:
 	#$(MAKE) DESTDIR=$$(pwd)/debian/quagga prefix=/usr install
