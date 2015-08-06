@@ -25,7 +25,7 @@
 #define _QUAGGA_BGP_MPATH_H
 
 /* BGP default maximum-paths */
-#define BGP_DEFAULT_MAXPATHS 1
+#define BGP_DEFAULT_MAXPATHS 8
 
 /* Supplemental information linked to bgp_info for keeping track of
  * multipath selections, lazily allocated to save memory
