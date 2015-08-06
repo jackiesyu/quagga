@@ -909,6 +909,7 @@ bgp_open_capability (struct stream *s, struct peer *peer)
   safi_t safi;
   as_t local_as;
   u_int32_t restart_time;
+  u_char af_flag;
 
   /* Remember current pointer for Opt Parm Len. */
   cp = stream_get_endp (s);
@@ -1057,7 +1058,9 @@ bgp_open_capability (struct stream *s, struct peer *peer)
             {
               stream_putw (s, afi);
               stream_putc (s, safi);
-              stream_putc (s, 0); //Forwarding is not retained as of now.
+	      af_flag = 0;
+              SET_FLAG (af_flag, RESTART_F_BIT);
+              stream_putc (s, af_flag); //Forwarding is retained.
             }
     }
 
