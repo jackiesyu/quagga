@@ -27,7 +27,7 @@
     <deb.version>0.99.24-1</deb.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <arch>amd64</arch>
-    <suite>precise</suite>
+    <suite>trusty</suite>
   </properties>
 
   <!-- resources>
