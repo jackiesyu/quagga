@@ -18,7 +18,7 @@
 
   <!-- Project Information -->
   <groupId>org.projectfloodlight</groupId>
-  <version>0.99.24-master-SNAPSHOT</version>
+  <version>0.99.24-master-trusty-SNAPSHOT</version>
   <artifactId>quagga</artifactId>
   <packaging>jar</packaging>
 
