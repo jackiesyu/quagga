@@ -7628,7 +7628,6 @@ bgp_show_peer_afi (struct vty *vty, struct peer *p, afi_t afi, safi_t safi,
   json_object *address_family_info;
   json_object *default_information_originate;
 
-  vty_out(vty, "this is the locally compiled version");sssssssssssssssssssssssssss
 
   if(use_json){
     orf_cap = json_object_new_object();
@@ -7984,7 +7983,7 @@ bgp_show_peer_afi (struct vty *vty, struct peer *p, afi_t afi, safi_t safi,
     /* Maximum prefix */
     if (CHECK_FLAG(p->af_flags[afi][safi], PEER_FLAG_MAX_PREFIX)) {
       char *s;
-      sprintf(s, "%ld%s", p->pmax[afi][safi], CHECK_FLAG (p->af_flags[afi][safi],
+      sprintf("%ld%s", p->pmax[afi][safi], CHECK_FLAG (p->af_flags[afi][safi],
           PEER_FLAG_MAX_PREFIX_WARNING) ? " (warning-only)" : "");
       json_string = json_object_new_string(s);
       json_object_object_add(address_family_info, "max-prefixes", json_string);
@@ -8202,306 +8201,305 @@ bgp_show_peer (struct vty *vty, struct peer *p, json_object *json_peers, u_char 
   }
   
   /* Capability. */
+  if (p->status == Established) {
+    if (p->cap || p->afc_adv[AFI_IP][SAFI_UNICAST]
+        || p->afc_recv[AFI_IP][SAFI_UNICAST]
+        || p->afc_adv[AFI_IP][SAFI_MULTICAST]
+        || p->afc_recv[AFI_IP][SAFI_MULTICAST]
+#ifdef HAVE_IPV6
+        || p->afc_adv[AFI_IP6][SAFI_UNICAST]
+        || p->afc_recv[AFI_IP6][SAFI_UNICAST]
+        || p->afc_adv[AFI_IP6][SAFI_MULTICAST]
+        || p->afc_recv[AFI_IP6][SAFI_MULTICAST]
+#endif /* HAVE_IPV6 */
+        || p->afc_adv[AFI_IP][SAFI_MPLS_VPN]
+        || p->afc_recv[AFI_IP][SAFI_MPLS_VPN]) {
+      json_object *neighbor_capabilities;
+      if (use_json) {
+        neighbor_capabilities = json_object_new_object();
+      } else {
+        vty_out(vty, "  Neighbor capabilities:%s", VTY_NEWLINE);
+      }
 
-//  if (p->status == Established) {
-//    if (p->cap || p->afc_adv[AFI_IP][SAFI_UNICAST]
-//        || p->afc_recv[AFI_IP][SAFI_UNICAST]
-//        || p->afc_adv[AFI_IP][SAFI_MULTICAST]
-//        || p->afc_recv[AFI_IP][SAFI_MULTICAST]
-//#ifdef HAVE_IPV6
-//        || p->afc_adv[AFI_IP6][SAFI_UNICAST]
-//        || p->afc_recv[AFI_IP6][SAFI_UNICAST]
-//        || p->afc_adv[AFI_IP6][SAFI_MULTICAST]
-//        || p->afc_recv[AFI_IP6][SAFI_MULTICAST]
-//#endif /* HAVE_IPV6 */
-//        || p->afc_adv[AFI_IP][SAFI_MPLS_VPN]
-//        || p->afc_recv[AFI_IP][SAFI_MPLS_VPN]) {
-//      json_object *neighbor_capabilities;
-//      if (use_json) {
-//        neighbor_capabilities = json_object_new_object();
-//      } else {
-//        vty_out(vty, "  Neighbor capabilities:%s", VTY_NEWLINE);
-//      }
-//
-//      /* AS4 */
-//      if (CHECK_FLAG(p->cap,
-//          PEER_CAP_AS4_RCV) || CHECK_FLAG(p->cap, PEER_CAP_AS4_ADV)) {
-//        if (use_json) {
-//          if (CHECK_FLAG(p->cap, PEER_CAP_AS4_ADV)) {
-//            if (CHECK_FLAG(p->cap, PEER_CAP_AS4_RCV))
-//              json_string = json_object_new_string("advertised and received");
-//            else
-//              json_string = json_object_new_string("advertised");
-//          } else {
-//            json_string = json_object_new_string("received");
-//          }
-//          json_object_object_add(neighbor_capabilities, "4-byte-as",
-//              json_string);
-//        } else {
-//          vty_out(vty, "    4 Byte AS:");
-//          if (CHECK_FLAG(p->cap, PEER_CAP_AS4_ADV))
-//            vty_out(vty, " advertised");
-//          if (CHECK_FLAG(p->cap, PEER_CAP_AS4_RCV))
-//            vty_out(vty, " %sreceived",
-//            CHECK_FLAG (p->cap, PEER_CAP_AS4_ADV) ? "and " : "");
-//          vty_out(vty, "%s", VTY_NEWLINE);
-//        }
-//      }
-//      /* Dynamic */
-//      if (CHECK_FLAG(p->cap,
-//          PEER_CAP_DYNAMIC_RCV) || CHECK_FLAG(p->cap, PEER_CAP_DYNAMIC_ADV)) {
-//        if (use_json) {
-//          if (CHECK_FLAG(p->cap, PEER_CAP_DYNAMIC_ADV)) {
-//            if (CHECK_FLAG(p->cap, PEER_CAP_DYNAMIC_RCV))
-//              json_string = json_object_new_string("advertised and received");
-//            else
-//              json_string = json_object_new_string("advertised");
-//          } else {
-//            json_string = json_object_new_string("received");
-//          }
-//          json_object_object_add(neighbor_capabilities, "dynamic", json_string);
-//        } else {
-//          vty_out(vty, "    Dynamic:");
-//          if (CHECK_FLAG(p->cap, PEER_CAP_DYNAMIC_ADV))
-//            vty_out(vty, " advertised");
-//          if (CHECK_FLAG(p->cap, PEER_CAP_DYNAMIC_RCV))
-//            vty_out(vty, " %sreceived",
-//            CHECK_FLAG (p->cap, PEER_CAP_DYNAMIC_ADV) ? "and " : "");
-//          vty_out(vty, "%s", VTY_NEWLINE);
-//        }
-//      }
-//
-//      /* Route Refresh */
-//      if (use_json) {
-//        if (CHECK_FLAG(p->cap, PEER_CAP_REFRESH_ADV))
-//          json_object_object_add(neighbor_capabilities,
-//              "route-refresh-advertise", json_boolean_true);
-//        if (CHECK_FLAG(p->cap, PEER_CAP_REFRESH_NEW_RCV))
-//          json_object_object_add(neighbor_capabilities,
-//              "route-refresh-receive-new", json_boolean_true);
-//        if (CHECK_FLAG(p->cap, PEER_CAP_REFRESH_OLD_RCV))
-//          json_object_object_add(neighbor_capabilities,
-//              "route-refresh-receive-old", json_boolean_true);
-//      } else {
-//        if (CHECK_FLAG(p->cap,
-//            PEER_CAP_REFRESH_ADV) || CHECK_FLAG (p->cap, PEER_CAP_REFRESH_NEW_RCV)
-//            || CHECK_FLAG (p->cap, PEER_CAP_REFRESH_OLD_RCV)) {
-//          vty_out(vty, "    Route refresh:");
-//          if (CHECK_FLAG(p->cap, PEER_CAP_REFRESH_ADV))
-//            vty_out(vty, " advertised");
-//          if (CHECK_FLAG(p->cap,
-//              PEER_CAP_REFRESH_NEW_RCV) || CHECK_FLAG (p->cap, PEER_CAP_REFRESH_OLD_RCV))
-//            vty_out(vty, " %sreceived(%s)",
-//            CHECK_FLAG (p->cap, PEER_CAP_REFRESH_ADV) ? "and " : "",
-//                (CHECK_FLAG(p->cap, PEER_CAP_REFRESH_OLD_RCV)
-//                    && CHECK_FLAG(p->cap, PEER_CAP_REFRESH_NEW_RCV)) ?
-//                    "old & new" :
-//                CHECK_FLAG(p->cap, PEER_CAP_REFRESH_OLD_RCV) ? "old" : "new");
-//
-//          vty_out(vty, "%s", VTY_NEWLINE);
-//        }
-//      }
-//
-//      /* Multiprotocol Extensions */
-//      for (afi = AFI_IP; afi < AFI_MAX; afi++) {
-//        for (safi = SAFI_UNICAST; safi < SAFI_MAX; safi++) {
-//          if (p->afc_adv[afi][safi] || p->afc_recv[afi][safi]) {
-//
-//            if (use_json) {
-//              if (p->afc_adv[afi][safi]) {
-//                if (p->afc_recv[afi][safi])
-//                  json_string = json_object_new_string(
-//                      "advertised and received");
-//                else
-//                  json_string = json_object_new_string("advertised");
-//              } else {
-//                json_string = json_object_new_string("received");
-//              }
-//              json_object_object_add(neighbor_capabilities, "address-family",
-//                  json_string);
-//            } else {
-//              vty_out(vty, "    Address family %s:", afi_safi_print(afi, safi));
-//              if (p->afc_adv[afi][safi])
-//                vty_out(vty, " advertised");
-//              if (p->afc_recv[afi][safi])
-//                vty_out(vty, " %sreceived",
-//                    p->afc_adv[afi][safi] ? "and " : "");
-//              vty_out(vty, "%s", VTY_NEWLINE);
-//            }
-//          }
-//        }
-//      }
-//
-//      /* Gracefull Restart */
-//      if (CHECK_FLAG(p->cap,
-//          PEER_CAP_RESTART_RCV) || CHECK_FLAG(p->cap, PEER_CAP_RESTART_ADV)) {
-//        if (use_json) {
-//          if (CHECK_FLAG(p->cap, PEER_CAP_RESTART_ADV))
-//            if (CHECK_FLAG(p->cap, PEER_CAP_RESTART_RCV))
-//              json_string = json_object_new_string("advertised and received");
-//            else
-//              json_string = json_object_new_string("advertised");
-//          else
-//            json_string = json_object_new_string("received");
-//
-//          if (CHECK_FLAG(p->cap, PEER_CAP_RESTART_RCV)) {
-//            int restart_af_count = 0;
-//
-//            json_string = json_object_new_int(p->v_gr_restart);
-//            json_object_object_add(neighbor_capabilities, "restart-timer",
-//                json_string);
-//
-//            json_string = json_object_new_int(p->v_gr_restart);
-//            json_object_object_add(neighbor_capabilities, "restart-timer",
-//                json_string);
-//
-//            json_object *address_families = json_object_new_array();
-//
-//            for (afi = AFI_IP; afi < AFI_MAX; afi++)
-//              for (safi = SAFI_UNICAST; safi < SAFI_MAX; safi++)
-//                if (CHECK_FLAG(p->af_cap[afi][safi], PEER_CAP_RESTART_AF_RCV)) {
-//                  char *s;
-//                  sprintf(s, "%s%s(%s)", restart_af_count ? ", " : "",
-//                      afi_safi_print(afi, safi),
-//                      CHECK_FLAG (p->af_cap[afi][safi], PEER_CAP_RESTART_AF_PRESERVE_RCV) ?
-//                          "preserved" : "not preserved");
-//                  json_string = json_object_new_string(s);
-//                  json_object_array_add(address_families, json_string);
-//                  restart_af_count++;
-//                }
-//            if (restart_af_count)
-//              json_object_object_add(neighbor_capabilities, "address-families",
-//                  address_families);
-//          }
-//        } else {
-//          vty_out(vty, "    Graceful Restart Capabilty:");
-//          if (CHECK_FLAG(p->cap, PEER_CAP_RESTART_ADV))
-//            vty_out(vty, " advertised");
-//          if (CHECK_FLAG(p->cap, PEER_CAP_RESTART_RCV))
-//            vty_out(vty, " %sreceived",
-//            CHECK_FLAG (p->cap, PEER_CAP_RESTART_ADV) ? "and " : "");
-//          vty_out(vty, "%s", VTY_NEWLINE);
-//
-//          if (CHECK_FLAG(p->cap, PEER_CAP_RESTART_RCV)) {
-//            int restart_af_count = 0;
-//
-//            vty_out(vty, "      Remote Restart timer is %d seconds%s",
-//                p->v_gr_restart, VTY_NEWLINE);
-//            vty_out(vty, "      Address families by peer:%s        ",
-//            VTY_NEWLINE);
-//
-//            for (afi = AFI_IP; afi < AFI_MAX; afi++)
-//              for (safi = SAFI_UNICAST; safi < SAFI_MAX; safi++)
-//                if (CHECK_FLAG(p->af_cap[afi][safi], PEER_CAP_RESTART_AF_RCV)) {
-//                  vty_out(vty, "%s%s(%s)", restart_af_count ? ", " : "",
-//                      afi_safi_print(afi, safi),
-//                      CHECK_FLAG (p->af_cap[afi][safi], PEER_CAP_RESTART_AF_PRESERVE_RCV) ?
-//                          "preserved" : "not preserved");
-//                  restart_af_count++;
-//                }
-//            if (!restart_af_count)
-//              vty_out(vty, "none");
-//            vty_out(vty, "%s", VTY_NEWLINE);
-//          }
-//        }
-//      }
-//      if (use_json) {
-//        json_object_object_add(json_peer, "neighbor-capabilities",
-//            neighbor_capabilities);
-//      }
-//    }
-//  }
+      /* AS4 */
+      if (CHECK_FLAG(p->cap,
+          PEER_CAP_AS4_RCV) || CHECK_FLAG(p->cap, PEER_CAP_AS4_ADV)) {
+        if (use_json) {
+          if (CHECK_FLAG(p->cap, PEER_CAP_AS4_ADV)) {
+            if (CHECK_FLAG(p->cap, PEER_CAP_AS4_RCV))
+              json_string = json_object_new_string("advertised and received");
+            else
+              json_string = json_object_new_string("advertised");
+          } else {
+            json_string = json_object_new_string("received");
+          }
+          json_object_object_add(neighbor_capabilities, "4-byte-as",
+              json_string);
+        } else {
+          vty_out(vty, "    4 Byte AS:");
+          if (CHECK_FLAG(p->cap, PEER_CAP_AS4_ADV))
+            vty_out(vty, " advertised");
+          if (CHECK_FLAG(p->cap, PEER_CAP_AS4_RCV))
+            vty_out(vty, " %sreceived",
+            CHECK_FLAG (p->cap, PEER_CAP_AS4_ADV) ? "and " : "");
+          vty_out(vty, "%s", VTY_NEWLINE);
+        }
+      }
+      /* Dynamic */
+      if (CHECK_FLAG(p->cap,
+          PEER_CAP_DYNAMIC_RCV) || CHECK_FLAG(p->cap, PEER_CAP_DYNAMIC_ADV)) {
+        if (use_json) {
+          if (CHECK_FLAG(p->cap, PEER_CAP_DYNAMIC_ADV)) {
+            if (CHECK_FLAG(p->cap, PEER_CAP_DYNAMIC_RCV))
+              json_string = json_object_new_string("advertised and received");
+            else
+              json_string = json_object_new_string("advertised");
+          } else {
+            json_string = json_object_new_string("received");
+          }
+          json_object_object_add(neighbor_capabilities, "dynamic", json_string);
+        } else {
+          vty_out(vty, "    Dynamic:");
+          if (CHECK_FLAG(p->cap, PEER_CAP_DYNAMIC_ADV))
+            vty_out(vty, " advertised");
+          if (CHECK_FLAG(p->cap, PEER_CAP_DYNAMIC_RCV))
+            vty_out(vty, " %sreceived",
+            CHECK_FLAG (p->cap, PEER_CAP_DYNAMIC_ADV) ? "and " : "");
+          vty_out(vty, "%s", VTY_NEWLINE);
+        }
+      }
+
+      /* Route Refresh */
+      if (use_json) {
+        if (CHECK_FLAG(p->cap, PEER_CAP_REFRESH_ADV))
+          json_object_object_add(neighbor_capabilities,
+              "route-refresh-advertise", json_boolean_true);
+        if (CHECK_FLAG(p->cap, PEER_CAP_REFRESH_NEW_RCV))
+          json_object_object_add(neighbor_capabilities,
+              "route-refresh-receive-new", json_boolean_true);
+        if (CHECK_FLAG(p->cap, PEER_CAP_REFRESH_OLD_RCV))
+          json_object_object_add(neighbor_capabilities,
+              "route-refresh-receive-old", json_boolean_true);
+      } else {
+        if (CHECK_FLAG(p->cap,
+            PEER_CAP_REFRESH_ADV) || CHECK_FLAG (p->cap, PEER_CAP_REFRESH_NEW_RCV)
+            || CHECK_FLAG (p->cap, PEER_CAP_REFRESH_OLD_RCV)) {
+          vty_out(vty, "    Route refresh:");
+          if (CHECK_FLAG(p->cap, PEER_CAP_REFRESH_ADV))
+            vty_out(vty, " advertised");
+          if (CHECK_FLAG(p->cap,
+              PEER_CAP_REFRESH_NEW_RCV) || CHECK_FLAG (p->cap, PEER_CAP_REFRESH_OLD_RCV))
+            vty_out(vty, " %sreceived(%s)",
+            CHECK_FLAG (p->cap, PEER_CAP_REFRESH_ADV) ? "and " : "",
+                (CHECK_FLAG(p->cap, PEER_CAP_REFRESH_OLD_RCV)
+                    && CHECK_FLAG(p->cap, PEER_CAP_REFRESH_NEW_RCV)) ?
+                    "old & new" :
+                CHECK_FLAG(p->cap, PEER_CAP_REFRESH_OLD_RCV) ? "old" : "new");
+
+          vty_out(vty, "%s", VTY_NEWLINE);
+        }
+      }
+
+      /* Multiprotocol Extensions */
+      for (afi = AFI_IP; afi < AFI_MAX; afi++) {
+        for (safi = SAFI_UNICAST; safi < SAFI_MAX; safi++) {
+          if (p->afc_adv[afi][safi] || p->afc_recv[afi][safi]) {
+
+            if (use_json) {
+              if (p->afc_adv[afi][safi]) {
+                if (p->afc_recv[afi][safi])
+                  json_string = json_object_new_string(
+                      "advertised and received");
+                else
+                  json_string = json_object_new_string("advertised");
+              } else {
+                json_string = json_object_new_string("received");
+              }
+              json_object_object_add(neighbor_capabilities, "address-family",
+                  json_string);
+            } else {
+              vty_out(vty, "    Address family %s:", afi_safi_print(afi, safi));
+              if (p->afc_adv[afi][safi])
+                vty_out(vty, " advertised");
+              if (p->afc_recv[afi][safi])
+                vty_out(vty, " %sreceived",
+                    p->afc_adv[afi][safi] ? "and " : "");
+              vty_out(vty, "%s", VTY_NEWLINE);
+            }
+          }
+        }
+      }
+
+      /* Gracefull Restart */
+      if (CHECK_FLAG(p->cap,
+          PEER_CAP_RESTART_RCV) || CHECK_FLAG(p->cap, PEER_CAP_RESTART_ADV)) {
+        if (use_json) {
+          if (CHECK_FLAG(p->cap, PEER_CAP_RESTART_ADV))
+            if (CHECK_FLAG(p->cap, PEER_CAP_RESTART_RCV))
+              json_string = json_object_new_string("advertised and received");
+            else
+              json_string = json_object_new_string("advertised");
+          else
+            json_string = json_object_new_string("received");
+
+          if (CHECK_FLAG(p->cap, PEER_CAP_RESTART_RCV)) {
+            int restart_af_count = 0;
+
+            json_string = json_object_new_int(p->v_gr_restart);
+            json_object_object_add(neighbor_capabilities, "restart-timer",
+                json_string);
+
+            json_string = json_object_new_int(p->v_gr_restart);
+            json_object_object_add(neighbor_capabilities, "restart-timer",
+                json_string);
+
+            json_object *address_families = json_object_new_array();
+
+            for (afi = AFI_IP; afi < AFI_MAX; afi++)
+              for (safi = SAFI_UNICAST; safi < SAFI_MAX; safi++)
+                if (CHECK_FLAG(p->af_cap[afi][safi], PEER_CAP_RESTART_AF_RCV)) {
+                  char *s;
+                  sprintf(s, "%s%s(%s)", restart_af_count ? ", " : "",
+                      afi_safi_print(afi, safi),
+                      CHECK_FLAG (p->af_cap[afi][safi], PEER_CAP_RESTART_AF_PRESERVE_RCV) ?
+                          "preserved" : "not preserved");
+                  json_string = json_object_new_string(s);
+                  json_object_array_add(address_families, json_string);
+                  restart_af_count++;
+                }
+            if (restart_af_count)
+              json_object_object_add(neighbor_capabilities, "address-families",
+                  address_families);
+          }
+        } else {
+          vty_out(vty, "    Graceful Restart Capabilty:");
+          if (CHECK_FLAG(p->cap, PEER_CAP_RESTART_ADV))
+            vty_out(vty, " advertised");
+          if (CHECK_FLAG(p->cap, PEER_CAP_RESTART_RCV))
+            vty_out(vty, " %sreceived",
+            CHECK_FLAG (p->cap, PEER_CAP_RESTART_ADV) ? "and " : "");
+          vty_out(vty, "%s", VTY_NEWLINE);
+
+          if (CHECK_FLAG(p->cap, PEER_CAP_RESTART_RCV)) {
+            int restart_af_count = 0;
+
+            vty_out(vty, "      Remote Restart timer is %d seconds%s",
+                p->v_gr_restart, VTY_NEWLINE);
+            vty_out(vty, "      Address families by peer:%s        ",
+            VTY_NEWLINE);
+
+            for (afi = AFI_IP; afi < AFI_MAX; afi++)
+              for (safi = SAFI_UNICAST; safi < SAFI_MAX; safi++)
+                if (CHECK_FLAG(p->af_cap[afi][safi], PEER_CAP_RESTART_AF_RCV)) {
+                  vty_out(vty, "%s%s(%s)", restart_af_count ? ", " : "",
+                      afi_safi_print(afi, safi),
+                      CHECK_FLAG (p->af_cap[afi][safi], PEER_CAP_RESTART_AF_PRESERVE_RCV) ?
+                          "preserved" : "not preserved");
+                  restart_af_count++;
+                }
+            if (!restart_af_count)
+              vty_out(vty, "none");
+            vty_out(vty, "%s", VTY_NEWLINE);
+          }
+        }
+      }
+      if (use_json) {
+        json_object_object_add(json_peer, "neighbor-capabilities",
+            neighbor_capabilities);
+      }
+    }
+  }
 
   /* graceful restart information */
 
-//  if (CHECK_FLAG(p->cap, PEER_CAP_RESTART_RCV) || p->t_gr_restart
-//      || p->t_gr_stale) {
-//    int eor_send_af_count = 0;
-//    int eor_receive_af_count = 0;
-//    if (use_json) {
-//      json_object *end_of_rib;
-//      json_object *graceful_restart_info = json_object_new_object();
-//      if (p->status == Established) {
-//        end_of_rib = json_object_new_array();
-//        for (afi = AFI_IP; afi < AFI_MAX; afi++) {
-//          for (safi = SAFI_UNICAST; safi < SAFI_MAX; safi++) {
-//            if (CHECK_FLAG(p->af_sflags[afi][safi], PEER_STATUS_EOR_SEND)) {
-//              char *s;
-//              sprintf(s, "%s%s", eor_send_af_count ? ", " : "",
-//                  afi_safi_print(afi, safi));
-//              json_string = json_object_new_string(s);
-//              json_object_array_add(end_of_rib, json_string);
-//              eor_send_af_count++;
-//            }
-//          }
-//        }
-//        json_object_object_add(json_peer, "end-of-RIB-send", end_of_rib);
-//
-//        end_of_rib = json_object_new_array();
-//        for (afi = AFI_IP; afi < AFI_MAX; afi++) {
-//          for (safi = SAFI_UNICAST; safi < SAFI_MAX; safi++) {
-//            if (CHECK_FLAG(p->af_sflags[afi][safi], PEER_STATUS_EOR_RECEIVED)) {
-//              char *s;
-//              sprintf(s, "%s%s", eor_receive_af_count ? ", " : "",
-//                  afi_safi_print(afi, safi));
-//              json_string = json_object_new_string(s);
-//              json_object_array_add(end_of_rib, json_string);
-//              eor_receive_af_count++;
-//            }
-//          }
-//        }
-//        json_object_object_add(json_peer, "end-of-RIB-receive", end_of_rib);
-//      }
-//
-//      if (p->t_gr_restart) {
-//        json_int = json_object_new_int(
-//            thread_timer_remain_second(p->t_gr_restart));
-//        json_object_object_add(graceful_restart_info, "restart-timer",
-//            json_int);
-//      }
-//
-//      if (p->t_gr_stale) {
-//        json_int = json_object_new_int(
-//            thread_timer_remain_second(p->t_gr_stale));
-//        json_object_object_add(graceful_restart_info, "stalepath-timer",
-//            json_int);
-//      }
-//      json_object_object_add(json_peer, "graceful-restart-info",
-//          graceful_restart_info);
-//    } else {
-//
-//      vty_out(vty, "  Graceful restart informations:%s", VTY_NEWLINE);
-//      if (p->status == Established) {
-//        vty_out(vty, "    End-of-RIB send: ");
-//        for (afi = AFI_IP; afi < AFI_MAX; afi++)
-//          for (safi = SAFI_UNICAST; safi < SAFI_MAX; safi++)
-//            if (CHECK_FLAG(p->af_sflags[afi][safi], PEER_STATUS_EOR_SEND)) {
-//              vty_out(vty, "%s%s", eor_send_af_count ? ", " : "",
-//                  afi_safi_print(afi, safi));
-//              eor_send_af_count++;
-//            }
-//        vty_out(vty, "%s", VTY_NEWLINE);
-//
-//        vty_out(vty, "    End-of-RIB received: ");
-//        for (afi = AFI_IP; afi < AFI_MAX; afi++)
-//          for (safi = SAFI_UNICAST; safi < SAFI_MAX; safi++)
-//            if (CHECK_FLAG(p->af_sflags[afi][safi], PEER_STATUS_EOR_RECEIVED)) {
-//              vty_out(vty, "%s%s", eor_receive_af_count ? ", " : "",
-//                  afi_safi_print(afi, safi));
-//              eor_receive_af_count++;
-//            }
-//        vty_out(vty, "%s", VTY_NEWLINE);
-//      }
-//
-//      if (p->t_gr_restart)
-//        vty_out(vty, "    The remaining time of restart timer is %ld%s",
-//            thread_timer_remain_second(p->t_gr_restart), VTY_NEWLINE);
-//
-//      if (p->t_gr_stale)
-//        vty_out(vty, "    The remaining time of stalepath timer is %ld%s",
-//            thread_timer_remain_second(p->t_gr_stale), VTY_NEWLINE);
-//    }
-//  }
+  if (CHECK_FLAG(p->cap, PEER_CAP_RESTART_RCV) || p->t_gr_restart
+      || p->t_gr_stale) {
+    int eor_send_af_count = 0;
+    int eor_receive_af_count = 0;
+    if (use_json) {
+      json_object *end_of_rib;
+      json_object *graceful_restart_info = json_object_new_object();
+      if (p->status == Established) {
+        end_of_rib = json_object_new_array();
+        for (afi = AFI_IP; afi < AFI_MAX; afi++) {
+          for (safi = SAFI_UNICAST; safi < SAFI_MAX; safi++) {
+            if (CHECK_FLAG(p->af_sflags[afi][safi], PEER_STATUS_EOR_SEND)) {
+              char *s;
+              sprintf(s, "%s%s", eor_send_af_count ? ", " : "",
+                  afi_safi_print(afi, safi));
+              json_string = json_object_new_string(s);
+              json_object_array_add(end_of_rib, json_string);
+              eor_send_af_count++;
+            }
+          }
+        }
+        json_object_object_add(json_peer, "end-of-RIB-send", end_of_rib);
+
+        end_of_rib = json_object_new_array();
+        for (afi = AFI_IP; afi < AFI_MAX; afi++) {
+          for (safi = SAFI_UNICAST; safi < SAFI_MAX; safi++) {
+            if (CHECK_FLAG(p->af_sflags[afi][safi], PEER_STATUS_EOR_RECEIVED)) {
+              char *s;
+              sprintf(s, "%s%s", eor_receive_af_count ? ", " : "",
+                  afi_safi_print(afi, safi));
+              json_string = json_object_new_string(s);
+              json_object_array_add(end_of_rib, json_string);
+              eor_receive_af_count++;
+            }
+          }
+        }
+        json_object_object_add(json_peer, "end-of-RIB-receive", end_of_rib);
+      }
+
+      if (p->t_gr_restart) {
+        json_int = json_object_new_int(
+            thread_timer_remain_second(p->t_gr_restart));
+        json_object_object_add(graceful_restart_info, "restart-timer",
+            json_int);
+      }
+
+      if (p->t_gr_stale) {
+        json_int = json_object_new_int(
+            thread_timer_remain_second(p->t_gr_stale));
+        json_object_object_add(graceful_restart_info, "stalepath-timer",
+            json_int);
+      }
+      json_object_object_add(json_peer, "graceful-restart-info",
+          graceful_restart_info);
+    } else {
+
+      vty_out(vty, "  Graceful restart informations:%s", VTY_NEWLINE);
+      if (p->status == Established) {
+        vty_out(vty, "    End-of-RIB send: ");
+        for (afi = AFI_IP; afi < AFI_MAX; afi++)
+          for (safi = SAFI_UNICAST; safi < SAFI_MAX; safi++)
+            if (CHECK_FLAG(p->af_sflags[afi][safi], PEER_STATUS_EOR_SEND)) {
+              vty_out(vty, "%s%s", eor_send_af_count ? ", " : "",
+                  afi_safi_print(afi, safi));
+              eor_send_af_count++;
+            }
+        vty_out(vty, "%s", VTY_NEWLINE);
+
+        vty_out(vty, "    End-of-RIB received: ");
+        for (afi = AFI_IP; afi < AFI_MAX; afi++)
+          for (safi = SAFI_UNICAST; safi < SAFI_MAX; safi++)
+            if (CHECK_FLAG(p->af_sflags[afi][safi], PEER_STATUS_EOR_RECEIVED)) {
+              vty_out(vty, "%s%s", eor_receive_af_count ? ", " : "",
+                  afi_safi_print(afi, safi));
+              eor_receive_af_count++;
+            }
+        vty_out(vty, "%s", VTY_NEWLINE);
+      }
+
+      if (p->t_gr_restart)
+        vty_out(vty, "    The remaining time of restart timer is %ld%s",
+            thread_timer_remain_second(p->t_gr_restart), VTY_NEWLINE);
+
+      if (p->t_gr_stale)
+        vty_out(vty, "    The remaining time of stalepath timer is %ld%s",
+            thread_timer_remain_second(p->t_gr_stale), VTY_NEWLINE);
+    }
+  }
 
 
   /* Packet counts. */
