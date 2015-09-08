@@ -7671,10 +7671,10 @@ bgp_show_peer_afi (struct vty *vty, struct peer *p, afi_t afi, safi_t safi,
               ORF_TYPE_PREFIX, VTY_NEWLINE);
         }
       bgp_show_peer_afi_orf_cap(vty, p, afi, safi,
-      PEER_CAP_ORF_PREFIX_SM_ADV,
-      PEER_CAP_ORF_PREFIX_RM_ADV,
-      PEER_CAP_ORF_PREFIX_SM_RCV,
-      PEER_CAP_ORF_PREFIX_RM_RCV, orf_cap, use_json);
+          PEER_CAP_ORF_PREFIX_SM_ADV,
+          PEER_CAP_ORF_PREFIX_RM_ADV,
+          PEER_CAP_ORF_PREFIX_SM_RCV,
+          PEER_CAP_ORF_PREFIX_RM_RCV, orf_cap, use_json);
       if (use_json)
         {
           json_int = json_object_new_int(ORF_TYPE_PREFIX);
@@ -7695,10 +7695,10 @@ bgp_show_peer_afi (struct vty *vty, struct peer *p, afi_t afi, safi_t safi,
           ORF_TYPE_PREFIX_OLD, VTY_NEWLINE);
         }
       bgp_show_peer_afi_orf_cap(vty, p, afi, safi,
-      PEER_CAP_ORF_PREFIX_SM_ADV,
-      PEER_CAP_ORF_PREFIX_RM_ADV,
-      PEER_CAP_ORF_PREFIX_SM_OLD_RCV,
-      PEER_CAP_ORF_PREFIX_RM_OLD_RCV, orf_cap, use_json);
+          PEER_CAP_ORF_PREFIX_SM_ADV,
+          PEER_CAP_ORF_PREFIX_RM_ADV,
+          PEER_CAP_ORF_PREFIX_SM_OLD_RCV,
+          PEER_CAP_ORF_PREFIX_RM_OLD_RCV, orf_cap, use_json);
       if (use_json)
         {
           json_int = json_object_new_int(ORF_TYPE_PREFIX);

@@ -66,14 +66,14 @@ bgp_capability_vty_out(struct vty *vty, struct peer *peer,
 
   while (pnt < end)
     {
-      if (pnt + sizeof(struct capability_mp_data) + 2 > end)
+      if (pnt + sizeof (struct capability_mp_data) + 2 > end)
         return;
 
-      hdr = (struct capability_header *) pnt;
+      hdr = (struct capability_header *)pnt;
       if (pnt + hdr->length + 2 > end)
         return;
 
-      memcpy(&mpc, pnt + 2, sizeof(struct capability_mp_data));
+      memcpy (&mpc, pnt + 2, sizeof(struct capability_mp_data));
 
       if (hdr->code == CAPABILITY_CODE_MP)
         {
