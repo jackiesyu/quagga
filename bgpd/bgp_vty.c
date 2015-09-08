@@ -8764,40 +8764,39 @@ bgp_show_peer (struct vty *vty, struct peer *p, json_object *json_peers, u_char 
   }
 
   /* Nexthop display. */
-//  if (p->su_local) {
-//    if (use_json) {
-//
-//      int a = 10;
-//      json_string = json_object_new_string(inet_ntop(AF_INET, &p->nexthop.v4, buf1, BUFSIZ));
-//      json_object_object_add(json_peers, "nexthop", json_string);
-//#ifdef HAVE_IPV6
-//      json_string = json_object_new_string(inet_ntop (AF_INET6, &p->nexthop.v6_global, buf1, BUFSIZ));
-//      json_object_object_add(json_peers, "nexthop-global", json_string);
-//
-//      json_string = json_object_new_string(inet_ntop (AF_INET6, &p->nexthop.v6_local, buf1, BUFSIZ));
-//      json_object_object_add(json_peers, "nexthop-local", json_string);
-//
-//      json_string = json_object_new_string(p->shared_network ? "shared network" : "non shared network");
-//      json_object_object_add(json_peers, "bgp-connection", json_string);
-//#endif /* HAVE_IPV6 */
-//    }
-//    else{
-//      vty_out(vty, "Nexthop: %s%s",
-//          inet_ntop(AF_INET, &p->nexthop.v4, buf1, BUFSIZ),
-//          VTY_NEWLINE);
-//#ifdef HAVE_IPV6
-//      vty_out (vty, "Nexthop global: %s%s",
-//          inet_ntop (AF_INET6, &p->nexthop.v6_global, buf1, BUFSIZ),
-//          VTY_NEWLINE);
-//      vty_out (vty, "Nexthop local: %s%s",
-//          inet_ntop (AF_INET6, &p->nexthop.v6_local, buf1, BUFSIZ),
-//          VTY_NEWLINE);
-//      vty_out (vty, "BGP connection: %s%s",
-//          p->shared_network ? "shared network" : "non shared network",
-//          VTY_NEWLINE);
-//#endif /* HAVE_IPV6 */
-//    }
-//  }
+  if (p->su_local) {
+    if (use_json) {
+
+      json_string = json_object_new_string(inet_ntop(AF_INET, &p->nexthop.v4, buf1, BUFSIZ));
+      json_object_object_add(json_peer, "nexthop", json_string);
+#ifdef HAVE_IPV6
+      json_string = json_object_new_string(inet_ntop (AF_INET6, &p->nexthop.v6_global, buf1, BUFSIZ));
+      json_object_object_add(json_peer, "nexthop-global", json_string);
+
+      json_string = json_object_new_string(inet_ntop (AF_INET6, &p->nexthop.v6_local, buf1, BUFSIZ));
+      json_object_object_add(json_peer, "nexthop-local", json_string);
+
+      json_string = json_object_new_string(p->shared_network ? "shared network" : "non shared network");
+      json_object_object_add(json_peer, "bgp-connection", json_string);
+#endif /* HAVE_IPV6 */
+    }
+    else{
+      vty_out(vty, "Nexthop: %s%s",
+          inet_ntop(AF_INET, &p->nexthop.v4, buf1, BUFSIZ),
+          VTY_NEWLINE);
+#ifdef HAVE_IPV6
+      vty_out (vty, "Nexthop global: %s%s",
+          inet_ntop (AF_INET6, &p->nexthop.v6_global, buf1, BUFSIZ),
+          VTY_NEWLINE);
+      vty_out (vty, "Nexthop local: %s%s",
+          inet_ntop (AF_INET6, &p->nexthop.v6_local, buf1, BUFSIZ),
+          VTY_NEWLINE);
+      vty_out (vty, "BGP connection: %s%s",
+          p->shared_network ? "shared network" : "non shared network",
+          VTY_NEWLINE);
+#endif /* HAVE_IPV6 */
+    }
+  }
 
   /* Timer information. */
   if(use_json){
