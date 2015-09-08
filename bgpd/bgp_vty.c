@@ -7671,11 +7671,13 @@ bgp_show_peer_afi (struct vty *vty, struct peer *p, afi_t afi, safi_t safi,
     PEER_CAP_ORF_PREFIX_SM_RCV,
     PEER_CAP_ORF_PREFIX_RM_RCV, orf_cap, use_json);
     if (use_json) {
-      char *s;
-      sprintf(s, "ORF type-%d prefix-list:", ORF_TYPE_PREFIX);
-      json_object_object_add(address_family_info, s, orf_cap);
+      json_int = json_object_new_int(ORF_TYPE_PREFIX);
+      json_object_object_add(address_family_info, "ORF-type", json_int);
+      json_object_object_add(address_family_info, "prefix-list", orf_cap);
+      orf_cap = json_object_new_object();
     }
   }
+
   if (CHECK_FLAG(p->af_cap[afi][safi],
       PEER_CAP_ORF_PREFIX_SM_ADV) || CHECK_FLAG (p->af_cap[afi][safi], PEER_CAP_ORF_PREFIX_SM_OLD_RCV)
       || CHECK_FLAG (p->af_cap[afi][safi], PEER_CAP_ORF_PREFIX_RM_ADV)
@@ -7690,9 +7692,9 @@ bgp_show_peer_afi (struct vty *vty, struct peer *p, afi_t afi, safi_t safi,
     PEER_CAP_ORF_PREFIX_SM_OLD_RCV,
     PEER_CAP_ORF_PREFIX_RM_OLD_RCV, orf_cap, use_json);
     if (use_json) {
-      char *s;
-      sprintf(s, "ORF type-%d prefix-list:", ORF_TYPE_PREFIX);
-      json_object_object_add(address_family_info, s, orf_cap);
+      json_int = json_object_new_int(ORF_TYPE_PREFIX);
+      json_object_object_add(address_family_info, "ORF-type", json_int);
+      json_object_object_add(address_family_info, "prefix-list", orf_cap);
     }
   }
 
@@ -7800,11 +7802,7 @@ bgp_show_peer_afi (struct vty *vty, struct peer *p, afi_t afi, safi_t safi,
       default_information_originate = json_object_new_object();
 
       if (p->default_rmap[afi][safi].name){
-        char *s;
-        sprintf(s, "default route-map %s%s,",
-            p->default_rmap[afi][safi].map ? "*" : "",
-            p->default_rmap[afi][safi].name);
-        json_string = json_object_new_string(s);
+        json_string = json_object_new_string(p->default_rmap[afi][safi].name);
         json_object_object_add(default_information_originate, "default-route-map", json_string);
       }
       if (CHECK_FLAG(p->af_sflags[afi][safi], PEER_STATUS_DEFAULT_ORIGINATE))
@@ -7982,11 +7980,13 @@ bgp_show_peer_afi (struct vty *vty, struct peer *p, afi_t afi, safi_t safi,
 
     /* Maximum prefix */
     if (CHECK_FLAG(p->af_flags[afi][safi], PEER_FLAG_MAX_PREFIX)) {
-      char *s;
-      sprintf("%ld%s", p->pmax[afi][safi], CHECK_FLAG (p->af_flags[afi][safi],
-          PEER_FLAG_MAX_PREFIX_WARNING) ? " (warning-only)" : "");
-      json_string = json_object_new_string(s);
-      json_object_object_add(address_family_info, "max-prefixes", json_string);
+
+      json_int = json_object_new_int(p->pmax[afi][safi]);
+      json_object_object_add(address_family_info, "max-prefixes", json_int);
+
+      if(CHECK_FLAG (p->af_flags[afi][safi], PEER_FLAG_MAX_PREFIX_WARNING)){
+        json_object_object_add(address_family_info, "warning-only", json_boolean_true);
+      }
 
       json_int = json_object_new_int(p->pmax_threshold[afi][safi]);
       json_object_object_add(address_family_info, "warning threshold", json_int);
@@ -8082,6 +8082,7 @@ bgp_show_peer (struct vty *vty, struct peer *p, json_object *json_peers, u_char 
       json_object_object_add (json_peer, "shutdown", json_boolean_true);
   }
   else{
+
     /* Configured IP address. */
     vty_out (vty, "BGP neighbor is %s, ", p->host);
     vty_out (vty, "remote AS %u, ", p->as);
@@ -8358,14 +8359,16 @@ bgp_show_peer (struct vty *vty, struct peer *p, json_object *json_peers, u_char 
             for (afi = AFI_IP; afi < AFI_MAX; afi++)
               for (safi = SAFI_UNICAST; safi < SAFI_MAX; safi++)
                 if (CHECK_FLAG(p->af_cap[afi][safi], PEER_CAP_RESTART_AF_RCV)) {
-                  char *s;
-                  sprintf(s, "%s%s(%s)", restart_af_count ? ", " : "",
-                      afi_safi_print(afi, safi),
-                      CHECK_FLAG (p->af_cap[afi][safi], PEER_CAP_RESTART_AF_PRESERVE_RCV) ?
-                          "preserved" : "not preserved");
-                  json_string = json_object_new_string(s);
-                  json_object_array_add(address_families, json_string);
-                  restart_af_count++;
+                  if(CHECK_FLAG (p->af_cap[afi][safi], PEER_CAP_RESTART_AF_PRESERVE_RCV)){
+                    char s[100];
+                    sprintf(s, "%s%s(%s)", restart_af_count ? ", " : "",
+                        afi_safi_print(afi, safi),
+                        CHECK_FLAG (p->af_cap[afi][safi], PEER_CAP_RESTART_AF_PRESERVE_RCV) ?
+                            "preserved" : "not preserved");
+                    json_string = json_object_new_string(s);
+                    json_object_array_add(address_families, json_string);
+                    restart_af_count++;
+                  }
                 }
             if (restart_af_count)
               json_object_object_add(neighbor_capabilities, "address-families",
@@ -8424,7 +8427,7 @@ bgp_show_peer (struct vty *vty, struct peer *p, json_object *json_peers, u_char 
         for (afi = AFI_IP; afi < AFI_MAX; afi++) {
           for (safi = SAFI_UNICAST; safi < SAFI_MAX; safi++) {
             if (CHECK_FLAG(p->af_sflags[afi][safi], PEER_STATUS_EOR_SEND)) {
-              char *s;
+              char s[100];
               sprintf(s, "%s%s", eor_send_af_count ? ", " : "",
                   afi_safi_print(afi, safi));
               json_string = json_object_new_string(s);
@@ -8439,7 +8442,7 @@ bgp_show_peer (struct vty *vty, struct peer *p, json_object *json_peers, u_char 
         for (afi = AFI_IP; afi < AFI_MAX; afi++) {
           for (safi = SAFI_UNICAST; safi < SAFI_MAX; safi++) {
             if (CHECK_FLAG(p->af_sflags[afi][safi], PEER_STATUS_EOR_RECEIVED)) {
-              char *s;
+              char s[100];
               sprintf(s, "%s%s", eor_receive_af_count ? ", " : "",
                   afi_safi_print(afi, safi));
               json_string = json_object_new_string(s);
@@ -8500,7 +8503,6 @@ bgp_show_peer (struct vty *vty, struct peer *p, json_object *json_peers, u_char 
             thread_timer_remain_second(p->t_gr_stale), VTY_NEWLINE);
     }
   }
-
 
   /* Packet counts. */
   if (use_json) {
@@ -8640,7 +8642,7 @@ bgp_show_peer (struct vty *vty, struct peer *p, json_object *json_peers, u_char 
       json_object_object_add(json_peer, "last reset", json_string);
     }
     else{
-      char *s;
+      char s[100];
       sprintf(s, "%s, due to %s", peer_uptime(p->resettime, timebuf, BGP_UPTIME_LEN),
           peer_down_str[(int) p->last_reset]);
       json_string = json_object_new_string(s);
@@ -8762,37 +8764,40 @@ bgp_show_peer (struct vty *vty, struct peer *p, json_object *json_peers, u_char 
   }
 
   /* Nexthop display. */
-  if (p->su_local) {
-    if (use_json) {
-      json_string = json_object_new_string(inet_ntop(AF_INET, &p->nexthop.v4, buf1, BUFSIZ));
-      json_object_object_add(json_peers, "nexthop", json_string);
-#ifdef HAVE_IPV6
-      json_string = json_object_new_string(inet_ntop (AF_INET6, &p->nexthop.v6_global, buf1, BUFSIZ));
-      json_object_object_add(json_peers, "nexthop-global", json_string);
-
-      json_string = json_object_new_string(inet_ntop (AF_INET6, &p->nexthop.v6_local, buf1, BUFSIZ));
-      json_object_object_add(json_peers, "nexthop-local", json_string);
-
-      json_string = json_object_new_string(p->shared_network ? "shared network" : "non shared network");
-      json_object_object_add(json_peers, "bgp-connection", json_string);
-#endif /* HAVE_IPV6 */
-    } else {
-      vty_out(vty, "Nexthop: %s%s",
-          inet_ntop(AF_INET, &p->nexthop.v4, buf1, BUFSIZ),
-          VTY_NEWLINE);
-#ifdef HAVE_IPV6
-      vty_out (vty, "Nexthop global: %s%s",
-          inet_ntop (AF_INET6, &p->nexthop.v6_global, buf1, BUFSIZ),
-          VTY_NEWLINE);
-      vty_out (vty, "Nexthop local: %s%s",
-          inet_ntop (AF_INET6, &p->nexthop.v6_local, buf1, BUFSIZ),
-          VTY_NEWLINE);
-      vty_out (vty, "BGP connection: %s%s",
-          p->shared_network ? "shared network" : "non shared network",
-          VTY_NEWLINE);
-#endif /* HAVE_IPV6 */
-    }
-  }
+//  if (p->su_local) {
+//    if (use_json) {
+//
+//      int a = 10;
+//      json_string = json_object_new_string(inet_ntop(AF_INET, &p->nexthop.v4, buf1, BUFSIZ));
+//      json_object_object_add(json_peers, "nexthop", json_string);
+//#ifdef HAVE_IPV6
+//      json_string = json_object_new_string(inet_ntop (AF_INET6, &p->nexthop.v6_global, buf1, BUFSIZ));
+//      json_object_object_add(json_peers, "nexthop-global", json_string);
+//
+//      json_string = json_object_new_string(inet_ntop (AF_INET6, &p->nexthop.v6_local, buf1, BUFSIZ));
+//      json_object_object_add(json_peers, "nexthop-local", json_string);
+//
+//      json_string = json_object_new_string(p->shared_network ? "shared network" : "non shared network");
+//      json_object_object_add(json_peers, "bgp-connection", json_string);
+//#endif /* HAVE_IPV6 */
+//    }
+//    else{
+//      vty_out(vty, "Nexthop: %s%s",
+//          inet_ntop(AF_INET, &p->nexthop.v4, buf1, BUFSIZ),
+//          VTY_NEWLINE);
+//#ifdef HAVE_IPV6
+//      vty_out (vty, "Nexthop global: %s%s",
+//          inet_ntop (AF_INET6, &p->nexthop.v6_global, buf1, BUFSIZ),
+//          VTY_NEWLINE);
+//      vty_out (vty, "Nexthop local: %s%s",
+//          inet_ntop (AF_INET6, &p->nexthop.v6_local, buf1, BUFSIZ),
+//          VTY_NEWLINE);
+//      vty_out (vty, "BGP connection: %s%s",
+//          p->shared_network ? "shared network" : "non shared network",
+//          VTY_NEWLINE);
+//#endif /* HAVE_IPV6 */
+//    }
+//  }
 
   /* Timer information. */
   if(use_json){
