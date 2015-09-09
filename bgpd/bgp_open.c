@@ -47,6 +47,10 @@ Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
    Next, if we send capability to the peer we want to set my capabilty
    inforation at each peer. */
 
+/*
+ * JSON:
+ * In case of error, adds info about error to json_peer object.
+ */
 void
 bgp_capability_vty_out(struct vty *vty, struct peer *peer,
     json_object *json_peer, u_char use_json)
@@ -75,11 +79,16 @@ bgp_capability_vty_out(struct vty *vty, struct peer *peer,
 
       memcpy (&mpc, pnt + 2, sizeof(struct capability_mp_data));
 
+      if(use_json){
+        error = json_object_new_object();
+        error_array = json_object_new_array();
+      }
+
       if (hdr->code == CAPABILITY_CODE_MP)
         {
           if (use_json)
             {
-              error = json_object_new_object();
+
               json_string = json_object_new_string("Multi protocol");
               json_object_object_add(error, "error-type", json_string);
 
@@ -95,7 +104,7 @@ bgp_capability_vty_out(struct vty *vty, struct peer *peer,
                   break;
                 default:
                   json_int = json_object_new_int(ntohs(mpc.afi));
-                  json_object_object_add(error, "Unknown AFI", json_int);
+                  json_object_object_add(error, "AFI", json_int);
                   break;
                 }
               switch (mpc.safi)
@@ -114,7 +123,7 @@ bgp_capability_vty_out(struct vty *vty, struct peer *peer,
                   break;
                 default:
                   json_int = json_object_new_int(mpc.safi);
-                   json_object_object_add(error, "Unknown SAFI", json_int);
+                   json_object_object_add(error, "SAFI", json_int);
                   break;
                 }
             }
