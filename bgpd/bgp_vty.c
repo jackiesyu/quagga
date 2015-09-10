@@ -7606,9 +7606,9 @@ bgp_show_peer_afi_orf_cap (struct vty *vty, struct peer *p,
       {
         vty_out (vty, "      Send-mode: ");
         if (CHECK_FLAG (p->af_cap[afi][safi], adv_smcap))
-         vty_out (vty, "advertised");
+          vty_out (vty, "advertised");
         if (CHECK_FLAG (p->af_cap[afi][safi], rcv_smcap))
-         vty_out (vty, "%sreceived",
+          vty_out (vty, "%sreceived",
                   CHECK_FLAG (p->af_cap[afi][safi], adv_smcap) ?
                   ", " : "");
         vty_out (vty, "%s", VTY_NEWLINE);
@@ -7628,9 +7628,9 @@ bgp_show_peer_afi_orf_cap (struct vty *vty, struct peer *p,
       {
         vty_out (vty, "      Receive-mode: ");
         if (CHECK_FLAG (p->af_cap[afi][safi], adv_rmcap))
-         vty_out (vty, "advertised");
+          vty_out (vty, "advertised");
         if (CHECK_FLAG (p->af_cap[afi][safi], rcv_rmcap))
-         vty_out (vty, "%sreceived",
+          vty_out (vty, "%sreceived",
                   CHECK_FLAG (p->af_cap[afi][safi], adv_rmcap) ?
                   ", " : "");
         vty_out (vty, "%s", VTY_NEWLINE);
@@ -7832,7 +7832,7 @@ bgp_show_peer_afi (struct vty *vty, struct peer *p, afi_t afi, safi_t safi,
         {
           vty_out (vty, "  Community attribute sent to this neighbor");
           if (CHECK_FLAG (p->af_flags[afi][safi], PEER_FLAG_SEND_COMMUNITY)
-              && CHECK_FLAG (p->af_flags[afi][safi], PEER_FLAG_SEND_EXT_COMMUNITY))
+            && CHECK_FLAG (p->af_flags[afi][safi], PEER_FLAG_SEND_EXT_COMMUNITY))
             vty_out (vty, "(both)%s", VTY_NEWLINE);
           else if (CHECK_FLAG (p->af_flags[afi][safi], PEER_FLAG_SEND_EXT_COMMUNITY))
             vty_out (vty, "(extended)%s", VTY_NEWLINE);
@@ -8600,7 +8600,8 @@ bgp_show_peer (struct vty *vty, struct peer *p, json_object *json_peers, u_char 
 
   /* graceful restart information */
 
-  if (CHECK_FLAG (p->cap, PEER_CAP_RESTART_RCV) || p->t_gr_restart
+  if (CHECK_FLAG (p->cap, PEER_CAP_RESTART_RCV)
+      || p->t_gr_restart
       || p->t_gr_stale)
     {
       int eor_send_af_count = 0;
@@ -8759,9 +8760,9 @@ bgp_show_peer (struct vty *vty, struct peer *p, json_object *json_peers, u_char 
       vty_out (vty, "    Route Refresh: %10d %10d%s", p->refresh_out, p->refresh_in, VTY_NEWLINE);
       vty_out (vty, "    Capability:    %10d %10d%s", p->dynamic_cap_out, p->dynamic_cap_in, VTY_NEWLINE);
       vty_out (vty, "    Total:         %10d %10d%s", p->open_out + p->notify_out +
-          p->update_out + p->keepalive_out + p->refresh_out + p->dynamic_cap_out,
-          p->open_in + p->notify_in + p->update_in + p->keepalive_in + p->refresh_in +
-          p->dynamic_cap_in, VTY_NEWLINE);
+              p->update_out + p->keepalive_out + p->refresh_out + p->dynamic_cap_out,
+              p->open_in + p->notify_in + p->update_in + p->keepalive_in + p->refresh_in +
+              p->dynamic_cap_in, VTY_NEWLINE);
     }
 
 
@@ -8790,7 +8791,7 @@ bgp_show_peer (struct vty *vty, struct peer *p, json_object *json_peers, u_char 
     {
       /* advertisement-interval */
       vty_out (vty, "  Minimum time between advertisement runs is %d seconds%s",
-          p->v_routeadv, VTY_NEWLINE);
+              p->v_routeadv, VTY_NEWLINE);
 
       /* Update-source. */
       if (p->update_if || p->update_source)
@@ -8800,14 +8801,14 @@ bgp_show_peer (struct vty *vty, struct peer *p, json_object *json_peers, u_char 
             vty_out (vty, "%s", p->update_if);
           else if (p->update_source)
             vty_out (vty, "%s",
-                sockunion2str(p->update_source, buf1, SU_ADDRSTRLEN));
+                    sockunion2str(p->update_source, buf1, SU_ADDRSTRLEN));
           vty_out (vty, "%s", VTY_NEWLINE);
         }
 
       /* Default weight */
       if (CHECK_FLAG(p->config, PEER_CONFIG_WEIGHT))
-         vty_out (vty, "  Default weight %d%s", p->weight,
-                 VTY_NEWLINE);
+        vty_out (vty, "  Default weight %d%s", p->weight,
+                VTY_NEWLINE);
 
       vty_out (vty, "%s", VTY_NEWLINE);
     }
@@ -8882,13 +8883,11 @@ bgp_show_peer (struct vty *vty, struct peer *p, json_object *json_peers, u_char 
                   VTY_NEWLINE);
 
           if (p->t_pmax_restart)
-            vty_out (vty,
-                    "  Reduce the no. of prefix from %s, will restart in %ld seconds%s",
+            vty_out (vty, "  Reduce the no. of prefix from %s, will restart in %ld seconds%s",
                     p->host, thread_timer_remain_second(p->t_pmax_restart),
                     VTY_NEWLINE);
           else
-            vty_out (vty,
-                    "  Reduce the no. of prefix and clear ip bgp %s to restore peering%s",
+            vty_out (vty, "  Reduce the no. of prefix and clear ip bgp %s to restore peering%s",
                     p->host, VTY_NEWLINE);
         }
     }
@@ -9071,7 +9070,8 @@ bgp_show_peer (struct vty *vty, struct peer *p, json_object *json_peers, u_char 
  * and adds the peer to json_peers array. Once done w/ every peer, this function adds json_peers
  * to json, converts json to a string, outputs it, and frees all memory held by the json objects.
  */
-static int bgp_show_neighbor (struct vty *vty, struct bgp *bgp,
+static int
+bgp_show_neighbor (struct vty *vty, struct bgp *bgp,
     enum show_type type, union sockunion *su, u_char use_json)
 {
   struct listnode *node, *nnode;
@@ -9087,18 +9087,18 @@ static int bgp_show_neighbor (struct vty *vty, struct bgp *bgp,
       json_peers = json_object_new_array();
     }
 
-  for (ALL_LIST_ELEMENTS(bgp->peer, node, nnode, peer))
+  for (ALL_LIST_ELEMENTS (bgp->peer, node, nnode, peer))
     {
       switch (type)
         {
         case show_all:
-          bgp_show_peer(vty, peer, json_peers, use_json);
+          bgp_show_peer (vty, peer, json_peers, use_json);
           break;
         case show_peer:
-          if (sockunion_same(&peer->su, su))
+          if (sockunion_same (&peer->su, su))
             {
               find = 1;
-              bgp_show_peer(vty, peer, json_peers, use_json);
+              bgp_show_peer (vty, peer, json_peers, use_json);
             }
           break;
         }
@@ -9116,9 +9116,7 @@ static int bgp_show_neighbor (struct vty *vty, struct bgp *bgp,
           json_object_object_add(error, "reason", json_string);
         }
       else
-        {
           vty_out (vty, "%% No such neighbor%s", VTY_NEWLINE);
-        }
     }
 
 
