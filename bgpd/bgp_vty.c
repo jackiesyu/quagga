@@ -7596,9 +7596,13 @@ bgp_show_peer_afi_orf_cap (struct vty *vty, struct peer *p,
   /* Send-Mode */
   if(use_json){
     if (CHECK_FLAG (p->af_cap[afi][safi], adv_smcap))
-      json_object_object_add(orf_cap, "send mode advertised", json_boolean_true);
+      json_object_object_add(orf_cap, "send-mode-adv", json_boolean_true);
     else
-      json_object_object_add(orf_cap, "send mode advertised", json_boolean_false);
+      json_object_object_add(orf_cap, "send-mode-adv", json_boolean_false);
+    if (CHECK_FLAG (p->af_cap[afi][safi], rcv_smcap))
+      json_object_object_add(orf_cap, "send-mode-rcv", json_boolean_true);
+    else
+      json_object_object_add(orf_cap, "send-mode-rcv", json_boolean_false);
   }
   else{
     if (CHECK_FLAG (p->af_cap[afi][safi], adv_smcap)
@@ -7617,12 +7621,17 @@ bgp_show_peer_afi_orf_cap (struct vty *vty, struct peer *p,
 
   /* Receive-Mode */
   if(use_json){
-    if (CHECK_FLAG (p->af_cap[afi][safi], rcv_smcap))
-      json_object_object_add(orf_cap, "send mode received", json_boolean_true);
+    if (CHECK_FLAG (p->af_cap[afi][safi], adv_smcap))
+      json_object_object_add(orf_cap, "rcv-mode-adv", json_boolean_true);
     else
-      json_object_object_add(orf_cap, "send mode received", json_boolean_false);
+      json_object_object_add(orf_cap, "rcv-mode-adv", json_boolean_false);
+    if (CHECK_FLAG (p->af_cap[afi][safi], rcv_smcap))
+      json_object_object_add(orf_cap, "rcv-mode-rcv", json_boolean_true);
+    else
+      json_object_object_add(orf_cap, "rcv-mode-rcv", json_boolean_false);
   }
-  else{
+  else
+  {
     if (CHECK_FLAG (p->af_cap[afi][safi], adv_rmcap)
         || CHECK_FLAG (p->af_cap[afi][safi], rcv_rmcap))
       {
@@ -7653,10 +7662,8 @@ bgp_show_peer_afi (struct vty *vty, struct peer *p, afi_t afi, safi_t safi,
 
   filter = &p->filter[afi][safi];
 
-  json_object *json_int;
+  json_object *json_int = NULL;
   json_object *json_string;
-  json_object *json_boolean_true;
-  json_object *json_boolean_false;
   json_object *orf_cap;
   json_object *address_family_info;
   json_object *default_information_originate;
@@ -7664,16 +7671,17 @@ bgp_show_peer_afi (struct vty *vty, struct peer *p, afi_t afi, safi_t safi,
 
   if(use_json)
     {
-      json_boolean_true = json_object_new_boolean(1);
-      json_boolean_false = json_object_new_boolean(0);
       orf_cap = json_object_new_object();
       address_family_info = json_object_new_object();
 
+      json_string = json_object_new_string(afi_safi_print(afi, safi));
+      json_object_object_add(address_family_info, "name", json_string);
+
       if (p->af_group[afi][safi])
-        {
           json_string = json_object_new_string(p->group->name);
-          json_object_object_add(address_family_info, "peer-group member", json_string);
-        }
+      else
+          json_string = NULL;
+      json_object_object_add(address_family_info, "peer-group-member", json_string);
     }
   else
     {
@@ -7695,6 +7703,11 @@ bgp_show_peer_afi (struct vty *vty, struct peer *p, afi_t afi, safi_t safi,
         vty_out (vty, "  AF-dependant capabilities:%s", VTY_NEWLINE);
     }
 
+  if (use_json)
+    {
+      json_int = json_object_new_int(ORF_TYPE_PREFIX);
+      json_object_object_add(address_family_info, "ORF-type-1", json_int);
+    }
   if (CHECK_FLAG (p->af_cap[afi][safi], PEER_CAP_ORF_PREFIX_SM_ADV)
       || CHECK_FLAG (p->af_cap[afi][safi], PEER_CAP_ORF_PREFIX_SM_RCV)
       || CHECK_FLAG (p->af_cap[afi][safi], PEER_CAP_ORF_PREFIX_RM_ADV)
@@ -7712,13 +7725,21 @@ bgp_show_peer_afi (struct vty *vty, struct peer *p, afi_t afi, safi_t safi,
                                 PEER_CAP_ORF_PREFIX_RM_RCV, orf_cap, use_json);
       if (use_json)
         {
-          json_int = json_object_new_int(ORF_TYPE_PREFIX);
-          json_object_object_add(address_family_info, "ORF-type", json_int);
-          json_object_object_add(address_family_info, "prefix-list", orf_cap);
+          json_object_object_add(address_family_info, "prefix-list-1", orf_cap);
           orf_cap = json_object_new_object();
         }
     }
+  else
+    {
+      if (use_json)
+          json_object_object_add(address_family_info, "prefix-list-1", NULL);
+    }
 
+  if (use_json)
+    {
+      json_int = json_object_new_int(ORF_TYPE_PREFIX_OLD);
+      json_object_object_add(address_family_info, "ORF-type-2", json_int);
+    }
   if (CHECK_FLAG (p->af_cap[afi][safi], PEER_CAP_ORF_PREFIX_SM_ADV)
       || CHECK_FLAG (p->af_cap[afi][safi], PEER_CAP_ORF_PREFIX_SM_OLD_RCV)
       || CHECK_FLAG (p->af_cap[afi][safi], PEER_CAP_ORF_PREFIX_RM_ADV)
@@ -7735,31 +7756,31 @@ bgp_show_peer_afi (struct vty *vty, struct peer *p, afi_t afi, safi_t safi,
                                 PEER_CAP_ORF_PREFIX_SM_OLD_RCV,
                                 PEER_CAP_ORF_PREFIX_RM_OLD_RCV, orf_cap, use_json);
       if (use_json)
-        {
-          json_int = json_object_new_int(ORF_TYPE_PREFIX);
-          json_object_object_add(address_family_info, "ORF-type", json_int);
-          json_object_object_add(address_family_info, "prefix-list", orf_cap);
-        }
+          json_object_object_add(address_family_info, "prefix-list-2", orf_cap);
+    }
+  else
+    {
+      if (use_json)
+          json_object_object_add(address_family_info, "prefix-list-2", NULL);
     }
 
   sprintf (orf_pfx_name, "%s.%d.%d", p->host, afi, safi);
   orf_pfx_count =  prefix_bgp_show_prefix_list (NULL, afi, orf_pfx_name);
 
+  if(use_json)
+    {
+      if (CHECK_FLAG(p->af_sflags[afi][safi], PEER_STATUS_ORF_PREFIX_SEND))
+        json_object_object_add(address_family_info, "ORF-sent", json_object_new_boolean(1));
+      else
+        json_object_object_add(address_family_info, "ORF-sent", json_object_new_boolean(0));
+
+      json_int = json_object_new_int(orf_pfx_count);
+      json_object_object_add(address_family_info, "ORF-received-entries", json_int);
+    }
   if (CHECK_FLAG (p->af_sflags[afi][safi], PEER_STATUS_ORF_PREFIX_SEND)
       || orf_pfx_count)
     {
-      if(use_json)
-        {
-          if (CHECK_FLAG(p->af_sflags[afi][safi], PEER_STATUS_ORF_PREFIX_SEND))
-            json_object_object_add(address_family_info, "ORF sent", json_boolean_true);
-
-          if (orf_pfx_count)
-            {
-              json_int = json_object_new_int(orf_pfx_count);
-              json_object_object_add(address_family_info, "ORF received entries", json_int);
-            }
-        }
-      else
+      if(!use_json)
         {
           vty_out (vty, "  Outbound Route Filter (ORF):");
           if (CHECK_FLAG(p->af_sflags[afi][safi], PEER_STATUS_ORF_PREFIX_SEND))
@@ -7770,32 +7791,61 @@ bgp_show_peer_afi (struct vty *vty, struct peer *p, afi_t afi, safi_t safi,
         }
     }
 
+  if(use_json)
+   {
+    if (CHECK_FLAG(p->af_sflags[afi][safi], PEER_STATUS_ORF_WAIT_REFRESH))
+      json_object_object_add(address_family_info, "first-update-deferred", json_object_new_boolean(1));
+    else
+      json_object_object_add(address_family_info, "first-update-deferred", json_object_new_boolean(0));
+   }
+
   if (CHECK_FLAG(p->af_sflags[afi][safi], PEER_STATUS_ORF_WAIT_REFRESH))
     {
-      if(use_json)
-        json_object_object_add(address_family_info, "first update deferred", json_boolean_true);
-      else
+      if(!use_json)
         vty_out (vty, "  First update is deferred until ORF or ROUTE-REFRESH is received%s", VTY_NEWLINE);
     }
 
   if(use_json)
     {
       if (CHECK_FLAG(p->af_flags[afi][safi], PEER_FLAG_REFLECTOR_CLIENT))
-        json_object_object_add(address_family_info, "route-reflector client", json_boolean_true);
+        json_object_object_add(address_family_info, "route-reflector-client", json_object_new_boolean(1));
+      else
+        json_object_object_add(address_family_info, "route-reflector-client", json_object_new_boolean(0));
+
       if (CHECK_FLAG(p->af_flags[afi][safi], PEER_FLAG_RSERVER_CLIENT))
-        json_object_object_add(address_family_info, "route-server client", json_boolean_true);
+        json_object_object_add(address_family_info, "route-server-client", json_object_new_boolean(1));
+      else
+        json_object_object_add(address_family_info, "route-server-client", json_object_new_boolean(0));
+
       if (CHECK_FLAG(p->af_flags[afi][safi], PEER_FLAG_SOFT_RECONFIG))
-        json_object_object_add(address_family_info, "inbound soft reconfiguration", json_boolean_true);
+        json_object_object_add(address_family_info, "inbound-soft-reconfiguration", json_object_new_boolean(1));
+      else
+        json_object_object_add(address_family_info, "inbound-soft-reconfiguration", json_object_new_boolean(0));
+
       if (CHECK_FLAG(p->af_flags[afi][safi], PEER_FLAG_REMOVE_PRIVATE_AS))
-        json_object_object_add(address_family_info, "private AS number removed", json_boolean_true);
+        json_object_object_add(address_family_info, "private-AS-number-removed", json_object_new_boolean(1));
+      else
+        json_object_object_add(address_family_info, "private-AS-number-removed", json_object_new_boolean(0));
       if (CHECK_FLAG(p->af_flags[afi][safi], PEER_FLAG_NEXTHOP_SELF))
-        json_object_object_add(address_family_info, "next-hop is self", json_boolean_true);
+        json_object_object_add(address_family_info, "next-hop-is-self", json_object_new_boolean(1));
+      else
+        json_object_object_add(address_family_info, "next-hop-is-self", json_object_new_boolean(1));
+
       if (CHECK_FLAG(p->af_flags[afi][safi], PEER_FLAG_AS_PATH_UNCHANGED))
-        json_object_object_add(address_family_info, "as-path propagated unchanged", json_boolean_true);
+        json_object_object_add(address_family_info, "as-path-propagated-unchanged", json_object_new_boolean(1));
+      else
+        json_object_object_add(address_family_info, "as-path-propagated-unchanged", json_object_new_boolean(0));
+
       if (CHECK_FLAG(p->af_flags[afi][safi], PEER_FLAG_NEXTHOP_UNCHANGED))
-        json_object_object_add(address_family_info, "next-hop propagated unchanged", json_boolean_true);
+      json_object_object_add(address_family_info, "next-hop-propagated-unchanged", json_object_new_boolean(1));
+      else
+      json_object_object_add(address_family_info, "next-hop-propagated-unchanged", json_object_new_boolean(0));
+
       if (CHECK_FLAG(p->af_flags[afi][safi], PEER_FLAG_MED_UNCHANGED))
-        json_object_object_add(address_family_info, "MED propagated unchanged", json_boolean_true);
+        json_object_object_add(address_family_info, "MED-propagated-unchanged", json_object_new_boolean(1));
+      else
+        json_object_object_add(address_family_info, "MED-propagated-unchanged", json_object_new_boolean(0));
+
       if (CHECK_FLAG(p->af_flags[afi][safi],
           PEER_FLAG_SEND_COMMUNITY) || CHECK_FLAG (p->af_flags[afi][safi], PEER_FLAG_SEND_EXT_COMMUNITY))
         {
@@ -7806,8 +7856,10 @@ bgp_show_peer_afi (struct vty *vty, struct peer *p, afi_t afi, safi_t safi,
             json_string = json_object_new_string("extended");
           else
             json_string = json_object_new_string("standard");
-          json_object_object_add(address_family_info, "community attribute", json_string);
         }
+      else
+          json_string = json_object_new_string("neither");
+      json_object_object_add(address_family_info, "community-attribute", json_string);
     }
   else
     {
@@ -7841,29 +7893,30 @@ bgp_show_peer_afi (struct vty *vty, struct peer *p, afi_t afi, safi_t safi,
         }
     }
 
+  if(use_json)
+    {
+      default_information_originate = json_object_new_object();
+
+      if (p->default_rmap[afi][safi].name)
+          json_string = json_object_new_string(p->default_rmap[afi][safi].name);
+      else
+          json_string = NULL;
+      json_object_object_add(default_information_originate, "route-map", json_string);
+      if (p->default_rmap[afi][safi].map) 
+          json_object_object_add(default_information_originate, "route-map-default", json_object_new_boolean(1));
+      else
+          json_object_object_add(default_information_originate, "route-map-default", json_object_new_boolean(0));
+
+      if (CHECK_FLAG(p->af_sflags[afi][safi], PEER_STATUS_DEFAULT_ORIGINATE))
+        json_object_object_add(default_information_originate, "default-sent", json_object_new_boolean(1));
+      else
+        json_object_object_add(default_information_originate, "default-sent", json_object_new_boolean(0));
+
+      json_object_object_add(address_family_info, "default-info-origin", default_information_originate);
+    }
   if (CHECK_FLAG(p->af_flags[afi][safi], PEER_FLAG_DEFAULT_ORIGINATE))
     {
-      if(use_json)
-        {
-          default_information_originate = json_object_new_object();
-
-          if (p->default_rmap[afi][safi].name)
-            {
-              char s[100];
-              sprintf (s, "%s%s,",
-                      p->default_rmap[afi][safi].map ? "*" : "",
-                      p->default_rmap[afi][safi].name);
-              json_string = json_object_new_string(s);
-              json_object_object_add(default_information_originate, "default-route-map", json_string);
-            }
-          if (CHECK_FLAG(p->af_sflags[afi][safi], PEER_STATUS_DEFAULT_ORIGINATE))
-            json_object_object_add(default_information_originate, "default-sent", json_boolean_true);
-          else
-            json_object_object_add(default_information_originate, "default-sent", json_boolean_false);
-
-          json_object_object_add(address_family_info, "default-info-origin", default_information_originate);
-        }
-      else
+      if(!use_json)
         {
           vty_out (vty, "  Default information originate,");
 
@@ -7884,17 +7937,25 @@ bgp_show_peer_afi (struct vty *vty, struct peer *p, afi_t afi, safi_t safi,
           || filter->dlist[FILTER_IN].name
           || filter->aslist[FILTER_IN].name
           || filter->map[RMAP_IN].name)
-        json_object_object_add(address_family_info, "inbound path policy", json_boolean_true);
+        json_object_object_add(address_family_info, "inbound-path-policy", json_object_new_boolean(1));
+      else
+        json_object_object_add(address_family_info, "inbound-path-policy", json_object_new_boolean(0));
       if (filter->plist[FILTER_OUT].name
           || filter->dlist[FILTER_OUT].name
           || filter->aslist[FILTER_OUT].name
           || filter->map[RMAP_OUT].name
           || filter->usmap.name)
-        json_object_object_add(address_family_info, "outbound path policy", json_boolean_true);
+        json_object_object_add(address_family_info, "outbound-path-policy", json_object_new_boolean(1));
+      else
+        json_object_object_add(address_family_info, "outbound-path-policy", json_object_new_boolean(0));
       if (filter->map[RMAP_IMPORT].name)
-        json_object_object_add(address_family_info, "import policy", json_boolean_true);
+        json_object_object_add(address_family_info, "import-policy", json_object_new_boolean(1));
+      else
+        json_object_object_add(address_family_info, "import-policy", json_object_new_boolean(0));
       if (filter->map[RMAP_EXPORT].name)
-        json_object_object_add(address_family_info, "export policy", json_boolean_true);
+        json_object_object_add(address_family_info, "export-policy", json_object_new_boolean(1));
+      else
+        json_object_object_add(address_family_info, "export-policy", json_object_new_boolean(0));
     }
   else
     {
@@ -7919,23 +7980,24 @@ bgp_show_peer_afi (struct vty *vty, struct peer *p, afi_t afi, safi_t safi,
   if(use_json)
     {
       if (filter->plist[FILTER_IN].name)
-        {
-          char s[100];
-          sprintf (s, "%s%s",
-                  filter->plist[FILTER_IN].plist ? "*" : "",
-                  filter->plist[FILTER_IN].name);
-          json_string = json_object_new_string(s);
-          json_object_object_add(address_family_info, "incoming update prefix filter", json_string);
-        }
+          json_string = json_object_new_string(filter->plist[FILTER_IN].name);
+      else
+          json_string = NULL;
+      json_object_object_add(address_family_info, "prefix-list-in", json_string);
+      if (filter->plist[FILTER_IN].plist) 
+          json_object_object_add(address_family_info, "in-exist", json_object_new_boolean(1));
+      else
+          json_object_object_add(address_family_info, "in-exist", json_object_new_boolean(0));
+
       if (filter->plist[FILTER_OUT].name)
-        {
-          char s[100];
-          sprintf (s, "%s%s",
-                  filter->plist[FILTER_OUT].plist ? "*" : "",
-                  filter->plist[FILTER_OUT].name);
-          json_string = json_object_new_string(s);
-          json_object_object_add(address_family_info, "outgoing update prefix filter", json_string);
-        }
+          json_string = json_object_new_string(filter->plist[FILTER_OUT].name);
+      else
+          json_string = NULL;
+      json_object_object_add(address_family_info, "prefix-list-out", json_string);
+      if (filter->plist[FILTER_OUT].plist) 
+          json_object_object_add(address_family_info, "out-exist", json_object_new_boolean(1));
+      else
+          json_object_object_add(address_family_info, "out-exist", json_object_new_boolean(0));
     }
   else
     {
@@ -7954,24 +8016,25 @@ bgp_show_peer_afi (struct vty *vty, struct peer *p, afi_t afi, safi_t safi,
   /* distribute-list */
   if(use_json)
     {
-      if (filter->plist[FILTER_IN].name)
-        {
-          char s[100];
-          sprintf (s, "%s%s",
-                  filter->dlist[FILTER_IN].alist ? "*" : "",
-                  filter->dlist[FILTER_IN].name);
-          json_string = json_object_new_string(s);
-          json_object_object_add(address_family_info, "incoming update network filter", json_string);
-        }
-      if (filter->plist[FILTER_OUT].name)
-        {
-          char s[100];
-          sprintf (s, "%s%s",
-                  filter->dlist[FILTER_OUT].alist ? "*" : "",
-                  filter->dlist[FILTER_OUT].name);
-          json_string = json_object_new_string(s);
-          json_object_object_add(address_family_info, "outgoing update network filter", json_string);
-        }
+      if (filter->dlist[FILTER_IN].name)
+          json_string = json_object_new_string(filter->dlist[FILTER_IN].name);
+      else
+          json_string = NULL;
+      json_object_object_add(address_family_info, "dist-filter-in", json_string);
+      if (filter->dlist[FILTER_IN].alist) 
+          json_object_object_add(address_family_info, "in-exist", json_object_new_boolean(1));
+      else
+          json_object_object_add(address_family_info, "in-exist", json_object_new_boolean(0));
+
+      if (filter->dlist[FILTER_OUT].name)
+          json_string = json_object_new_string(filter->dlist[FILTER_OUT].name);
+      else
+          json_string = NULL;
+      json_object_object_add(address_family_info, "dist-filter-out", json_string);
+      if (filter->dlist[FILTER_OUT].alist) 
+          json_object_object_add(address_family_info, "out-exist", json_object_new_boolean(1));
+      else
+          json_object_object_add(address_family_info, "out-exist", json_object_new_boolean(0));
     }
   else
     {
@@ -7990,24 +8053,25 @@ bgp_show_peer_afi (struct vty *vty, struct peer *p, afi_t afi, safi_t safi,
   /* filter-list. */
   if(use_json)
     {
-      if (filter->plist[FILTER_IN].name)
-        {
-          char s[100];
-          sprintf (s, "%s%s",
-                  filter->aslist[FILTER_IN].aslist ? "*" : "",
-                  filter->aslist[FILTER_IN].name);
-          json_string = json_object_new_string(s);
-          json_object_object_add(address_family_info, "incoming update AS path filter", json_string);
-        }
-      if (filter->plist[FILTER_OUT].name)
-        {
-          char s[100];
-          sprintf (s, "%s%s",
-                  filter->aslist[FILTER_OUT].aslist ? "*" : "",
-                  filter->aslist[FILTER_OUT].name);
-          json_string = json_object_new_string(s);
-          json_object_object_add(address_family_info, "outgoing update AS path filter", json_string);
-        }
+      if (filter->aslist[FILTER_IN].name)
+          json_string = json_object_new_string(filter->aslist[FILTER_IN].name);
+      else
+          json_string = NULL;
+      json_object_object_add(address_family_info, "aspath-filter-in", json_string);
+      if (filter->aslist[FILTER_IN].aslist) 
+          json_object_object_add(address_family_info, "in-exist", json_object_new_boolean(1));
+      else
+          json_object_object_add(address_family_info, "in-exist", json_object_new_boolean(0));
+
+      if (filter->aslist[FILTER_OUT].name)
+          json_string = json_object_new_string(filter->aslist[FILTER_OUT].name);
+      else
+          json_string = NULL;
+      json_object_object_add(address_family_info, "aspath-filter-out", json_string);
+      if (filter->aslist[FILTER_OUT].aslist) 
+          json_object_object_add(address_family_info, "out-exist", json_object_new_boolean(1));
+      else
+          json_object_object_add(address_family_info, "out-exist", json_object_new_boolean(0));
     }
   else
     {
@@ -8027,41 +8091,43 @@ bgp_show_peer_afi (struct vty *vty, struct peer *p, afi_t afi, safi_t safi,
   if(use_json)
     {
       if (filter->map[RMAP_IN].name)
-        {
-          char s[100];
-          sprintf (s, "%s%s",
-                  filter->map[RMAP_IN].map ? "*" : "",
-                  filter->map[RMAP_IN].name);
-          json_string = json_object_new_string(s);
-          json_object_object_add(address_family_info, "incoming advertisement route map", json_string);
-        }
+          json_string = json_object_new_string(filter->map[RMAP_IN].name);
+      else
+          json_string = NULL;
+      json_object_object_add(address_family_info, "adv-rmap-in", json_string);
+      if (filter->map[RMAP_IN].map) 
+          json_object_object_add(address_family_info, "in-exist", json_object_new_boolean(1));
+      else
+          json_object_object_add(address_family_info, "in-exist", json_object_new_boolean(0));
+
       if (filter->map[RMAP_OUT].name)
-        {
-          char s[100];
-          sprintf (s, "%s%s",
-                  filter->map[RMAP_OUT].map ? "*" : "",
-                  filter->map[RMAP_OUT].name);
-          json_string = json_object_new_string(s);
-          json_object_object_add(address_family_info, "outgoing advertisement route map", json_string);
-        }
+          json_string = json_object_new_string(filter->map[RMAP_OUT].name);
+      else
+          json_string = NULL;
+      json_object_object_add(address_family_info, "adv-rmap-out", json_string);
+      if (filter->map[RMAP_OUT].map) 
+          json_object_object_add(address_family_info, "out-exist", json_object_new_boolean(1));
+      else
+          json_object_object_add(address_family_info, "out-exist", json_object_new_boolean(0));
       if (filter->map[RMAP_IMPORT].name)
-        {
-          char s[100];
-          sprintf (s, "%s%s",
-                  filter->map[RMAP_IMPORT].map ? "*" : "",
-                  filter->map[RMAP_IMPORT].name);
-          json_string = json_object_new_string(s);
-          json_object_object_add(address_family_info, "route-map into RS-client table", json_string);
-        }
+          json_string = json_object_new_string(filter->map[RMAP_IMPORT].name);
+      else
+          json_string = NULL;
+      json_object_object_add(address_family_info, "rmap-import", json_string);
+      if (filter->map[RMAP_IMPORT].map) 
+          json_object_object_add(address_family_info, "in-exist", json_object_new_boolean(1));
+      else
+          json_object_object_add(address_family_info, "in-exist", json_object_new_boolean(0));
+
       if (filter->map[RMAP_EXPORT].name)
-        {
-          char s[100];
-          sprintf (s, "%s%s",
-                  filter->map[RMAP_EXPORT].map ? "*" : "",
-                  filter->map[RMAP_EXPORT].name);
-          json_string = json_object_new_string(s);
-          json_object_object_add(address_family_info, "route-map from RS-client", json_string);
-        }
+          json_string = json_object_new_string(filter->map[RMAP_EXPORT].name);
+      else
+          json_string = NULL;
+      json_object_object_add(address_family_info, "rmap-export", json_string);
+      if (filter->map[RMAP_EXPORT].map) 
+          json_object_object_add(address_family_info, "out-exist", json_object_new_boolean(1));
+      else
+          json_object_object_add(address_family_info, "out-exist", json_object_new_boolean(0));
     }
   else
     {
@@ -8090,39 +8156,40 @@ bgp_show_peer_afi (struct vty *vty, struct peer *p, afi_t afi, safi_t safi,
     {
       /* unsuppress-map */
       if (filter->usmap.name)
-        {
-          char s[100];
-          sprintf (s, "%s%s",
-                  filter->usmap.map ? "*" : "",
-                  filter->usmap.name);
-          json_string = json_object_new_string(s);
-          json_object_object_add(address_family_info, "selective unsuppress", json_string);
-        }
+          json_string = json_object_new_string(filter->usmap.name);
+      else
+          json_string = NULL;
+      json_object_object_add(address_family_info, "selective-unsuppress", json_string);
+      if (filter->usmap.map) 
+          json_object_object_add(address_family_info, "exist", json_object_new_boolean(1));
+      else
+          json_object_object_add(address_family_info, "exist", json_object_new_boolean(0));
+
       /* Receive prefix count */
       json_int = json_object_new_int(p->pcount[afi][safi]);
-      json_object_object_add(address_family_info, "accepted prefixes", json_int);
-
+      json_object_object_add(address_family_info, "accepted-prefixes", json_int);
       /* Maximum prefix */
       if (CHECK_FLAG(p->af_flags[afi][safi], PEER_FLAG_MAX_PREFIX))
-        {
+          json_object_object_add(address_family_info, "max-prefixes-valid", json_object_new_boolean(1));
+      else
+          json_object_object_add(address_family_info, "max-prefixes-valid", json_object_new_boolean(0));
 
-          json_int = json_object_new_int(p->pmax[afi][safi]);
-          json_object_object_add(address_family_info, "max-prefixes", json_int);
+      json_int = json_object_new_int(p->pmax[afi][safi]);
+      json_object_object_add(address_family_info, "max-prefixes", json_int);
 
-          if(CHECK_FLAG (p->af_flags[afi][safi], PEER_FLAG_MAX_PREFIX_WARNING))
-            {
-              json_object_object_add(address_family_info, "warning-only", json_boolean_true);
-            }
+      if(CHECK_FLAG (p->af_flags[afi][safi], PEER_FLAG_MAX_PREFIX_WARNING))
+          json_object_object_add(address_family_info, "max-prefix-warning-only", json_object_new_boolean(1));
+      else
+          json_object_object_add(address_family_info, "max-prefix-warning-only", json_object_new_boolean(0));
+      json_int = json_object_new_int(p->pmax_threshold[afi][safi]);
+      json_object_object_add(address_family_info, "max-prefix-warning threshold", json_int);
 
-          json_int = json_object_new_int(p->pmax_threshold[afi][safi]);
-          json_object_object_add(address_family_info, "warning threshold", json_int);
-
-          if (p->pmax_restart[afi][safi])
-            {
-              json_int = json_object_new_int(p->pmax_restart[afi][safi]);
-              json_object_object_add(address_family_info, "restart interval", json_int);
-            }
-        }
+      if (p->pmax_restart[afi][safi])
+          json_object_object_add(address_family_info, "max-prefix-restart", json_object_new_boolean(1));
+      else
+          json_object_object_add(address_family_info, "max-prefix-restart", json_object_new_boolean(0));
+      json_int = json_object_new_int(p->pmax_restart[afi][safi]);
+      json_object_object_add(address_family_info, "restart-interval", json_int);
     }
   else
     {
@@ -8179,7 +8246,7 @@ bgp_show_peer (struct vty *vty, struct peer *p, json_object *json_peers, u_char 
   json_object *json_boolean_false;
   json_object *json_string;
   json_object *json_int;
-  json_object *json_peer;
+  json_object *json_peer = NULL;
 
   if(use_json)
     {
@@ -8198,30 +8265,36 @@ bgp_show_peer (struct vty *vty, struct peer *p, json_object *json_peers, u_char 
 
       if(CHECK_FLAG (p->flags, PEER_FLAG_LOCAL_AS_NO_PREPEND))
         json_object_object_add (json_peer, "no-prepend", json_boolean_true);
+      else
+        json_object_object_add (json_peer, "no-prepend", json_boolean_false);
 
       if(CHECK_FLAG (p->flags, PEER_FLAG_LOCAL_AS_REPLACE_AS))
         json_object_object_add (json_peer, "replace-as", json_boolean_true);
+      else
+        json_object_object_add (json_peer, "replace-as", json_boolean_false);
 
       json_string = json_object_new_string(p->as == p->local_as ? "internal" : "external");
       json_object_object_add (json_peer, "link", json_string);
 
       /* Description. */
       if (p->desc)
-        {
           json_string = json_object_new_string(p->desc);
-          json_object_object_add (json_peer, "description", json_string);
-        }
+      else
+          json_string = NULL;
+      json_object_object_add (json_peer, "description", json_string);
 
       /* Peer-group */
       if (p->group)
-        {
           json_string = json_object_new_string(p->group->name);
-          json_object_object_add (json_peer, "peer-group", json_string);
-        }
+      else
+          json_string = NULL;
+      json_object_object_add (json_peer, "peer-group", json_string);
 
       /* Administrative shutdown. */
       if (CHECK_FLAG (p->flags, PEER_FLAG_SHUTDOWN))
         json_object_object_add (json_peer, "shutdown", json_boolean_true);
+      else
+        json_object_object_add (json_peer, "shutdown", json_boolean_false);
     }
   else
     {
@@ -8259,7 +8332,7 @@ bgp_show_peer (struct vty *vty, struct peer *p, json_object *json_peers, u_char 
       json_object *bgp_info = json_object_new_object();
 
       json_int = json_object_new_int(4);
-      json_object_object_add (bgp_info, "version", json_string);
+      json_object_object_add (bgp_info, "version", json_int);
 
       json_string = json_object_new_string(inet_ntop (AF_INET, &p->remote_id, buf1, BUFSIZ));
       json_object_object_add(bgp_info, "remote-router", json_string);
@@ -8267,28 +8340,27 @@ bgp_show_peer (struct vty *vty, struct peer *p, json_object *json_peers, u_char 
       if (CHECK_FLAG (bgp->config, BGP_CONFIG_CONFEDERATION)
           && bgp_confederation_peers_check (bgp, p->as))
         json_object_object_add(bgp_info, "common-administration", json_boolean_true);
+      else
+        json_object_object_add(bgp_info, "common-administration", json_boolean_false);
 
       json_string = json_object_new_string(LOOKUP (bgp_status_msg, p->status));
       json_object_object_add(bgp_info, "bgp-state", json_string);
 
       if (p->status == Established)
-        {
           json_string = json_object_new_string(peer_uptime (p->uptime, timebuf, BGP_UPTIME_LEN));
-          json_object_object_add(bgp_info, "uptime", json_string);
-        }
-      else if (p->status == Active)
+      else
+          json_string = NULL;
+      json_object_object_add(bgp_info, "Established-uptime", json_string);
+
+      json_string = NULL;
+      if (p->status == Active)
         {
           if (CHECK_FLAG (p->flags, PEER_FLAG_PASSIVE))
-            {
               json_string = json_object_new_string("passive");
-              json_object_object_add(bgp_info, "sub-active", json_string);
-            }
           else if (CHECK_FLAG (p->sflags, PEER_STATUS_NSF_WAIT))
-            {
               json_string = json_object_new_string("NSF passive");
-              json_object_object_add(bgp_info, "sub-active", json_string);
-            }
         }
+      json_object_object_add(bgp_info, "sub-active", json_string);
 
       /* read timer */
       json_string = json_object_new_string(peer_uptime (p->readtime, timebuf, BGP_UPTIME_LEN));
@@ -8305,6 +8377,12 @@ bgp_show_peer (struct vty *vty, struct peer *p, json_object *json_peers, u_char 
           json_int = json_object_new_int(p->holdtime);
           json_object_object_add(bgp_info, "peer-hold-time", json_int);
           json_int = json_object_new_int(p->keepalive);
+          json_object_object_add(bgp_info, "peer-keepalive-interval", json_int);
+        }
+      else
+        {
+          json_int = NULL;
+          json_object_object_add(bgp_info, "peer-hold-time", json_int);
           json_object_object_add(bgp_info, "peer-keepalive-interval", json_int);
         }
 
@@ -8376,21 +8454,21 @@ bgp_show_peer (struct vty *vty, struct peer *p, json_object *json_peers, u_char 
             vty_out (vty, "  Neighbor capabilities:%s", VTY_NEWLINE);
 
           /* AS4 */
+          if (use_json)
+            {
+              if (CHECK_FLAG(p->cap, PEER_CAP_AS4_ADV))
+                json_object_object_add(neighbor_capabilities, "Four-byte-as-advertised", json_boolean_true);
+              else
+                json_object_object_add(neighbor_capabilities, "Four-byte-as-advertised", json_boolean_false);
+              if (CHECK_FLAG(p->cap, PEER_CAP_AS4_RCV))
+                json_object_object_add(neighbor_capabilities, "Four-byte-as-received", json_boolean_true);
+              else
+                json_object_object_add(neighbor_capabilities, "Four-byte-as-received", json_boolean_false);
+            }
           if (CHECK_FLAG(p->cap, PEER_CAP_AS4_RCV)
               || CHECK_FLAG(p->cap, PEER_CAP_AS4_ADV))
             {
-              if (use_json)
-                {
-                  if (CHECK_FLAG(p->cap, PEER_CAP_AS4_ADV))
-                    json_object_object_add(neighbor_capabilities, "4 byte as advertised", json_boolean_true);
-                  else
-                    json_object_object_add(neighbor_capabilities, "4 byte as advertised", json_boolean_false);
-                  if (CHECK_FLAG(p->cap, PEER_CAP_AS4_RCV))
-                    json_object_object_add(neighbor_capabilities, "4 byte as received", json_boolean_true);
-                  else
-                    json_object_object_add(neighbor_capabilities, "4 byte as received", json_boolean_false);
-                }
-              else
+              if (!use_json)
                 {
                   vty_out (vty, "    4 Byte AS:");
                   if (CHECK_FLAG(p->cap, PEER_CAP_AS4_ADV))
@@ -8402,21 +8480,21 @@ bgp_show_peer (struct vty *vty, struct peer *p, json_object *json_peers, u_char 
                 }
             }
           /* Dynamic */
+          if (use_json)
+            {
+              if (CHECK_FLAG(p->cap, PEER_CAP_DYNAMIC_ADV))
+                json_object_object_add(neighbor_capabilities, "dynamic-advertised", json_boolean_true);
+              else
+                json_object_object_add(neighbor_capabilities, "dynamic-advertised", json_boolean_false);
+              if (CHECK_FLAG(p->cap, PEER_CAP_DYNAMIC_RCV))
+                json_object_object_add(neighbor_capabilities, "dynamic-received", json_boolean_true);
+              else
+                json_object_object_add(neighbor_capabilities, "dynamic-receieved", json_boolean_true);
+            }
           if (CHECK_FLAG(p->cap,
               PEER_CAP_DYNAMIC_RCV) || CHECK_FLAG(p->cap, PEER_CAP_DYNAMIC_ADV))
             {
-              if (use_json)
-                {
-                  if (CHECK_FLAG(p->cap, PEER_CAP_DYNAMIC_ADV))
-                    json_object_object_add(neighbor_capabilities, "dynamic advertised", json_boolean_true);
-                  else
-                    json_object_object_add(neighbor_capabilities, "dynamic advertised", json_boolean_false);
-                  if (CHECK_FLAG(p->cap, PEER_CAP_DYNAMIC_RCV))
-                    json_object_object_add(neighbor_capabilities, "dynamic received", json_boolean_true);
-                  else
-                    json_object_object_add(neighbor_capabilities, "dynamic receieved", json_boolean_true);
-                }
-              else
+              if (!use_json)
                 {
                   vty_out (vty, "    Dynamic:");
                   if (CHECK_FLAG(p->cap, PEER_CAP_DYNAMIC_ADV))
@@ -8434,12 +8512,21 @@ bgp_show_peer (struct vty *vty, struct peer *p, json_object *json_peers, u_char 
               if (CHECK_FLAG(p->cap, PEER_CAP_REFRESH_ADV))
                 json_object_object_add(neighbor_capabilities,
                     "route-refresh-advertise", json_boolean_true);
+              else
+                json_object_object_add(neighbor_capabilities,
+                    "route-refresh-advertise", json_boolean_false);
               if (CHECK_FLAG(p->cap, PEER_CAP_REFRESH_NEW_RCV))
                 json_object_object_add(neighbor_capabilities,
                     "route-refresh-receive-new", json_boolean_true);
+              else
+                json_object_object_add(neighbor_capabilities,
+                    "route-refresh-advertise", json_boolean_false);
               if (CHECK_FLAG(p->cap, PEER_CAP_REFRESH_OLD_RCV))
                 json_object_object_add(neighbor_capabilities,
                     "route-refresh-receive-old", json_boolean_true);
+              else
+                json_object_object_add(neighbor_capabilities,
+                    "route-refresh-advertise", json_boolean_false);
             }
           else
             {
@@ -8502,60 +8589,47 @@ bgp_show_peer (struct vty *vty, struct peer *p, json_object *json_peers, u_char 
 
 
           if(use_json)
-            json_object_object_add(neighbor_capabilities, "address-families", af_array);
+            json_object_object_add(neighbor_capabilities, "multiproto-ext-af", af_array);
 
           /* Gracefull Restart */
+          if (use_json)
+            {
+              if (CHECK_FLAG(p->cap, PEER_CAP_RESTART_ADV))
+                json_object_object_add(neighbor_capabilities, "graceful-restart-advertised", json_boolean_true);
+              else
+                json_object_object_add(neighbor_capabilities, "graceful-restart-advertised", json_boolean_false);
+              if (CHECK_FLAG(p->cap, PEER_CAP_RESTART_RCV))
+                json_object_object_add(neighbor_capabilities, "graceful-restart-received", json_boolean_true);
+              else
+                json_object_object_add(neighbor_capabilities, "graceful-restart-received", json_boolean_false);
+              af_array = json_object_new_array();
+
+              if (CHECK_FLAG(p->cap, PEER_CAP_RESTART_RCV))
+                  json_string = json_object_new_int(p->v_gr_restart);
+              else
+                  json_string = NULL;
+              json_object_object_add(neighbor_capabilities, "restart-timer", json_string);
+              for (afi = AFI_IP; afi < AFI_MAX; afi++)
+                for (safi = SAFI_UNICAST; safi < SAFI_MAX; safi++)
+                  if (CHECK_FLAG(p->af_cap[afi][safi], PEER_CAP_RESTART_AF_RCV))
+                    {
+                      af = json_object_new_object();
+                      json_string = json_object_new_string(afi_safi_print(afi, safi));
+                      json_object_object_add(af, "name", json_string);
+
+                      if(CHECK_FLAG (p->af_cap[afi][safi], PEER_CAP_RESTART_AF_PRESERVE_RCV))
+                          json_string = json_object_new_string("preserved");
+                      else
+                          json_string = json_object_new_string("not preserved");
+                      json_object_object_add(af, "AF-restart", json_string);
+                      json_object_array_add(af_array, af);
+                    }
+              json_object_object_add(neighbor_capabilities, "Restart-AF", af_array);
+            }
           if (CHECK_FLAG(p->cap, PEER_CAP_RESTART_RCV)
               || CHECK_FLAG(p->cap, PEER_CAP_RESTART_ADV))
             {
-              if (use_json)
-                {
-                  if (CHECK_FLAG(p->cap, PEER_CAP_RESTART_ADV))
-                    json_object_object_add(neighbor_capabilities, "graceful restart advertised", json_boolean_true);
-                  else
-                    json_object_object_add(neighbor_capabilities, "graceful restart advertised", json_boolean_false);
-                  if (CHECK_FLAG(p->cap, PEER_CAP_RESTART_RCV))
-                    json_object_object_add(neighbor_capabilities, "graceful restart received", json_boolean_true);
-                  else
-                    json_object_object_add(neighbor_capabilities, "graceful restart received", json_boolean_false);
-
-
-                  if (CHECK_FLAG(p->cap, PEER_CAP_RESTART_RCV))
-                    {
-                      int restart_af_count = 0;
-
-                      json_string = json_object_new_int(p->v_gr_restart);
-                      json_object_object_add(neighbor_capabilities, "restart-timer",
-                          json_string);
-
-                      json_string = json_object_new_int(p->v_gr_restart);
-                      json_object_object_add(neighbor_capabilities, "restart-timer",
-                          json_string);
-
-                      json_object *address_families = json_object_new_array();
-
-                      for (afi = AFI_IP; afi < AFI_MAX; afi++)
-                        for (safi = SAFI_UNICAST; safi < SAFI_MAX; safi++)
-                          if (CHECK_FLAG(p->af_cap[afi][safi], PEER_CAP_RESTART_AF_RCV))
-                            {
-                              if(CHECK_FLAG (p->af_cap[afi][safi], PEER_CAP_RESTART_AF_PRESERVE_RCV))
-                                {
-                                  char s[100];
-                                  sprintf(s, "%s%s(%s)", restart_af_count ? ", " : "",
-                                      afi_safi_print(afi, safi),
-                                      CHECK_FLAG (p->af_cap[afi][safi], PEER_CAP_RESTART_AF_PRESERVE_RCV) ?
-                                          "preserved" : "not preserved");
-                                  json_string = json_object_new_string(s);
-                                  json_object_array_add(address_families, json_string);
-                                  restart_af_count++;
-                                }
-                            }
-                      if (restart_af_count)
-                        json_object_object_add(neighbor_capabilities, "address-families",
-                            address_families);
-                    }
-                }
-              else
+              if (!use_json)
                 {
                   vty_out (vty, "    Graceful Restart Capabilty:");
                   if (CHECK_FLAG(p->cap, PEER_CAP_RESTART_ADV))
@@ -8599,6 +8673,51 @@ bgp_show_peer (struct vty *vty, struct peer *p, json_object *json_peers, u_char 
     }
 
   /* graceful restart information */
+    if (use_json)
+      {
+        json_object *end_of_rib;
+        json_object *graceful_restart_info = json_object_new_object();
+        json_object *af;
+        if (p->status == Established)
+          {
+            end_of_rib = json_object_new_array();
+            for (afi = AFI_IP; afi < AFI_MAX; afi++)
+              for (safi = SAFI_UNICAST; safi < SAFI_MAX; safi++)
+               {
+                af = json_object_new_object();
+                json_string = json_object_new_string(afi_safi_print(afi, safi));
+                json_object_object_add(af, "name", json_string);
+                if (CHECK_FLAG(p->af_sflags[afi][safi], PEER_STATUS_EOR_SEND))
+                    json_object_object_add(af, "End-of-RIB sent", json_boolean_true);
+                else
+                    json_object_object_add(af, "End-of-RIB sent", json_boolean_false);
+                if (CHECK_FLAG(p->af_sflags[afi][safi], PEER_STATUS_EOR_RECEIVED))
+                    json_object_object_add(af, "End-of-RIB rcvd", json_boolean_true);
+                else
+                    json_object_object_add(af, "End-of-RIB rcvd", json_boolean_false);
+                json_object_array_add(end_of_rib, af);
+               }
+            json_object_object_add(graceful_restart_info, "GR-AF-info", end_of_rib);
+          }
+
+        if (p->t_gr_restart)
+            json_int = json_object_new_int(
+                thread_timer_remain_second(p->t_gr_restart));
+        else
+            json_int = NULL;
+        json_object_object_add(graceful_restart_info, "restart-timer",
+                json_int);
+
+        if (p->t_gr_stale)
+            json_int = json_object_new_int(
+                thread_timer_remain_second(p->t_gr_stale));
+        else
+            json_int = NULL;
+        json_object_object_add(graceful_restart_info, "stalepath-timer",
+                json_int);
+        json_object_object_add(json_peer, "graceful-restart-info",
+            graceful_restart_info);
+      }
 
   if (CHECK_FLAG (p->cap, PEER_CAP_RESTART_RCV)
       || p->t_gr_restart
@@ -8606,60 +8725,7 @@ bgp_show_peer (struct vty *vty, struct peer *p, json_object *json_peers, u_char 
     {
       int eor_send_af_count = 0;
       int eor_receive_af_count = 0;
-      if (use_json)
-        {
-          json_object *end_of_rib;
-          json_object *graceful_restart_info = json_object_new_object();
-          if (p->status == Established)
-            {
-              end_of_rib = json_object_new_array();
-              for (afi = AFI_IP; afi < AFI_MAX; afi++)
-                for (safi = SAFI_UNICAST; safi < SAFI_MAX; safi++)
-                  if (CHECK_FLAG(p->af_sflags[afi][safi], PEER_STATUS_EOR_SEND))
-                    {
-                      char s[100];
-                      sprintf(s, "%s", afi_safi_print(afi, safi));
-                      json_string = json_object_new_string(s);
-                      json_object_array_add(end_of_rib, json_string);
-                      eor_send_af_count++;
-                    }
-
-              json_object_object_add(graceful_restart_info, "end-of-RIB-send", end_of_rib);
-
-              end_of_rib = json_object_new_array();
-              for (afi = AFI_IP; afi < AFI_MAX; afi++)
-                for (safi = SAFI_UNICAST; safi < SAFI_MAX; safi++)
-                  if (CHECK_FLAG(p->af_sflags[afi][safi], PEER_STATUS_EOR_RECEIVED))
-                    {
-                      char s[100];
-                      sprintf(s, "%s", afi_safi_print(afi, safi));
-                      json_string = json_object_new_string(s);
-                      json_object_array_add(end_of_rib, json_string);
-                      eor_receive_af_count++;
-                    }
-
-              json_object_object_add(graceful_restart_info, "end-of-RIB-receive", end_of_rib);
-            }
-
-          if (p->t_gr_restart)
-            {
-              json_int = json_object_new_int(
-                  thread_timer_remain_second(p->t_gr_restart));
-              json_object_object_add(graceful_restart_info, "restart-timer",
-                  json_int);
-            }
-
-          if (p->t_gr_stale)
-            {
-              json_int = json_object_new_int(
-                  thread_timer_remain_second(p->t_gr_stale));
-              json_object_object_add(graceful_restart_info, "stalepath-timer",
-                  json_int);
-            }
-          json_object_object_add(json_peer, "graceful-restart-info",
-              graceful_restart_info);
-        }
-      else
+      if (!use_json)
         {
 
           vty_out (vty, "  Graceful restart informations:%s", VTY_NEWLINE);
@@ -8773,19 +8839,21 @@ bgp_show_peer (struct vty *vty, struct peer *p, json_object *json_peers, u_char 
       json_object_object_add(json_peer, "advertisement-run-interval", json_int);
 
       /* Update-source. */
+      json_string = NULL;
       if (p->update_if || p->update_source) {
         if (p->update_if)
           json_string = json_object_new_string(p->update_if);
         else if (p->update_source)
           json_string = json_object_new_string(
               sockunion2str(p->update_source, buf1, SU_ADDRSTRLEN));
-        json_object_object_add(json_peer, "update-source", json_string);
-      }
+      json_object_object_add(json_peer, "update-source", json_string);
 
       /* Default weight */
+      json_int = NULL;
       if (CHECK_FLAG(p->config, PEER_CONFIG_WEIGHT))
         json_int = json_object_new_int(p->weight);
       json_object_object_add(json_peer, "default-weight", json_int);
+       }
     }
   else
     {
@@ -8816,47 +8884,45 @@ bgp_show_peer (struct vty *vty, struct peer *p, json_object *json_peers, u_char 
   json_object *address_family_array = json_object_new_array();
   if(use_json)
     {
+      json_object *json_string2;
       /* Address Family Information */
       for (afi = AFI_IP; afi < AFI_MAX; afi++)
         for (safi = SAFI_UNICAST; safi < SAFI_MAX; safi++)
           if (p->afc[afi][safi])
             bgp_show_peer_afi(vty, p, afi, safi, address_family_array, use_json);
 
-      json_object_object_add(json_peer, "address family info", address_family_array);
+      json_object_object_add(json_peer, "address-family-info", address_family_array);
 
       json_int = json_object_new_int(p->established);
-      json_object_object_add(json_peer, "connections established", json_int);
+      json_object_object_add(json_peer, "connections-established", json_int);
       json_int = json_object_new_int(p->dropped);
-      json_object_object_add(json_peer, "connections dropped", json_int);
+      json_object_object_add(json_peer, "connections-dropped", json_int);
 
       if (!p->dropped)
         {
           json_string = json_object_new_string("never");
-          json_object_object_add(json_peer, "last reset", json_string);
+          json_string2 = NULL;
         }
       else
         {
           json_string = json_object_new_string(peer_uptime(p->resettime, timebuf, BGP_UPTIME_LEN));
-          json_object_object_add(json_peer, "last reset time", json_string);
-
-          json_string = json_object_new_string(peer_down_str[(int) p->last_reset]);
-          json_object_object_add(json_peer, "last reset reason", json_string);
+          json_string2 = json_object_new_string(peer_down_str[(int) p->last_reset]);
         }
+      json_object_object_add(json_peer, "last-reset", json_string);
+      json_object_object_add(json_peer, "last-reset-reason", json_string2);
 
+      json_int = NULL;
       if (CHECK_FLAG(p->sflags, PEER_STATUS_PREFIX_OVERFLOW))
         {
-          json_object_object_add(json_peer, "max prefixes exceeded", json_boolean_true);
-          json_string = json_object_new_string(p->host);
-          json_object_object_add(json_peer, "host reduce no. of prefixes", json_string);
-
+          json_object_object_add(json_peer, "max-prefixes-exceeded", json_boolean_false);
           if (p->t_pmax_restart)
-            {
               json_int = json_object_new_int(thread_timer_remain_second(p->t_pmax_restart));
-              json_object_object_add(json_peer, "restart timer", json_int);
-            }
-          else
-            json_object_object_add(json_peer, "clear ip bgp", json_boolean_true);
         }
+      else
+        {
+          json_object_object_add(json_peer, "max-prefixes-exceeded", json_boolean_false);
+        }
+        json_object_object_add(json_peer, "restart-timer", json_int);
     }
   else
     {
@@ -8898,24 +8964,13 @@ bgp_show_peer (struct vty *vty, struct peer *p, json_object *json_peers, u_char 
       if (p->sort != BGP_PEER_IBGP)
         {
           if (p->gtsm_hops > 0)
-            {
               json_int = json_object_new_int(p->gtsm_hops);
-              json_object_object_add(json_peer, "external-neighbor-hops", json_int);
-            }
           else if(p->ttl > 1)
-            {
               json_int = json_object_new_int(p->ttl);
-              json_object_object_add(json_peer, "external-neighbor-hops", json_int);
-            }
         }
       else
-        {
-          if (p->gtsm_hops > 0)
-            {
-              json_int = json_object_new_int(p->gtsm_hops);
-              json_object_object_add(json_peer, "external-neighbor-hops", json_int);
-            }
-        }
+          json_int = json_object_new_int(p->gtsm_hops);
+      json_object_object_add(json_peer, "GTSM", json_int);
     }
   else
     {
@@ -9016,15 +9071,15 @@ bgp_show_peer (struct vty *vty, struct peer *p, json_object *json_peers, u_char 
   if(use_json)
     {
       if (p->t_start)
-        {
-          json_int = json_object_new_int(thread_timer_remain_second(p->t_start));
-          json_object_object_add(json_peer, "start-timer", json_int);
-        }
-      if(p->t_connect)
-        {
-          json_int = json_object_new_int(thread_timer_remain_second(p->t_connect));
-          json_object_object_add(json_peer, "conncet-timer", json_int);
-        }
+        json_int = json_object_new_int(thread_timer_remain_second(p->t_start));
+      else
+        json_int = NULL;
+      json_object_object_add(json_peer, "start-timer", json_int);
+      if (p->t_connect)
+        json_int = json_object_new_int(thread_timer_remain_second(p->t_connect));
+      else
+        json_int = NULL;
+      json_object_object_add(json_peer, "connect-timer", json_int);
 
       json_string = json_object_new_string(p->t_read ? "on" : "off");
       json_object_object_add(json_peer, "read-thread", json_string);
@@ -9033,8 +9088,9 @@ bgp_show_peer (struct vty *vty, struct peer *p, json_object *json_peers, u_char 
       json_object_object_add(json_peer, "write-thread", json_string);
 
       if (p->notify.code == BGP_NOTIFY_OPEN_ERR
-              && p->notify.subcode == BGP_NOTIFY_OPEN_UNSUP_CAPBL)
+              && p->notify.subcode == BGP_NOTIFY_OPEN_UNSUP_CAPBL) {
         bgp_capability_vty_out (vty, p, json_peer, use_json);
+      }
     }
   else
     {

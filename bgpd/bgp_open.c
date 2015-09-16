@@ -68,6 +68,9 @@ bgp_capability_vty_out(struct vty *vty, struct peer *peer,
   json_object *error_array;
   json_object *error;
 
+  if (use_json)
+      error_array = json_object_new_array();
+
   while (pnt < end)
     {
       if (pnt + sizeof (struct capability_mp_data) + 2 > end)
@@ -78,17 +81,12 @@ bgp_capability_vty_out(struct vty *vty, struct peer *peer,
         return;
 
       memcpy (&mpc, pnt + 2, sizeof(struct capability_mp_data));
-
-      if(use_json){
-        error = json_object_new_object();
-        error_array = json_object_new_array();
-      }
-
+      if (use_json)
+          error = json_object_new_object();
       if (hdr->code == CAPABILITY_CODE_MP)
         {
           if (use_json)
             {
-
               json_string = json_object_new_string("Multi protocol");
               json_object_object_add(error, "error-type", json_string);
 
@@ -123,7 +121,7 @@ bgp_capability_vty_out(struct vty *vty, struct peer *peer,
                   break;
                 default:
                   json_int = json_object_new_int(mpc.safi);
-                   json_object_object_add(error, "SAFI", json_int);
+                  json_object_object_add(error, "SAFI", json_int);
                   break;
                 }
             }
@@ -186,7 +184,6 @@ bgp_capability_vty_out(struct vty *vty, struct peer *peer,
               vty_out(vty, "  Capability error: unknown capability code %d",
                   hdr->code);
             }
-
         }
 
         pnt += hdr->length + 2;
