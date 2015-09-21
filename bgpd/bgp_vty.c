@@ -8182,7 +8182,7 @@ bgp_show_peer_afi (struct vty *vty, struct peer *p, afi_t afi, safi_t safi,
       else
           json_object_object_add(address_family_info, "max-prefix-warning-only", json_object_new_boolean(0));
       json_int = json_object_new_int(p->pmax_threshold[afi][safi]);
-      json_object_object_add(address_family_info, "max-prefix-warning threshold", json_int);
+      json_object_object_add(address_family_info, "max-prefix-warning-threshold", json_int);
 
       if (p->pmax_restart[afi][safi])
           json_object_object_add(address_family_info, "max-prefix-restart", json_object_new_boolean(1));
@@ -8602,28 +8602,33 @@ bgp_show_peer (struct vty *vty, struct peer *p, json_object *json_peers, u_char 
                 json_object_object_add(neighbor_capabilities, "graceful-restart-received", json_boolean_true);
               else
                 json_object_object_add(neighbor_capabilities, "graceful-restart-received", json_boolean_false);
-              af_array = json_object_new_array();
 
               if (CHECK_FLAG(p->cap, PEER_CAP_RESTART_RCV))
                   json_string = json_object_new_int(p->v_gr_restart);
               else
                   json_string = NULL;
               json_object_object_add(neighbor_capabilities, "restart-timer", json_string);
+
+              af_array = json_object_new_array();
               for (afi = AFI_IP; afi < AFI_MAX; afi++)
                 for (safi = SAFI_UNICAST; safi < SAFI_MAX; safi++)
-                  if (CHECK_FLAG(p->af_cap[afi][safi], PEER_CAP_RESTART_AF_RCV))
-                    {
-                      af = json_object_new_object();
-                      json_string = json_object_new_string(afi_safi_print(afi, safi));
-                      json_object_object_add(af, "name", json_string);
+                 {
+                  af = json_object_new_object();
+                  json_string = json_object_new_string(afi_safi_print(afi, safi));
+                  json_object_object_add(af, "name", json_string);
 
-                      if(CHECK_FLAG (p->af_cap[afi][safi], PEER_CAP_RESTART_AF_PRESERVE_RCV))
-                          json_string = json_object_new_string("preserved");
-                      else
-                          json_string = json_object_new_string("not preserved");
-                      json_object_object_add(af, "AF-restart", json_string);
-                      json_object_array_add(af_array, af);
-                    }
+                  if (CHECK_FLAG(p->af_cap[afi][safi], PEER_CAP_RESTART_AF_RCV))
+                      json_object_object_add(af, "AF-restart-rcvd", json_boolean_true);
+                  else
+                      json_object_object_add(af, "AF-restart-rcvd", json_boolean_false);
+
+                  if(CHECK_FLAG (p->af_cap[afi][safi], PEER_CAP_RESTART_AF_PRESERVE_RCV))
+                      json_string = json_object_new_string("preserved");
+                  else
+                      json_string = json_object_new_string("not preserved");
+                  json_object_object_add(af, "AF-restart", json_string);
+                  json_object_array_add(af_array, af);
+                 }
               json_object_object_add(neighbor_capabilities, "Restart-AF", af_array);
             }
           if (CHECK_FLAG(p->cap, PEER_CAP_RESTART_RCV)
@@ -8688,13 +8693,13 @@ bgp_show_peer (struct vty *vty, struct peer *p, json_object *json_peers, u_char 
                 json_string = json_object_new_string(afi_safi_print(afi, safi));
                 json_object_object_add(af, "name", json_string);
                 if (CHECK_FLAG(p->af_sflags[afi][safi], PEER_STATUS_EOR_SEND))
-                    json_object_object_add(af, "End-of-RIB sent", json_boolean_true);
+                    json_object_object_add(af, "End-of-RIB-sent", json_boolean_true);
                 else
-                    json_object_object_add(af, "End-of-RIB sent", json_boolean_false);
+                    json_object_object_add(af, "End-of-RIB-sent", json_boolean_false);
                 if (CHECK_FLAG(p->af_sflags[afi][safi], PEER_STATUS_EOR_RECEIVED))
-                    json_object_object_add(af, "End-of-RIB rcvd", json_boolean_true);
+                    json_object_object_add(af, "End-of-RIB-rcvd", json_boolean_true);
                 else
-                    json_object_object_add(af, "End-of-RIB rcvd", json_boolean_false);
+                    json_object_object_add(af, "End-of-RIB-rcvd", json_boolean_false);
                 json_object_array_add(end_of_rib, af);
                }
             json_object_object_add(graceful_restart_info, "GR-AF-info", end_of_rib);
@@ -9088,9 +9093,8 @@ bgp_show_peer (struct vty *vty, struct peer *p, json_object *json_peers, u_char 
       json_object_object_add(json_peer, "write-thread", json_string);
 
       if (p->notify.code == BGP_NOTIFY_OPEN_ERR
-              && p->notify.subcode == BGP_NOTIFY_OPEN_UNSUP_CAPBL) {
+              && p->notify.subcode == BGP_NOTIFY_OPEN_UNSUP_CAPBL)
         bgp_capability_vty_out (vty, p, json_peer, use_json);
-      }
     }
   else
     {
