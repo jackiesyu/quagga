@@ -240,6 +240,6 @@ extern safi_t bgp_node_safi (struct vty *);
 
 extern void route_vty_out (struct vty *, struct prefix *, struct bgp_info *, int, safi_t, json_object *);
 extern void route_vty_out_tag (struct vty *, struct prefix *, struct bgp_info *, int, safi_t);
-extern void route_vty_out_tmp (struct vty *, struct prefix *, struct attr *, safi_t);
+extern void route_vty_out_tmp (struct vty *, struct prefix *, struct attr *, safi_t, json_object *json, u_char use_json);
 
 #endif /* _QUAGGA_BGP_ROUTE_H */
