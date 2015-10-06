@@ -64,6 +64,7 @@ static const struct option longopts[] =
   { "vty_file",    required_argument, NULL, 'V'},
   { "retain",      no_argument,       NULL, 'r'},
   { "no_kernel",   no_argument,       NULL, 'n'},
+  { "tenant_name", required_argument, NULL, 't'},
   { "user",        required_argument, NULL, 'u'},
   { "group",       required_argument, NULL, 'g'},
   { "version",     no_argument,       NULL, 'v'},
@@ -114,6 +115,7 @@ char *config_file = NULL;
 /* Process ID saved for use by init system */
 static const char *pid_file = PATH_BGPD_PID;
 const char *vty_file = BGP_VTYSH_PATH;
+const char *tenant_name = "UNKNOWN";
 
 /* VTY port number and address.  */
 int vty_port = BGP_VTY_PORT;
@@ -165,6 +167,7 @@ redistribution between different routing protocols.\n\n\
 -n, --no_kernel    Do not install route to kernel.\n\
 -u, --user         User to run as\n\
 -g, --group        Group to run as\n\
+-t, --tenant_name  Tenant name for logging purposes\n\
 -v, --version      Print program version\n\
 -C, --dryrun       Check configuration for validity and exit\n\
 -h, --help         Display this help and exit\n\
@@ -346,7 +349,7 @@ main (int argc, char **argv)
   /* Command line argument treatment. */
   while (1) 
     {
-      opt = getopt_long (argc, argv, "df:i:z:hp:l:A:P:V:rnu:g:vC", longopts, 0);
+      opt = getopt_long (argc, argv, "df:i:z:hp:l:A:P:V:rnu:g:t:vC", longopts, 0);
     
       if (opt == EOF)
 	break;
@@ -401,6 +404,10 @@ main (int argc, char **argv)
 	case 'n':
 	  bgp_option_set (BGP_OPT_NO_FIB);
 	  break;
+        case 't':
+          tenant_name = optarg;
+          zlog_set_tenant (zlog_default, tenant_name);
+          break;
 	case 'u':
 	  bgpd_privs.user = optarg;
 	  break;
