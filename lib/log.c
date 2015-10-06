@@ -177,8 +177,14 @@ vzlog (struct zlog *zl, int priority, const char *format, va_list args)
   if (priority <= zl->maxlvl[ZLOG_DEST_SYSLOG])
     {
       va_list ac;
+      char new_format[BUFSIZ]; 
       va_copy(ac, args);
-      vsyslog (priority|zlog_default->facility, format, ac);
+      if (zl->tenant_name) {
+        sprintf(new_format, "qtenant=%s, ", zl->tenant_name);
+        strcat(new_format, format);
+        vsyslog (priority|zlog_default->facility, new_format, ac);
+      } else
+        vsyslog (priority|zlog_default->facility, format, ac);
       va_end(ac);
     }
 
@@ -189,6 +195,8 @@ vzlog (struct zlog *zl, int priority, const char *format, va_list args)
       time_print (zl->fp, &tsctl);
       if (zl->record_priority)
 	fprintf (zl->fp, "%s: ", zlog_priority[priority]);
+      if (zl->tenant_name)
+	fprintf (zl->fp, " qtenant=%s ", zl->tenant_name);
       fprintf (zl->fp, "%s: ", zlog_proto_names[zl->protocol]);
       va_copy(ac, args);
       vfprintf (zl->fp, format, ac);
@@ -686,6 +694,7 @@ openzlog (const char *progname, zlog_proto_t protocol,
     zl->maxlvl[i] = ZLOG_DISABLED;
   zl->maxlvl[ZLOG_DEST_MONITOR] = LOG_DEBUG;
   zl->default_lvl = LOG_DEBUG;
+  zl->tenant_name = NULL;
 
   openlog (progname, syslog_flags, zl->facility);
   
@@ -704,6 +713,15 @@ closezlog (struct zlog *zl)
     free (zl->filename);
 
   XFREE (MTYPE_ZLOG, zl);
+}
+
+void
+zlog_set_tenant (struct zlog *zl, char *tenant_name)
+{
+  if (zl == NULL)
+    zl = zlog_default;
+
+  zl->tenant_name = tenant_name;
 }
 
 /* Called from command.c. */

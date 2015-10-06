@@ -84,6 +84,7 @@ struct zlog
   			   priority of the message? */
   int syslog_options;	/* 2nd arg to openlog */
   int timestamp_precision;	/* # of digits of subsecond precision */
+  char *tenant_name;
 };
 
 /* Message structure. */

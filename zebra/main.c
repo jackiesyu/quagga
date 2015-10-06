@@ -82,6 +82,7 @@ struct option longopts[] =
 #ifdef HAVE_NETLINK
   { "nl-bufsize",  required_argument, NULL, 's'},
 #endif /* HAVE_NETLINK */
+  { "tenant_name", required_argument, NULL, 't'},
   { "user",        required_argument, NULL, 'u'},
   { "group",       required_argument, NULL, 'g'},
   { "version",     no_argument,       NULL, 'v'},
@@ -118,6 +119,7 @@ const char *pid_file = PATH_ZEBRA_PID;
 
 /* default VTY file name */
 const char *vty_file = ZEBRA_VTYSH_PATH;
+const char *tenant_name = "UNKNOWN";
 
 /* Help information display. */
 static void
@@ -148,7 +150,8 @@ usage (char *progname, int status)
 #ifdef HAVE_NETLINK
       printf ("-s, --nl-bufsize   Set netlink receive buffer size\n");
 #endif /* HAVE_NETLINK */
-      printf ("-v, --version      Print program version\n"\
+      printf ("-t, --tenant       tenant name\n"\
+              "-v, --version      Print program version\n"\
 	      "-h, --help         Display this help and exit\n"\
 	      "\n"\
 	      "Report bugs to %s\n", ZEBRA_BUG_ADDRESS);
@@ -238,9 +241,9 @@ main (int argc, char **argv)
       int opt;
   
 #ifdef HAVE_NETLINK  
-      opt = getopt_long (argc, argv, "bdkf:i:z:hA:V:P:ru:g:vs:C", longopts, 0);
+      opt = getopt_long (argc, argv, "bdkf:i:z:hA:V:P:ru:g:vs:t:C", longopts, 0);
 #else
-      opt = getopt_long (argc, argv, "bdkf:i:z:hA:V:P:ru:g:vC", longopts, 0);
+      opt = getopt_long (argc, argv, "bdkf:i:z:hA:V:P:ru:g:t:vC", longopts, 0);
 #endif /* HAVE_NETLINK */
 
       if (opt == EOF)
@@ -296,6 +299,10 @@ main (int argc, char **argv)
 	  nl_rcvbufsize = atoi (optarg);
 	  break;
 #endif /* HAVE_NETLINK */
+        case 't':
+          tenant_name = optarg;
+          zlog_set_tenant (zlog_default, tenant_name);
+          break;
 	case 'u':
 	  zserv_privs.user = optarg;
 	  break;
