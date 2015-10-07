@@ -1529,8 +1529,17 @@ DEFUN (no_neighbor,
   else
     {
       peer = peer_lookup (vty->index, &su);
-      if (peer)
+      // When a neighbor is being unconfigured, send CEASE notification to neighbor
+      if (peer) {
+        if (peer->status == Established ||
+            peer->status == OpenSent ||
+            peer->status == OpenConfirm)
+          {
+              bgp_notify_send (peer, BGP_NOTIFY_CEASE,
+                               BGP_NOTIFY_CEASE_PEER_UNCONFIG);
+          }
         peer_delete (peer);
+      }
     }
 
   return CMD_SUCCESS;
