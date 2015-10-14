@@ -8490,7 +8490,7 @@ bgp_show_peer (struct vty *vty, struct peer *p, json_object *json_peers, u_char 
               if (CHECK_FLAG(p->cap, PEER_CAP_DYNAMIC_RCV))
                 json_object_object_add(neighbor_capabilities, "dynamic-received", json_boolean_true);
               else
-                json_object_object_add(neighbor_capabilities, "dynamic-receieved", json_boolean_true);
+                json_object_object_add(neighbor_capabilities, "dynamic-received", json_boolean_false);
             }
           if (CHECK_FLAG(p->cap,
               PEER_CAP_DYNAMIC_RCV) || CHECK_FLAG(p->cap, PEER_CAP_DYNAMIC_ADV))
