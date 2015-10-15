@@ -7712,57 +7712,61 @@ bgp_show_peer_afi (struct vty *vty, struct peer *p, afi_t afi, safi_t safi,
         vty_out (vty, "  AF-dependant capabilities:%s", VTY_NEWLINE);
     }
 
-  if (use_json)
-    {
-      json_int = json_object_new_int(ORF_TYPE_PREFIX);
-      json_object_object_add(address_family_info, "ORF-type-1", json_int);
-      bgp_show_peer_afi_orf_cap (vty, p, afi, safi,
-                                PEER_CAP_ORF_PREFIX_SM_ADV,
-                                PEER_CAP_ORF_PREFIX_RM_ADV,
-                                PEER_CAP_ORF_PREFIX_SM_RCV,
-                                PEER_CAP_ORF_PREFIX_RM_RCV, orf_cap, use_json);
-      json_object_object_add(address_family_info, "prefix-list-1", orf_cap);
-      orf_cap = json_object_new_object();
-    }
   if ((CHECK_FLAG (p->af_cap[afi][safi], PEER_CAP_ORF_PREFIX_SM_ADV)
       || CHECK_FLAG (p->af_cap[afi][safi], PEER_CAP_ORF_PREFIX_SM_RCV)
       || CHECK_FLAG (p->af_cap[afi][safi], PEER_CAP_ORF_PREFIX_RM_ADV)
-      || CHECK_FLAG (p->af_cap[afi][safi], PEER_CAP_ORF_PREFIX_RM_RCV))
-     && !use_json)
+      || CHECK_FLAG (p->af_cap[afi][safi], PEER_CAP_ORF_PREFIX_RM_RCV)))
     {
-      vty_out (vty, "    Outbound Route Filter (ORF) type (%d) Prefix-list:%s",
-               ORF_TYPE_PREFIX, VTY_NEWLINE);
-      bgp_show_peer_afi_orf_cap (vty, p, afi, safi,
-                                PEER_CAP_ORF_PREFIX_SM_ADV,
-                                PEER_CAP_ORF_PREFIX_RM_ADV,
-                                PEER_CAP_ORF_PREFIX_SM_RCV,
-                                PEER_CAP_ORF_PREFIX_RM_RCV, orf_cap, use_json);
+      if (use_json)
+        {
+          json_int = json_object_new_int(ORF_TYPE_PREFIX);
+          json_object_object_add(address_family_info, "ORF-type-1", json_int);
+          bgp_show_peer_afi_orf_cap (vty, p, afi, safi,
+                                    PEER_CAP_ORF_PREFIX_SM_ADV,
+                                    PEER_CAP_ORF_PREFIX_RM_ADV,
+                                    PEER_CAP_ORF_PREFIX_SM_RCV,
+                                    PEER_CAP_ORF_PREFIX_RM_RCV, orf_cap, use_json);
+          json_object_object_add(address_family_info, "prefix-list-1", orf_cap);
+          orf_cap = json_object_new_object();
+        }
+      else
+        {
+          vty_out (vty, "    Outbound Route Filter (ORF) type (%d) Prefix-list:%s",
+                   ORF_TYPE_PREFIX, VTY_NEWLINE);
+          bgp_show_peer_afi_orf_cap (vty, p, afi, safi,
+                                     PEER_CAP_ORF_PREFIX_SM_ADV,
+                                     PEER_CAP_ORF_PREFIX_RM_ADV,
+                                     PEER_CAP_ORF_PREFIX_SM_RCV,
+                                     PEER_CAP_ORF_PREFIX_RM_RCV, orf_cap, use_json);
+        }
     }
 
-  if (use_json)
-    {
-      json_int = json_object_new_int(ORF_TYPE_PREFIX_OLD);
-      json_object_object_add(address_family_info, "ORF-type-2", json_int);
-      bgp_show_peer_afi_orf_cap (vty, p, afi, safi,
-                                PEER_CAP_ORF_PREFIX_SM_ADV,
-                                PEER_CAP_ORF_PREFIX_RM_ADV,
-                                PEER_CAP_ORF_PREFIX_SM_OLD_RCV,
-                                PEER_CAP_ORF_PREFIX_RM_OLD_RCV, orf_cap, use_json);
-      json_object_object_add(address_family_info, "prefix-list-2", orf_cap);
-    }
   if ((CHECK_FLAG (p->af_cap[afi][safi], PEER_CAP_ORF_PREFIX_SM_ADV)
       || CHECK_FLAG (p->af_cap[afi][safi], PEER_CAP_ORF_PREFIX_SM_OLD_RCV)
       || CHECK_FLAG (p->af_cap[afi][safi], PEER_CAP_ORF_PREFIX_RM_ADV)
-      || CHECK_FLAG (p->af_cap[afi][safi], PEER_CAP_ORF_PREFIX_RM_OLD_RCV))
-     && !use_json)
+      || CHECK_FLAG (p->af_cap[afi][safi], PEER_CAP_ORF_PREFIX_RM_OLD_RCV)))
     {
-      vty_out (vty, "    Outbound Route Filter (ORF) type (%d) Prefix-list:%s",
-              ORF_TYPE_PREFIX_OLD, VTY_NEWLINE);
-      bgp_show_peer_afi_orf_cap (vty, p, afi, safi,
-                                PEER_CAP_ORF_PREFIX_SM_ADV,
-                                PEER_CAP_ORF_PREFIX_RM_ADV,
-                                PEER_CAP_ORF_PREFIX_SM_OLD_RCV,
-                                PEER_CAP_ORF_PREFIX_RM_OLD_RCV, orf_cap, use_json);
+      if (use_json)
+        {
+          json_int = json_object_new_int(ORF_TYPE_PREFIX_OLD);
+          json_object_object_add(address_family_info, "ORF-type-2", json_int);
+          bgp_show_peer_afi_orf_cap (vty, p, afi, safi,
+                                    PEER_CAP_ORF_PREFIX_SM_ADV,
+                                    PEER_CAP_ORF_PREFIX_RM_ADV,
+                                    PEER_CAP_ORF_PREFIX_SM_OLD_RCV,
+                                    PEER_CAP_ORF_PREFIX_RM_OLD_RCV, orf_cap, use_json);
+          json_object_object_add(address_family_info, "prefix-list-2", orf_cap);
+        }
+      else
+        {
+          vty_out (vty, "    Outbound Route Filter (ORF) type (%d) Prefix-list:%s",
+                   ORF_TYPE_PREFIX_OLD, VTY_NEWLINE);
+          bgp_show_peer_afi_orf_cap (vty, p, afi, safi,
+                                    PEER_CAP_ORF_PREFIX_SM_ADV,
+                                    PEER_CAP_ORF_PREFIX_RM_ADV,
+                                    PEER_CAP_ORF_PREFIX_SM_OLD_RCV,
+                                    PEER_CAP_ORF_PREFIX_RM_OLD_RCV, orf_cap, use_json);
+        }
     }
 
   sprintf (orf_pfx_name, "%s.%d.%d", p->host, afi, safi);
@@ -7857,10 +7861,8 @@ bgp_show_peer_afi (struct vty *vty, struct peer *p, afi_t afi, safi_t safi,
             json_string = json_object_new_string("extended");
           else
             json_string = json_object_new_string("standard");
+          json_object_object_add(address_family_info, "community-attribute", json_string);
         }
-      else
-          json_string = json_object_new_string("neither");
-      json_object_object_add(address_family_info, "community-attribute", json_string);
     }
   else
     {
@@ -7894,27 +7896,6 @@ bgp_show_peer_afi (struct vty *vty, struct peer *p, afi_t afi, safi_t safi,
         }
     }
 
-  if(use_json)
-    {
-      default_information_originate = json_object_new_object();
-
-      if (p->default_rmap[afi][safi].name)
-          json_string = json_object_new_string(p->default_rmap[afi][safi].name);
-      else
-          json_string = NULL;
-      json_object_object_add(default_information_originate, "route-map", json_string);
-      if (p->default_rmap[afi][safi].map) 
-          json_object_object_add(default_information_originate, "route-map-default", json_object_new_boolean(1));
-      else
-          json_object_object_add(default_information_originate, "route-map-default", json_object_new_boolean(0));
-
-      if (CHECK_FLAG(p->af_sflags[afi][safi], PEER_STATUS_DEFAULT_ORIGINATE))
-        json_object_object_add(default_information_originate, "default-sent", json_object_new_boolean(1));
-      else
-        json_object_object_add(default_information_originate, "default-sent", json_object_new_boolean(0));
-
-      json_object_object_add(address_family_info, "default-info-origin", default_information_originate);
-    }
   if (CHECK_FLAG(p->af_flags[afi][safi], PEER_FLAG_DEFAULT_ORIGINATE))
     {
       if(!use_json)
@@ -7929,6 +7910,27 @@ bgp_show_peer_afi (struct vty *vty, struct peer *p, afi_t afi, safi_t safi,
             vty_out (vty, " default sent%s", VTY_NEWLINE);
           else
             vty_out (vty, " default not sent%s", VTY_NEWLINE);
+        }
+      else
+        {
+          default_information_originate = json_object_new_object();
+
+          if (p->default_rmap[afi][safi].name)
+              json_string = json_object_new_string(p->default_rmap[afi][safi].name);
+          else
+              json_string = NULL;
+          json_object_object_add(default_information_originate, "route-map", json_string);
+          if (p->default_rmap[afi][safi].map)
+              json_object_object_add(default_information_originate, "route-map-default", json_object_new_boolean(1));
+          else
+              json_object_object_add(default_information_originate, "route-map-default", json_object_new_boolean(0));
+
+          if (CHECK_FLAG(p->af_sflags[afi][safi], PEER_STATUS_DEFAULT_ORIGINATE))
+            json_object_object_add(default_information_originate, "default-sent", json_object_new_boolean(1));
+          else
+            json_object_object_add(default_information_originate, "default-sent", json_object_new_boolean(0));
+
+          json_object_object_add(address_family_info, "default-info-origin", default_information_originate);
         }
     }
 
@@ -8678,52 +8680,6 @@ bgp_show_peer (struct vty *vty, struct peer *p, json_object *json_peers, u_char 
     }
 
   /* graceful restart information */
-    if (use_json)
-      {
-        json_object *end_of_rib;
-        json_object *graceful_restart_info = json_object_new_object();
-        json_object *af;
-        if (p->status == Established)
-          {
-            end_of_rib = json_object_new_array();
-            for (afi = AFI_IP; afi < AFI_MAX; afi++)
-              for (safi = SAFI_UNICAST; safi < SAFI_MAX; safi++)
-               {
-                af = json_object_new_object();
-                json_string = json_object_new_string(afi_safi_print(afi, safi));
-                json_object_object_add(af, "name", json_string);
-                if (CHECK_FLAG(p->af_sflags[afi][safi], PEER_STATUS_EOR_SEND))
-                    json_object_object_add(af, "End-of-RIB-sent", json_boolean_true);
-                else
-                    json_object_object_add(af, "End-of-RIB-sent", json_boolean_false);
-                if (CHECK_FLAG(p->af_sflags[afi][safi], PEER_STATUS_EOR_RECEIVED))
-                    json_object_object_add(af, "End-of-RIB-rcvd", json_boolean_true);
-                else
-                    json_object_object_add(af, "End-of-RIB-rcvd", json_boolean_false);
-                json_object_array_add(end_of_rib, af);
-               }
-            json_object_object_add(graceful_restart_info, "GR-AF-info", end_of_rib);
-          }
-
-        if (p->t_gr_restart)
-            json_int = json_object_new_int(
-                thread_timer_remain_second(p->t_gr_restart));
-        else
-            json_int = NULL;
-        json_object_object_add(graceful_restart_info, "restart-timer",
-                json_int);
-
-        if (p->t_gr_stale)
-            json_int = json_object_new_int(
-                thread_timer_remain_second(p->t_gr_stale));
-        else
-            json_int = NULL;
-        json_object_object_add(graceful_restart_info, "stalepath-timer",
-                json_int);
-        json_object_object_add(json_peer, "graceful-restart-info",
-            graceful_restart_info);
-      }
-
   if (CHECK_FLAG (p->cap, PEER_CAP_RESTART_RCV)
       || p->t_gr_restart
       || p->t_gr_stale)
@@ -8766,6 +8722,51 @@ bgp_show_peer (struct vty *vty, struct peer *p, json_object *json_peers, u_char 
           if (p->t_gr_stale)
             vty_out (vty, "    The remaining time of stalepath timer is %ld%s",
                     thread_timer_remain_second(p->t_gr_stale), VTY_NEWLINE);
+        }
+      else
+        {
+          json_object *end_of_rib;
+          json_object *graceful_restart_info = json_object_new_object();
+          json_object *af;
+          if (p->status == Established)
+            {
+              end_of_rib = json_object_new_array();
+              for (afi = AFI_IP; afi < AFI_MAX; afi++)
+                for (safi = SAFI_UNICAST; safi < SAFI_MAX; safi++)
+                  {
+                    af = json_object_new_object();
+                    json_string = json_object_new_string(afi_safi_print(afi, safi));
+                    json_object_object_add(af, "name", json_string);
+                    if (CHECK_FLAG(p->af_sflags[afi][safi], PEER_STATUS_EOR_SEND))
+                      json_object_object_add(af, "End-of-RIB-sent", json_boolean_true);
+                    else
+                      json_object_object_add(af, "End-of-RIB-sent", json_boolean_false);
+                    if (CHECK_FLAG(p->af_sflags[afi][safi], PEER_STATUS_EOR_RECEIVED))
+                      json_object_object_add(af, "End-of-RIB-rcvd", json_boolean_true);
+                    else
+                      json_object_object_add(af, "End-of-RIB-rcvd", json_boolean_false);
+                    json_object_array_add(end_of_rib, af);
+                  }
+              json_object_object_add(graceful_restart_info, "GR-AF-info", end_of_rib);
+            }
+
+            if (p->t_gr_restart)
+              json_int = json_object_new_int(
+                  thread_timer_remain_second(p->t_gr_restart));
+            else
+              json_int = NULL;
+            json_object_object_add(graceful_restart_info, "restart-timer",
+                    json_int);
+
+            if (p->t_gr_stale)
+              json_int = json_object_new_int(
+                    thread_timer_remain_second(p->t_gr_stale));
+            else
+              json_int = NULL;
+            json_object_object_add(graceful_restart_info, "stalepath-timer",
+                    json_int);
+            json_object_object_add(json_peer, "graceful-restart-info",
+                graceful_restart_info);
         }
     }
   /* Packet counts. */
@@ -8918,7 +8919,7 @@ bgp_show_peer (struct vty *vty, struct peer *p, json_object *json_peers, u_char 
       json_int = NULL;
       if (CHECK_FLAG(p->sflags, PEER_STATUS_PREFIX_OVERFLOW))
         {
-          json_object_object_add(json_peer, "max-prefixes-exceeded", json_boolean_false);
+          json_object_object_add(json_peer, "max-prefixes-exceeded", json_boolean_true);
           if (p->t_pmax_restart)
               json_int = json_object_new_int(thread_timer_remain_second(p->t_pmax_restart));
         }
@@ -8965,6 +8966,7 @@ bgp_show_peer (struct vty *vty, struct peer *p, json_object *json_peers, u_char 
   /* EBGP Multihop and GTSM */
   if(use_json)
     {
+      json_int = NULL;
       if (p->sort != BGP_PEER_IBGP)
         {
           if (p->gtsm_hops > 0)
@@ -8972,7 +8974,7 @@ bgp_show_peer (struct vty *vty, struct peer *p, json_object *json_peers, u_char 
           else if(p->ttl > 1)
               json_int = json_object_new_int(p->ttl);
         }
-      else
+      else if (p->gtsm_hops > 0)
           json_int = json_object_new_int(p->gtsm_hops);
       json_object_object_add(json_peer, "GTSM", json_int);
     }
