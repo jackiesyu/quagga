@@ -110,8 +110,12 @@ bgp_info_extra_free (struct bgp_info_extra **extra)
       
       (*extra)->damp_info = NULL;
       
+      if ((*extra)->attr)
+        bgp_attr_unintern(&((*extra)->attr));
+
+      (*extra)->attr = NULL;
+
       XFREE (MTYPE_BGP_ROUTE_EXTRA, *extra);
-      
       *extra = NULL;
     }
 }
@@ -1572,7 +1576,8 @@ bgp_process_main (struct work_queue *wq, void *data)
   struct bgp_info *old_select;
   struct bgp_info_pair old_and_new;
   struct listnode *node, *nnode;
-  struct peer *peer;
+  struct peer *peer, *log_peer = NULL;
+  struct attr *attr;
   
   /* Best path selection. */
   bgp_best_selection (bgp, rn, &bgp->maxpaths[afi][safi], &old_and_new);
@@ -1608,6 +1613,8 @@ bgp_process_main (struct work_queue *wq, void *data)
   for (ALL_LIST_ELEMENTS (bgp->peer, node, nnode, peer))
     {
       bgp_process_announce_selected (peer, new_select, rn, afi, safi);
+      if (log_peer == NULL)
+          log_peer = peer;
     }
 
   /* FIB update. */
@@ -1616,15 +1623,27 @@ bgp_process_main (struct work_queue *wq, void *data)
     {
       if (new_select 
 	  && new_select->type == ZEBRA_ROUTE_BGP 
-	  && new_select->sub_type == BGP_ROUTE_NORMAL)
+	  && new_select->sub_type == BGP_ROUTE_NORMAL) {
 	bgp_zebra_announce (p, new_select, bgp, safi);
+        zlog (log_peer->log, LOG_DEBUG, "FIB update -- add");
+      }
       else
 	{
 	  /* Withdraw the route from the kernel. */
 	  if (old_select 
 	      && old_select->type == ZEBRA_ROUTE_BGP
-	      && old_select->sub_type == BGP_ROUTE_NORMAL)
-	    bgp_zebra_withdraw (p, old_select, safi);
+	      && old_select->sub_type == BGP_ROUTE_NORMAL) {
+            if (CHECK_FLAG (old_select->flags, BGP_INFO_NEW_NHOP_INVALID)) {
+              attr = old_select->attr;
+              old_select->attr = (bgp_info_extra_get(old_select))->attr;
+	      bgp_zebra_withdraw (p, old_select, safi);
+              old_select->attr = attr;
+              zlog (log_peer->log, LOG_DEBUG, "FIB update -- withdraw with old attr");
+            } else {
+	      bgp_zebra_withdraw (p, old_select, safi);
+            }
+            zlog (log_peer->log, LOG_DEBUG, "FIB update -- withdraw");
+          }
 	}
     }
     
@@ -2075,7 +2094,7 @@ bgp_update_main (struct peer *peer, struct prefix *p, struct attr *attr,
   struct bgp *bgp;
   struct attr new_attr;
   struct attr_extra new_extra;
-  struct attr *attr_new;
+  struct attr *attr_new, *saved_attr;
   struct bgp_info *ri;
   struct bgp_info *new;
   const char *reason;
@@ -2272,8 +2291,9 @@ bgp_update_main (struct peer *peer, struct prefix *p, struct attr *attr,
 	    bgp_damp_withdraw (ri, rn, afi, safi, 1);  
 	}
 	
-      /* Update to new attribute.  */
-      bgp_attr_unintern (&ri->attr);
+      /* Update to new attribute.  Save the old attr to be freed after we decide
+         the new attribute has next hop that's reachable or not */
+      saved_attr = ri->attr;
       ri->attr = attr_new;
 
       /* Update MPLS tag.  */
@@ -2288,6 +2308,7 @@ bgp_update_main (struct peer *peer, struct prefix *p, struct attr *attr,
 	  ret = bgp_damp_update (ri, rn, afi, safi);
 	  if (ret == BGP_DAMP_SUPPRESSED)
 	    {
+              bgp_attr_unintern (&saved_attr);
 	      bgp_unlock_node (rn);
 	      return 0;
 	    }
@@ -2301,13 +2322,24 @@ bgp_update_main (struct peer *peer, struct prefix *p, struct attr *attr,
 	      || (peer->sort == BGP_PEER_EBGP && peer->ttl != 1)
 	      || CHECK_FLAG (peer->flags, PEER_FLAG_DISABLE_CONNECTED_CHECK)))
 	{
-	  if (bgp_nexthop_lookup (afi, peer, ri, NULL, NULL))
+	  if (bgp_nexthop_lookup (afi, peer, ri, NULL, NULL)) {
 	    bgp_info_set_flag (rn, ri, BGP_INFO_VALID);
-	  else
+            bgp_attr_unintern (&saved_attr);
+	    bgp_info_unset_flag (rn, ri, BGP_INFO_NEW_NHOP_INVALID);
+            zlog (peer->log, LOG_DEBUG, "FOUND it");
+	  } else {
 	    bgp_info_unset_flag (rn, ri, BGP_INFO_VALID);
+	    bgp_info_set_flag (rn, ri, BGP_INFO_NEW_NHOP_INVALID);
+            ri->extra = bgp_info_extra_new();
+            ri->extra->attr = saved_attr;
+            zlog (peer->log, LOG_DEBUG, "not FOUND it");
+          }
 	}
-      else
+      else {
         bgp_info_set_flag (rn, ri, BGP_INFO_VALID);
+        bgp_attr_unintern (&saved_attr);
+	bgp_info_unset_flag (rn, ri, BGP_INFO_NEW_NHOP_INVALID);
+      }
 
       /* Process change. */
       bgp_aggregate_increment (bgp, p, ri, afi, safi);
