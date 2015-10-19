@@ -8973,9 +8973,14 @@ bgp_show_peer (struct vty *vty, struct peer *p, json_object *json_peers, u_char 
               json_int = json_object_new_int(p->gtsm_hops);
           else if(p->ttl > 1)
               json_int = json_object_new_int(p->ttl);
+          json_object_object_add(json_peer, "internal", json_boolean_false);
         }
-      else if (p->gtsm_hops > 0)
-          json_int = json_object_new_int(p->gtsm_hops);
+      else
+        {
+          if (p->gtsm_hops > 0)
+              json_int = json_object_new_int(p->gtsm_hops);
+          json_object_object_add(json_peer, "internal", json_boolean_true);
+        }
       json_object_object_add(json_peer, "GTSM", json_int);
     }
   else
