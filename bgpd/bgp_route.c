@@ -2330,7 +2330,11 @@ bgp_update_main (struct peer *peer, struct prefix *p, struct attr *attr,
 	  } else {
 	    bgp_info_unset_flag (rn, ri, BGP_INFO_VALID);
 	    bgp_info_set_flag (rn, ri, BGP_INFO_NEW_NHOP_INVALID);
-            ri->extra = bgp_info_extra_new();
+            if (!ri->extra)
+              ri->extra = bgp_info_extra_new();
+            else
+              if (ri->extra->attr)
+                bgp_attr_unintern(&(ri->extra->attr));
             ri->extra->attr = saved_attr;
             zlog (peer->log, LOG_DEBUG, "not FOUND it");
           }
