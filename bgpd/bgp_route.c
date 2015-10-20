@@ -2309,10 +2309,10 @@ bgp_update_main (struct peer *peer, struct prefix *p, struct attr *attr,
 	  if (ret == BGP_DAMP_SUPPRESSED)
 	    {
               bgp_attr_unintern (&saved_attr);
-	      bgp_unlock_node (rn);
-	      return 0;
-	    }
-	}
+              bgp_unlock_node (rn);
+              return 0;
+            }
+        }
 
       /* Nexthop reachability check. */
       if ((afi == AFI_IP || afi == AFI_IP6)
@@ -2322,14 +2322,14 @@ bgp_update_main (struct peer *peer, struct prefix *p, struct attr *attr,
 	      || (peer->sort == BGP_PEER_EBGP && peer->ttl != 1)
 	      || CHECK_FLAG (peer->flags, PEER_FLAG_DISABLE_CONNECTED_CHECK)))
 	{
-	  if (bgp_nexthop_lookup (afi, peer, ri, NULL, NULL)) {
-	    bgp_info_set_flag (rn, ri, BGP_INFO_VALID);
+          if (bgp_nexthop_lookup (afi, peer, ri, NULL, NULL)) {
+            bgp_info_set_flag (rn, ri, BGP_INFO_VALID);
             bgp_attr_unintern (&saved_attr);
-	    bgp_info_unset_flag (rn, ri, BGP_INFO_NEW_NHOP_INVALID);
+            bgp_info_unset_flag (rn, ri, BGP_INFO_NEW_NHOP_INVALID);
             zlog (peer->log, LOG_DEBUG, "FOUND it");
-	  } else {
-	    bgp_info_unset_flag (rn, ri, BGP_INFO_VALID);
-	    bgp_info_set_flag (rn, ri, BGP_INFO_NEW_NHOP_INVALID);
+          } else {
+            bgp_info_unset_flag (rn, ri, BGP_INFO_VALID);
+            bgp_info_set_flag (rn, ri, BGP_INFO_NEW_NHOP_INVALID);
             if (!ri->extra)
               ri->extra = bgp_info_extra_new();
             else
@@ -2338,11 +2338,11 @@ bgp_update_main (struct peer *peer, struct prefix *p, struct attr *attr,
             ri->extra->attr = saved_attr;
             zlog (peer->log, LOG_DEBUG, "not FOUND it");
           }
-	}
+        }
       else {
         bgp_info_set_flag (rn, ri, BGP_INFO_VALID);
         bgp_attr_unintern (&saved_attr);
-	bgp_info_unset_flag (rn, ri, BGP_INFO_NEW_NHOP_INVALID);
+        bgp_info_unset_flag (rn, ri, BGP_INFO_NEW_NHOP_INVALID);
       }
 
       /* Process change. */
