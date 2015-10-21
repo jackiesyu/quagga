@@ -9189,7 +9189,7 @@ bgp_show_neighbor (struct vty *vty, struct bgp *bgp,
   if (use_json)
     {
       json_object_object_add(json, "peers", json_peers);
-      vty_out (vty, "%s", json_object_to_json_string(json));
+      vty_out (vty, "%s%s", json_object_to_json_string(json), VTY_NEWLINE);
       // Recursively free all json structures
       json_object_put(json);
     }
