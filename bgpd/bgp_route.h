@@ -41,6 +41,9 @@ struct bgp_info_extra
 
   /* MPLS label.  */
   u_char tag[3];  
+
+  /* Attribute structure. Only for invalid next hop update case  */
+  struct attr *attr;
 };
 
 struct bgp_info
@@ -83,6 +86,7 @@ struct bgp_info
 #define BGP_INFO_COUNTED	(1 << 10)
 #define BGP_INFO_MULTIPATH      (1 << 11)
 #define BGP_INFO_MULTIPATH_CHG  (1 << 12)
+#define BGP_INFO_NEW_NHOP_INVALID (1 << 13)
 
   /* BGP route type.  This can be static, RIP, OSPF, BGP etc.  */
   u_char type;
