@@ -5899,7 +5899,11 @@ route_vty_out_tmp (struct vty *vty, struct prefix *p,
 		   struct attr *attr, safi_t safi, json_object *json_route,
                    u_char use_json)
 {
-  json_object *json_string = NULL, *json_int = NULL;
+  json_object *json_string = NULL, *json_int = NULL, *json_attr;
+  json_object *json_boolean_true;
+  char buf2[BUFSIZ];
+  char buf[BUFSIZ];
+
   if (!use_json) {
     /* Route status display. */
     vty_out (vty, "*");
@@ -5907,10 +5911,15 @@ route_vty_out_tmp (struct vty *vty, struct prefix *p,
     vty_out (vty, " ");
   }
 
-  /* print prefix and mask */
-  route_vty_out_route (p, vty, json_route, use_json);
+  if (!use_json)
+      /* print prefix and mask */
+      route_vty_out_route (p, vty, NULL, use_json);
 
   if (use_json) {
+    json_boolean_true = json_object_new_boolean(1);
+    json_attr = json_object_new_object();
+    json_object_object_add(json_attr, "valid", json_boolean_true);
+    json_object_object_add(json_attr, "bestpath", json_boolean_true);
     if (attr)
       {
       if (p->family == AF_INET)
@@ -5923,7 +5932,6 @@ route_vty_out_tmp (struct vty *vty, struct prefix *p,
 #ifdef HAVE_IPV6
       else if (p->family == AF_INET6)
         {
-          char buf[BUFSIZ];
           assert (attr->extra);
 	  json_string = json_object_new_string(
                          inet_ntop (AF_INET6, &attr->extra->mp_nexthop_global,
@@ -5932,34 +5940,34 @@ route_vty_out_tmp (struct vty *vty, struct prefix *p,
 #endif /* HAVE_IPV6 */
       else
           json_string = json_object_new_string("None");
-      json_object_object_add(json_route, "attr", json_string);
+      json_object_object_add(json_attr, "nexthop", json_string);
 
-      if (attr->flag & ATTR_FLAG_BIT (BGP_ATTR_MULTI_EXIT_DISC))
+      if (attr->flag & ATTR_FLAG_BIT (BGP_ATTR_MULTI_EXIT_DISC)) {
 	json_int = json_object_new_int(attr->med);
-      else
-        json_int = json_object_new_int(0);
-      json_object_object_add(json_route, "MED", json_int);
+        json_object_object_add(json_attr, "med", json_int);
+      }
 
-      if (attr->flag & ATTR_FLAG_BIT (BGP_ATTR_LOCAL_PREF))
+      if (attr->flag & ATTR_FLAG_BIT (BGP_ATTR_LOCAL_PREF)) {
         json_int = json_object_new_int(attr->local_pref);
-      else
-        json_int = json_object_new_int(0);
-      json_object_object_add(json_route, "local-pref", json_int);
+        json_object_object_add(json_attr, "localpref", json_int);
+      }
 
       json_int = json_object_new_int(attr->extra ? attr->extra->weight : 0);
-      json_object_object_add(json_route, "weight", json_int);
+      json_object_object_add(json_attr, "weight", json_int);
 
       /* Print aspath */
-      if (attr->aspath)
+      if (attr->aspath) {
         json_string = json_object_new_string(attr->aspath->str);
-      else
-        json_string = json_object_new_string("NA");
-      json_object_object_add(json_route, "as-path", json_string);
+        json_object_object_add(json_attr, "aspath", json_string);
+      }
 
       /* Print origin */
       json_string = json_object_new_string(bgp_origin_str[attr->origin]);
-      json_object_object_add(json_route, "origin", json_string);
+      json_object_object_add(json_attr, "origin", json_string);
     }
+    sprintf(buf2, "%s/%d", inet_ntop (p->family, &p->u.prefix, buf, BUFSIZ), p->prefixlen);
+    json_object_object_add(json_route, buf2, json_attr);
+
     return;
   }
 
