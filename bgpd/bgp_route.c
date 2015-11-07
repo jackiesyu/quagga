@@ -6760,12 +6760,24 @@ route_vty_out_detail (struct vty *vty, struct bgp *bgp, struct prefix *p,
 #ifdef HAVE_CLOCK_MONOTONIC
       tbuf = time(NULL) - (bgp_clock() - binfo->uptime);
       if (json_paths)
-	json_string = json_object_new_string(ctime(&tbuf));
+        {
+          char *timeStr = ctime(&tbuf);
+          /* Strip the \n at the end of the string */
+          int len = strlen(timeStr);
+          timeStr[len -2] = '\0';
+	  json_string = json_object_new_string(timeStr);
+        }
       else
         vty_out (vty, "      Last update: %s", ctime(&tbuf));
 #else
       if (json_paths)
-	json_string = json_object_new_string(ctime(&binfo->uptime));
+        {
+          char *timeStr = ctime(&binfo->uptime);
+          /* Strip the \n at the end of the string */
+          int len = strlen(timeStr);
+          timeStr[len -2] = '\0';
+	  json_string = json_object_new_string(timeStr);
+        }
       else
         vty_out (vty, "      Last update: %s", ctime(&binfo->uptime));
 #endif /* HAVE_CLOCK_MONOTONIC */
