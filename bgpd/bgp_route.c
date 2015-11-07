@@ -6764,7 +6764,7 @@ route_vty_out_detail (struct vty *vty, struct bgp *bgp, struct prefix *p,
           char *timeStr = ctime(&tbuf);
           /* Strip the \n at the end of the string */
           int len = strlen(timeStr);
-          timeStr[len -2] = '\0';
+          timeStr[len - 1] = '\0';
 	  json_string = json_object_new_string(timeStr);
         }
       else
@@ -6775,7 +6775,7 @@ route_vty_out_detail (struct vty *vty, struct bgp *bgp, struct prefix *p,
           char *timeStr = ctime(&binfo->uptime);
           /* Strip the \n at the end of the string */
           int len = strlen(timeStr);
-          timeStr[len -2] = '\0';
+          timeStr[len - 1] = '\0';
 	  json_string = json_object_new_string(timeStr);
         }
       else
