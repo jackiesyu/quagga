@@ -10811,6 +10811,8 @@ enum bgp_pcounts
   PCOUNT_ALL,
   PCOUNT_COUNTED,
   PCOUNT_PFCNT, /* the figure we display to users */
+  PCOUNT_SELECT,
+  PCOUNT_ECMP,
   PCOUNT_MAX,
 };
 
@@ -10825,6 +10827,8 @@ static const char *pcount_strs[] =
   [PCOUNT_ALL]     = "All RIB",
   [PCOUNT_COUNTED] = "PfxCt counted",
   [PCOUNT_PFCNT]   = "Useable",
+  [PCOUNT_SELECT]  = "Selected",
+  [PCOUNT_ECMP]    = "ECMP",
   [PCOUNT_MAX]     = NULL,
 };
 
@@ -10872,6 +10876,10 @@ bgp_peer_count_walker (struct thread *t)
             pc->count[PCOUNT_VALID]++;
           if (!CHECK_FLAG (ri->flags, BGP_INFO_UNUSEABLE))
             pc->count[PCOUNT_PFCNT]++;
+          if (CHECK_FLAG (ri->flags, BGP_INFO_SELECTED))
+            pc->count[PCOUNT_SELECT]++;
+          if (CHECK_FLAG (ri->flags, BGP_INFO_MULTIPATH))
+            pc->count[PCOUNT_ECMP]++;
           
           if (CHECK_FLAG (ri->flags, BGP_INFO_COUNTED))
             {
@@ -10899,6 +10907,28 @@ bgp_peer_count_walker (struct thread *t)
         }
     }
   return 0;
+}
+
+int
+bgp_peer_counters (struct peer *peer, afi_t afi, safi_t safi, int *selected,
+                   int *ecmp, int *adj_in)
+{
+  struct peer_pcounts pcounts = { .peer = peer };
+  unsigned int i;
+
+  memset (&pcounts, 0, sizeof(pcounts));
+  pcounts.peer = peer;
+  pcounts.table = peer->bgp->rib[afi][safi];
+
+  /* in-place call via thread subsystem so as to record execution time
+   * stats for the thread-walk (i.e. ensure this can't be blamed on
+   * on just vty_read()).
+   */
+  thread_execute (bm->master, bgp_peer_count_walker, &pcounts, 0);
+  *selected = pcounts.count[PCOUNT_SELECT];
+  *ecmp = pcounts.count[PCOUNT_ECMP];
+  *adj_in = pcounts.count[PCOUNT_ADJ_IN];
+  return CMD_SUCCESS;
 }
 
 static int

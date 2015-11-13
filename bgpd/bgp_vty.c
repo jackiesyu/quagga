@@ -6975,15 +6975,18 @@ bgp_show_summary (struct vty *vty, struct bgp *bgp, int afi, int safi, u_char us
   json_object *json_peer;
   json_object *json_peers;
   json_object *json_boolean_true;
+  json_object *json_boolean_false;
+  int num_selected, num_ecmp, num_adj_in;
 
   /* Header string for each address family. */
-  static char header[] = "Neighbor        V    AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd";
+  static char header[] = "Neighbor        V    AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd PfxAccept PfxApplied";
 
   if (use_json)
     {
       json = json_object_new_object();
       json_peers = json_object_new_array();
       json_boolean_true = json_object_new_boolean(1);
+      json_boolean_false = json_object_new_boolean(0);
     }
 
   for (ALL_LIST_ELEMENTS (bgp->peer, node, nnode, peer))
@@ -7161,6 +7164,8 @@ bgp_show_summary (struct vty *vty, struct bgp *bgp, int afi, int safi, u_char us
             }
           
           count++;
+          bgp_peer_counters(peer, afi, safi, &num_selected, &num_ecmp,
+                            &num_adj_in);
           if (use_json)
             {
               json_peer = json_object_new_object();
@@ -7193,8 +7198,22 @@ bgp_show_summary (struct vty *vty, struct bgp *bgp, int afi, int safi, u_char us
               json_string = json_object_new_string(peer_uptime (peer->uptime, timebuf, BGP_UPTIME_LEN));
               json_object_object_add(json_peer, "uptime", json_string);
 
-              json_int = json_object_new_int(peer->pcount[afi][safi]);
+              if (CHECK_FLAG (peer->af_flags[afi][safi],
+                  PEER_FLAG_SOFT_RECONFIG))
+                  json_object_object_add(json_peer, "adj-in-valid",
+                                         json_boolean_true);
+              else
+                  json_object_object_add(json_peer, "adj-in-valid",
+                                         json_boolean_false);
+
+              json_int = json_object_new_int(num_adj_in);
               json_object_object_add(json_peer, "prefix-received-count", json_int);
+
+              json_int = json_object_new_int(peer->pcount[afi][safi]);
+              json_object_object_add(json_peer, "prefix-accepted-count", json_int);
+
+              json_int = json_object_new_int(num_ecmp + num_selected);
+              json_object_object_add(json_peer, "prefix-applied-count", json_int);
 
               if (CHECK_FLAG (peer->flags, PEER_FLAG_SHUTDOWN))
                 json_string = json_object_new_string("Idle (Admin)");
@@ -7233,9 +7252,15 @@ bgp_show_summary (struct vty *vty, struct bgp *bgp, int afi, int safi, u_char us
               vty_out (vty, "%8s",
                        peer_uptime (peer->uptime, timebuf, BGP_UPTIME_LEN));
 
-              if (peer->status == Established)
+              if (peer->status == Established) {
+                  if (CHECK_FLAG (peer->af_flags[afi][safi],
+                      PEER_FLAG_SOFT_RECONFIG))
+                      vty_out (vty, " %8d", num_adj_in);
+                  else
+                      vty_out (vty, " Established ");
                   vty_out (vty, " %8ld", peer->pcount[afi][safi]);
-              else
+                  vty_out (vty, " %8d", num_selected + num_ecmp);
+              } else
                 {
                   if (CHECK_FLAG (peer->flags, PEER_FLAG_SHUTDOWN))
                     vty_out (vty, " Idle (Admin)");
