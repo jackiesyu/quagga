@@ -180,7 +180,7 @@ vzlog (struct zlog *zl, int priority, const char *format, va_list args)
       char new_format[BUFSIZ]; 
       va_copy(ac, args);
       if (zl->tenant_name) {
-        sprintf(new_format, "qtenant=%s, ", zl->tenant_name);
+        sprintf(new_format, "tenant=%s, ", zl->tenant_name);
         strcat(new_format, format);
         vsyslog (priority|zlog_default->facility, new_format, ac);
       } else
@@ -196,7 +196,7 @@ vzlog (struct zlog *zl, int priority, const char *format, va_list args)
       if (zl->record_priority)
 	fprintf (zl->fp, "%s: ", zlog_priority[priority]);
       if (zl->tenant_name)
-	fprintf (zl->fp, " qtenant=%s ", zl->tenant_name);
+	fprintf (zl->fp, " tenant=%s ", zl->tenant_name);
       fprintf (zl->fp, "%s: ", zlog_proto_names[zl->protocol]);
       va_copy(ac, args);
       vfprintf (zl->fp, format, ac);
