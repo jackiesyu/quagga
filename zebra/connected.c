@@ -248,7 +248,7 @@ connected_add_ipv4 (struct interface *ifp, int flags, struct in_addr *addr,
 	      char buf[2][INET_ADDRSTRLEN];
 	      struct in_addr bcalc;
 	      bcalc.s_addr = ipv4_broadcast_addr(addr->s_addr,prefixlen);
-	      zlog_warn("warning: interface %s broadcast addr %s/%d != "
+	      zlog_debug("warning: interface %s broadcast addr %s/%d != "
 	       		"calculated %s, routing protocols may malfunction",
 	    		ifp->name,
 			inet_ntop (AF_INET, broad, buf[0], sizeof(buf[0])),
