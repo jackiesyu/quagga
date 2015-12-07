@@ -7198,6 +7198,9 @@ bgp_show_summary (struct vty *vty, struct bgp *bgp, int afi, int safi, u_char us
               json_string = json_object_new_string(peer_uptime (peer->uptime, timebuf, BGP_UPTIME_LEN));
               json_object_object_add(json_peer, "uptime", json_string);
 
+              json_int = json_object_new_int(peer->dropped);
+              json_object_object_add(json_peer, "connections-dropped", json_int);
+
               if (CHECK_FLAG (peer->af_flags[afi][safi],
                   PEER_FLAG_SOFT_RECONFIG))
                   json_object_object_add(json_peer, "adj-in-valid",
