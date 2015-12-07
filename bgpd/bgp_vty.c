@@ -7195,7 +7195,10 @@ bgp_show_summary (struct vty *vty, struct bgp *bgp, int afi, int safi, u_char us
               json_int = json_object_new_int(0);
               json_object_object_add(json_peer, "inq", json_int);
 
-              json_string = json_object_new_string(peer_uptime (peer->uptime, timebuf, BGP_UPTIME_LEN));
+              if (peer->uptime == 0)
+                  json_string = json_object_new_string("never");
+              else
+                  json_string = json_object_new_string(peer_uptime (peer->uptime, timebuf, BGP_UPTIME_LEN));
               json_object_object_add(json_peer, "uptime", json_string);
 
               json_int = json_object_new_int(peer->dropped);
