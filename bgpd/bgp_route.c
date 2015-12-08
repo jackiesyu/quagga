@@ -1625,7 +1625,8 @@ bgp_process_main (struct work_queue *wq, void *data)
 	  && new_select->type == ZEBRA_ROUTE_BGP 
 	  && new_select->sub_type == BGP_ROUTE_NORMAL) {
 	bgp_zebra_announce (p, new_select, bgp, safi);
-        zlog (log_peer->log, LOG_DEBUG, "FIB update -- add");
+        if (log_peer && log_peer->log)
+            zlog (log_peer->log, LOG_DEBUG, "FIB update -- add");
       }
       else
 	{
@@ -1638,11 +1639,13 @@ bgp_process_main (struct work_queue *wq, void *data)
               old_select->attr = (bgp_info_extra_get(old_select))->attr;
 	      bgp_zebra_withdraw (p, old_select, safi);
               old_select->attr = attr;
-              zlog (log_peer->log, LOG_DEBUG, "FIB update -- withdraw with old attr");
+              if (log_peer && log_peer->log)
+                zlog (log_peer->log, LOG_DEBUG, "FIB update -- withdraw with old attr");
             } else {
 	      bgp_zebra_withdraw (p, old_select, safi);
             }
-            zlog (log_peer->log, LOG_DEBUG, "FIB update -- withdraw");
+            if (log_peer && log_peer->log)
+                zlog (log_peer->log, LOG_DEBUG, "FIB update -- withdraw");
           }
 	}
     }
@@ -6761,22 +6764,24 @@ route_vty_out_detail (struct vty *vty, struct bgp *bgp, struct prefix *p,
       tbuf = time(NULL) - (bgp_clock() - binfo->uptime);
       if (json_paths)
         {
-          char *timeStr = ctime(&tbuf);
-          /* Strip the \n at the end of the string */
-          int len = strlen(timeStr);
-          timeStr[len - 1] = '\0';
-	  json_string = json_object_new_string(timeStr);
+          char buf[BUFSIZ];
+          /* Convert to ISO 8601 time format */
+          int len = strftime(buf, BUFSIZ, "%FT%T", localtime(&tbuf));
+          /* Add the \0 at the end of the string */
+          buf[len] = '\0';
+          json_string = json_object_new_string(buf);
         }
       else
         vty_out (vty, "      Last update: %s", ctime(&tbuf));
 #else
       if (json_paths)
         {
-          char *timeStr = ctime(&binfo->uptime);
-          /* Strip the \n at the end of the string */
-          int len = strlen(timeStr);
-          timeStr[len - 1] = '\0';
-	  json_string = json_object_new_string(timeStr);
+          char buf[BUFSIZ];
+          /* Convert to ISO 8601 time format */
+          int len = strftime(buf, BUFSIZ, "%FT%T", localtime(&binfo->uptime));
+          /* Add the \0 at the end of the string */
+          buf[len] = '\0';
+          json_string = json_object_new_string(buf);
         }
       else
         vty_out (vty, "      Last update: %s", ctime(&binfo->uptime));
