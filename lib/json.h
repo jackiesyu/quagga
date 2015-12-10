@@ -46,6 +46,7 @@ typedef int json_bool;
 json_object *json_object_new_object (void);
 json_object *json_object_new_array (void);
 json_object *json_object_new_int (int value);
+json_object *json_object_new_int64 (uint64_t value);
 json_object *json_object_new_string (const char *str);
 void json_object_object_add (json_object *a, const char *str, json_object *b);
 void json_object_put (json_object *obj);
