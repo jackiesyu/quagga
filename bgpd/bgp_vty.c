@@ -7004,7 +7004,7 @@ bgp_show_summary (struct vty *vty, struct bgp *bgp, int afi, int safi, u_char us
                   json_string = json_object_new_string(inet_ntoa (bgp->router_id));
                   json_object_object_add(json, "router-id", json_string);
 
-                  json_int = json_object_new_int(bgp->as);
+                  json_int = json_object_new_int64((uint64_t)bgp->as);
                   json_object_object_add(json, "as", json_int);
                 }
               else
@@ -8291,10 +8291,10 @@ bgp_show_peer (struct vty *vty, struct peer *p, json_object *json_peers, u_char 
       json_string = json_object_new_string(p->host);
       json_object_object_add (json_peer, "neighbor-IP", json_string);
 
-      json_int = json_object_new_int(p->as);
+      json_int = json_object_new_int64((uint64_t)p->as);
       json_object_object_add (json_peer, "remote-as", json_int);
 
-      json_int = json_object_new_int(p->change_local_as ? p->change_local_as : p->local_as);
+      json_int = json_object_new_int64(p->change_local_as ? (uint64_t)p->change_local_as : (uint64_t)p->local_as);
       json_object_object_add (json_peer, "local-as", json_int);
 
       if(CHECK_FLAG (p->flags, PEER_FLAG_LOCAL_AS_NO_PREPEND))
