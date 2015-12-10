@@ -1,5 +1,5 @@
-quagga (0.99.24-1) UNRELEASED; urgency=medium
+quagga (0.99.24-bcf-3.5.0) RELEASED; urgency=medium
 
   * Initial release.
 
- -- dev <jacqueline.yu@bigswitch.com>  Tue, 23 Jun 2015 14:21:25 -0700
+ -- dev <jacqueline.yu@bigswitch.com>  Wed, 9 Dec 2015 14:21:25 -0700
