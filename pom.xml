@@ -18,13 +18,13 @@
 
   <!-- Project Information -->
   <groupId>org.projectfloodlight</groupId>
-  <version>0.99.24-master-trusty-SNAPSHOT</version>
+  <version>0.99.24-bcf-3.5.0-trusty-SNAPSHOT</version>
   <artifactId>quagga</artifactId>
   <packaging>jar</packaging>
 
   <name>Dynamic routing protocol</name>
   <properties>
-    <deb.version>0.99.24-1</deb.version>
+    <deb.version>0.99.24-bcf-3.5.0</deb.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <arch>amd64</arch>
     <suite>trusty</suite>
