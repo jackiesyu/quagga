@@ -6264,7 +6264,7 @@ route_vty_out_detail (struct vty *vty, struct bgp *bgp, struct prefix *p,
         {
           if (json_paths)
             {
-              json_int = json_object_new_int(attr->extra->aggregator_as);
+              json_int = json_object_new_int64((uint64_t)attr->extra->aggregator_as);
               json_string = json_object_new_string(inet_ntoa (attr->extra->aggregator_addr));
               json_object_object_add(json_path, "aggregator-as", json_int);
               json_object_object_add(json_path, "aggregator-id", json_string);
