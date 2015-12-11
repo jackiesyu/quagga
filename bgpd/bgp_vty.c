@@ -7172,7 +7172,7 @@ bgp_show_summary (struct vty *vty, struct bgp *bgp, int afi, int safi, u_char us
               json_string = json_object_new_string(peer->host);
               json_object_object_add(json_peer, "peer-id", json_string);
 
-              json_int = json_object_new_int(peer->as);
+              json_int = json_object_new_int64((uint64_t)peer->as);
               json_object_object_add(json_peer, "remote-as", json_int);
 
               json_int = json_object_new_int(4);
