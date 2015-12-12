@@ -127,7 +127,7 @@ if_create (const char *name, int namelen)
   if (if_lookup_by_name(ifp->name) == NULL)
     listnode_add_sort (iflist, ifp);
   else
-    zlog_err("if_create(%s): corruption detected -- interface with this "
+    zlog_err("DR-7150:if_create(%s): corruption detected -- interface with this "
 	     "name exists already!", ifp->name);
   ifp->connected = list_new ();
   ifp->connected->del = (void (*) (void *)) connected_free;
@@ -454,7 +454,7 @@ if_dump (const struct interface *ifp)
   struct connected *c __attribute__((unused));
 
   for (ALL_LIST_ELEMENTS_RO (ifp->connected, node, c))
-    zlog_info ("Interface %s index %d metric %d mtu %d "
+    zlog_info ("DR-1000:Interface %s index %d metric %d mtu %d "
 #ifdef HAVE_IPV6
                "mtu6 %d "
 #endif /* HAVE_IPV6 */
@@ -686,7 +686,7 @@ connected_log (struct connected *connected, char *str)
       strncat (logbuf, inet_ntop (p->family, &p->u.prefix, buf, BUFSIZ),
 	       BUFSIZ - strlen(logbuf));
     }
-  zlog (NULL, LOG_INFO, "%s", logbuf);
+  zlog (NULL, LOG_INFO, "DR-1001:%s", logbuf);
 }
 
 /* If two connected address has same prefix return 1. */
@@ -828,7 +828,7 @@ ifaddr_ipv4_add (struct in_addr *ifaddr, struct interface *ifp)
   if (rn)
     {
       route_unlock_node (rn);
-      zlog_info ("ifaddr_ipv4_add(): address %s is already added",
+      zlog_info ("DR-1002:ifaddr_ipv4_add(): address %s is already added",
 		 inet_ntoa (*ifaddr));
       return;
     }
@@ -848,7 +848,7 @@ ifaddr_ipv4_delete (struct in_addr *ifaddr, struct interface *ifp)
   rn = route_node_lookup (ifaddr_ipv4_table, (struct prefix *) &p);
   if (! rn)
     {
-      zlog_info ("ifaddr_ipv4_delete(): can't find address %s",
+      zlog_info ("DR-1003:ifaddr_ipv4_delete(): can't find address %s",
 		 inet_ntoa (*ifaddr));
       return;
     }

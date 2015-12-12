@@ -268,10 +268,10 @@ bgp_pcount_adjust (struct bgp_node *rn, struct bgp_info *ri)
         ri->peer->pcount[table->afi][table->safi]--;
       else
         {
-          zlog_warn ("%s: Asked to decrement 0 prefix count for peer %s",
+          zlog_warn ("BGP-4300:%s: Asked to decrement 0 prefix count for peer %s",
                      __func__, ri->peer->host);
           zlog_backtrace (LOG_WARNING);
-          zlog_warn ("%s: Please report to Quagga bugzilla", __func__);
+          zlog_warn ("BGP-4301:%s: Please report to Quagga bugzilla", __func__);
         }      
     }
   else if (!BGP_INFO_HOLDDOWN (ri) 
@@ -1680,7 +1680,7 @@ bgp_process_queue_init (void)
   
   if ( !(bm->process_main_queue && bm->process_rsclient_queue) )
     {
-      zlog_err ("%s: Failed to allocate work queue", __func__);
+      zlog_err ("BGP-7400:%s: Failed to allocate work queue", __func__);
       exit (1);
     }
   
@@ -1766,7 +1766,7 @@ bgp_maximum_prefix_overflow (struct peer *peer, afi_t afi,
        return 0;
 
       zlog (peer->log, LOG_INFO,
-	    "%%MAXPFXEXCEED: No. of %s prefix received from %s %ld exceed, "
+	    "BGP-1400:%%MAXPFXEXCEED: No. of %s prefix received from %s %ld exceed, "
 	    "limit %ld", afi_safi_print (afi, safi), peer->host,
 	    peer->pcount[afi][safi], peer->pmax[afi][safi]);
       SET_FLAG (peer->af_sflags[afi][safi], PEER_STATUS_PREFIX_LIMIT);
@@ -1818,7 +1818,7 @@ bgp_maximum_prefix_overflow (struct peer *peer, afi_t afi,
        return 0;
 
       zlog (peer->log, LOG_INFO,
-	    "%%MAXPFX: No. of %s prefix received from %s reaches %ld, max %ld",
+	    "BGP-1401:%%MAXPFX: No. of %s prefix received from %s reaches %ld, max %ld",
 	    afi_safi_print (afi, safi), peer->host, peer->pcount[afi][safi],
 	    peer->pmax[afi][safi]);
       SET_FLAG (peer->af_sflags[afi][safi], PEER_STATUS_PREFIX_THRESHOLD);
@@ -2858,7 +2858,7 @@ bgp_clear_node_queue_init (struct peer *peer)
 
   if ( (peer->clear_node_queue = work_queue_new (bm->master, wname)) == NULL)
     {
-      zlog_err ("%s: Failed to allocate work queue", __func__);
+      zlog_err ("BGP-7400:%s: Failed to allocate work queue", __func__);
       exit (1);
     }
   peer->clear_node_queue->spec.hold = 10;
@@ -3181,7 +3181,7 @@ bgp_nlri_parse (struct peer *peer, struct attr *attr, struct bgp_nlri *packet)
 	      * address), it should ignore the prefix.
 	      */
 	      zlog (peer->log, LOG_ERR, 
-		    "IPv4 unicast NLRI is multicast address %s",
+		    "BGP-7402:IPv4 unicast NLRI is multicast address %s",
 		    inet_ntoa (p.u.prefix4));
 
 	      return -1;
@@ -3197,7 +3197,7 @@ bgp_nlri_parse (struct peer *peer, struct attr *attr, struct bgp_nlri *packet)
 	      char buf[BUFSIZ];
 
 	      zlog (peer->log, LOG_WARNING, 
-		    "IPv6 link-local NLRI received %s ignore this NLRI",
+		    "BGP-4302:IPv6 link-local NLRI received %s ignore this NLRI",
 		    inet_ntop (AF_INET6, &p.u.prefix6, buf, BUFSIZ));
 
 	      continue;

@@ -110,7 +110,7 @@ route_read (void)
 	int			flags, dev, retval, process;
 
 	if ((dev = open (_PATH_GETMSG_ROUTE, O_RDWR)) == -1) {
-		zlog_warn ("can't open %s: %s", _PATH_GETMSG_ROUTE,
+		zlog_warn ("DR-5450:can't open %s: %s", _PATH_GETMSG_ROUTE,
 			safe_strerror (errno));
 		return;
 	}
@@ -132,7 +132,7 @@ route_read (void)
 	flags = 0;
 
 	if (putmsg (dev, &msgdata, NULL, flags) == -1) {
-		zlog_warn ("putmsg failed: %s", safe_strerror (errno));
+		zlog_warn ("DR-5451:putmsg failed: %s", safe_strerror (errno));
 		goto exit;
 	}
 
@@ -144,7 +144,7 @@ route_read (void)
 		retval = getmsg (dev, &msgdata, NULL, &flags);
 
 		if (retval == -1) {
-			zlog_warn ("getmsg(ctl) failed: %s", safe_strerror (errno));
+			zlog_warn ("DR-5452:getmsg(ctl) failed: %s", safe_strerror (errno));
 			goto exit;
 		}
 
@@ -158,7 +158,7 @@ route_read (void)
 
 		if (msgdata.len >= sizeof (struct T_error_ack) &&
 			TLIerr->PRIM_type == T_ERROR_ACK) {
-			zlog_warn ("getmsg(ctl) returned T_ERROR_ACK: %s",
+			zlog_warn ("DR-5453:getmsg(ctl) returned T_ERROR_ACK: %s",
 				safe_strerror ((TLIerr->TLI_error == TSYSERR)
 				? TLIerr->UNIX_error : EPROTO));
 			break;
@@ -172,7 +172,7 @@ route_read (void)
 			TLIack->PRIM_type != T_OPTMGMT_ACK ||
 			TLIack->MGMT_flags != T_SUCCESS) {
 			errno = ENOMSG;
-			zlog_warn ("getmsg(ctl) returned bizarreness");
+			zlog_warn ("DR-5454:getmsg(ctl) returned bizarreness");
 			break;
 		}
 
@@ -198,20 +198,20 @@ route_read (void)
 			retval = getmsg (dev, NULL, &msgdata, &flags);
 
 			if (retval == -1) {
-				zlog_warn ("getmsg(data) failed: %s",
+				zlog_warn ("DR-5455:getmsg(data) failed: %s",
 					safe_strerror (errno));
 				goto exit;
 			}
 
 			if (!(retval == 0 || retval == MOREDATA)) {
-				zlog_warn ("getmsg(data) returned %d", retval);
+				zlog_warn ("DR-5456:getmsg(data) returned %d", retval);
 				goto exit;
 			}
 
 			if (process) {
 				if (msgdata.len %
 					sizeof (mib2_ipRouteEntry_t) != 0) {
-					zlog_warn ("getmsg(data) returned "
+					zlog_warn ("DR-5457:getmsg(data) returned "
 "msgdata.len = %d (%% sizeof (mib2_ipRouteEntry_t) != 0)", msgdata.len);
 					goto exit;
 				}

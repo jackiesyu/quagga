@@ -56,16 +56,16 @@ interface_list_ioctl (int af)
   char *buf = NULL;
 
   if (zserv_privs.change(ZPRIVS_RAISE))
-    zlog (NULL, LOG_ERR, "Can't raise privileges");
+    zlog (NULL, LOG_ERR, "DR-8000:Can't raise privileges");
   
   sock = socket (af, SOCK_DGRAM, 0);
   if (sock < 0)
     {
-      zlog_warn ("Can't make %s socket stream: %s",
+      zlog_warn ("DR-4800:Can't make %s socket stream: %s",
                  (af == AF_INET ? "AF_INET" : "AF_INET6"), safe_strerror (errno));
                  
       if (zserv_privs.change(ZPRIVS_LOWER))
-        zlog (NULL, LOG_ERR, "Can't lower privileges");
+        zlog (NULL, LOG_ERR, "DR-8001:Can't lower privileges");
         
       return -1;
     }
@@ -77,11 +77,11 @@ calculate_lifc_len:     /* must hold privileges to enter here */
   save_errno = errno;
   
   if (zserv_privs.change(ZPRIVS_LOWER))
-    zlog (NULL, LOG_ERR, "Can't lower privileges");
+    zlog (NULL, LOG_ERR, "DR-8001:Can't lower privileges");
  
   if (ret < 0)
     {
-      zlog_warn ("interface_list_ioctl: SIOCGLIFNUM failed %s",
+      zlog_warn ("DR-4801:interface_list_ioctl: SIOCGLIFNUM failed %s",
                  safe_strerror (save_errno));
       close (sock);
       return -1;
@@ -101,7 +101,7 @@ calculate_lifc_len:     /* must hold privileges to enter here */
         XFREE (MTYPE_TMP, buf);
       if ((buf = XMALLOC (MTYPE_TMP, needed)) == NULL)
         {
-          zlog_warn ("interface_list_ioctl: malloc failed");
+          zlog_warn ("DR-4802:interface_list_ioctl: malloc failed");
           close (sock);
           return -1;
         }
@@ -114,7 +114,7 @@ calculate_lifc_len:     /* must hold privileges to enter here */
   lifconf.lifc_buf = buf;
 
   if (zserv_privs.change(ZPRIVS_RAISE))
-    zlog (NULL, LOG_ERR, "Can't raise privileges");
+    zlog (NULL, LOG_ERR, "DR-8000:Can't raise privileges");
     
   ret = ioctl (sock, SIOCGLIFCONF, &lifconf);
 
@@ -123,16 +123,16 @@ calculate_lifc_len:     /* must hold privileges to enter here */
       if (errno == EINVAL)
         goto calculate_lifc_len; /* deliberately hold privileges */
 
-      zlog_warn ("SIOCGLIFCONF: %s", safe_strerror (errno));
+      zlog_warn ("DR-4803:SIOCGLIFCONF: %s", safe_strerror (errno));
 
       if (zserv_privs.change(ZPRIVS_LOWER))
-        zlog (NULL, LOG_ERR, "Can't lower privileges");
+        zlog (NULL, LOG_ERR, "DR-8001:Can't lower privileges");
 
       goto end;
     }
 
   if (zserv_privs.change(ZPRIVS_LOWER))
-    zlog (NULL, LOG_ERR, "Can't lower privileges");
+    zlog (NULL, LOG_ERR, "DR-8001:Can't lower privileges");
     
   /* Allocate interface. */
   lifreq = lifconf.lifc_req;
@@ -225,7 +225,7 @@ if_get_index (struct interface *ifp)
 
   if (ret < 0)
     {
-      zlog_warn ("SIOCGLIFINDEX(%s) failed", ifp->name);
+      zlog_warn ("DR-4804:SIOCGLIFINDEX(%s) failed", ifp->name);
       return ret;
     }
 
@@ -291,7 +291,7 @@ if_get_addr (struct interface *ifp, struct sockaddr *addr, const char *label)
         {
           if (errno != EADDRNOTAVAIL)
             {
-              zlog_warn ("SIOCGLIFNETMASK (%s) fail: %s", ifp->name,
+              zlog_warn ("DR-4805:SIOCGLIFNETMASK (%s) fail: %s", ifp->name,
                          safe_strerror (errno));
               return ret;
             }
@@ -314,7 +314,7 @@ if_get_addr (struct interface *ifp, struct sockaddr *addr, const char *label)
 	  if (ifp->flags & IFF_POINTOPOINT)
 	    prefixlen = IPV6_MAX_BITLEN;
 	  else
-	    zlog_warn ("SIOCGLIFSUBNET (%s) fail: %s",
+	    zlog_warn ("DR-4806:SIOCGLIFSUBNET (%s) fail: %s",
 		       ifp->name, safe_strerror (errno));
 	}
       else

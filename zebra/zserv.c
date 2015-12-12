@@ -87,7 +87,7 @@ zserv_flush_data(struct thread *thread)
   switch (buffer_flush_available(client->wb, client->sock))
     {
     case BUFFER_ERROR:
-      zlog_warn("%s: buffer_flush_available failed on zserv client fd %d, "
+      zlog_warn("DR-5600:%s: buffer_flush_available failed on zserv client fd %d, "
       		"closing", __func__, client->sock);
       zebra_client_close(client);
       break;
@@ -110,7 +110,7 @@ zebra_server_send_message(struct zserv *client)
 		       stream_get_endp(client->obuf)))
     {
     case BUFFER_ERROR:
-      zlog_warn("%s: buffer_write failed to zserv client fd %d, closing",
+      zlog_warn("DR-5601:%s: buffer_write failed to zserv client fd %d, closing",
       		 __func__, client->sock);
       /* Schedule a delayed close since many of the functions that call this
          one do not check the return code.  They do not allow for the
@@ -1230,12 +1230,12 @@ zread_hello (struct zserv *client)
   if ((proto < ZEBRA_ROUTE_MAX)
   &&  (proto > ZEBRA_ROUTE_STATIC))
     {
-      zlog_notice ("client %d says hello and bids fair to announce only %s routes",
+      zlog_notice ("DR-1750:client %d says hello and bids fair to announce only %s routes",
                     client->sock, zebra_route_string(proto));
 
       /* if route-type was binded by other client */
       if (route_type_oaths[proto])
-        zlog_warn ("sender of %s routes changed %c->%c",
+        zlog_warn ("DR-5602:sender of %s routes changed %c->%c",
                     zebra_route_string(proto), route_type_oaths[proto],
                     client->sock);
 
@@ -1254,7 +1254,7 @@ zebra_score_rib (int client_sock)
   for (i = ZEBRA_ROUTE_RIP; i < ZEBRA_ROUTE_MAX; i++)
     if (client_sock == route_type_oaths[i])
       {
-        zlog_notice ("client %d disconnected. %lu %s routes removed from the rib",
+        zlog_notice ("DR-1751:client %d disconnected. %lu %s routes removed from the rib",
                       client_sock, rib_score_proto (i), zebra_route_string (i));
         route_type_oaths[i] = 0;
         break;
@@ -1372,21 +1372,21 @@ zebra_client_read (struct thread *thread)
 
   if (marker != ZEBRA_HEADER_MARKER || version != ZSERV_VERSION)
     {
-      zlog_err("%s: socket %d version mismatch, marker %d, version %d",
+      zlog_err("DR-8450:%s: socket %d version mismatch, marker %d, version %d",
                __func__, sock, marker, version);
       zebra_client_close (client);
       return -1;
     }
   if (length < ZEBRA_HEADER_SIZE) 
     {
-      zlog_warn("%s: socket %d message length %u is less than header size %d",
+      zlog_warn("DR-5603:%s: socket %d message length %u is less than header size %d",
 	        __func__, sock, length, ZEBRA_HEADER_SIZE);
       zebra_client_close (client);
       return -1;
     }
   if (length > STREAM_SIZE(client->ibuf))
     {
-      zlog_warn("%s: socket %d message length %u exceeds buffer size %lu",
+      zlog_warn("DR-5604:%s: socket %d message length %u exceeds buffer size %lu",
 	        __func__, sock, length, (u_long)STREAM_SIZE(client->ibuf));
       zebra_client_close (client);
       return -1;
@@ -1481,7 +1481,7 @@ zebra_client_read (struct thread *thread)
       zread_hello (client);
       break;
     default:
-      zlog_info ("Zebra received unknown command %d", command);
+      zlog_info ("DR-1752:Zebra received unknown command %d", command);
       break;
     }
 
@@ -1517,7 +1517,7 @@ zebra_accept (struct thread *thread)
 
   if (client_sock < 0)
     {
-      zlog_warn ("Can't accept zebra socket: %s", safe_strerror (errno));
+      zlog_warn ("DR-5605:Can't accept zebra socket: %s", safe_strerror (errno));
       return -1;
     }
 
@@ -1543,9 +1543,9 @@ zebra_serv ()
 
   if (accept_sock < 0) 
     {
-      zlog_warn ("Can't create zserv stream socket: %s", 
+      zlog_warn ("DR-5606:Can't create zserv stream socket: %s", 
                  safe_strerror (errno));
-      zlog_warn ("zebra can't provice full functionality due to above error");
+      zlog_warn ("DR-5607:zebra can't provice full functionality due to above error");
       return;
     }
 
@@ -1562,28 +1562,28 @@ zebra_serv ()
   sockopt_reuseport (accept_sock);
 
   if ( zserv_privs.change(ZPRIVS_RAISE) )
-    zlog (NULL, LOG_ERR, "Can't raise privileges");
+    zlog (NULL, LOG_ERR, "DR-8000:Can't raise privileges");
     
   ret  = bind (accept_sock, (struct sockaddr *)&addr, 
 	       sizeof (struct sockaddr_in));
   if (ret < 0)
     {
-      zlog_warn ("Can't bind to stream socket: %s", 
+      zlog_warn ("DR-5608:Can't bind to stream socket: %s", 
                  safe_strerror (errno));
-      zlog_warn ("zebra can't provice full functionality due to above error");
+      zlog_warn ("DR-5607:zebra can't provice full functionality due to above error");
       close (accept_sock);      /* Avoid sd leak. */
       return;
     }
     
   if ( zserv_privs.change(ZPRIVS_LOWER) )
-    zlog (NULL, LOG_ERR, "Can't lower privileges");
+    zlog (NULL, LOG_ERR, "DR-8001:Can't lower privileges");
 
   ret = listen (accept_sock, 1);
   if (ret < 0)
     {
-      zlog_warn ("Can't listen to stream socket: %s", 
+      zlog_warn ("DR-5610:Can't listen to stream socket: %s", 
                  safe_strerror (errno));
-      zlog_warn ("zebra can't provice full functionality due to above error");
+      zlog_warn ("DR-5607:zebra can't provice full functionality due to above error");
       close (accept_sock);	/* Avoid sd leak. */
       return;
     }
@@ -1614,9 +1614,9 @@ zebra_serv_un (const char *path)
   sock = socket (AF_UNIX, SOCK_STREAM, 0);
   if (sock < 0)
     {
-      zlog_warn ("Can't create zserv unix socket: %s", 
+      zlog_warn ("DR-5612:Can't create zserv unix socket: %s", 
                  safe_strerror (errno));
-      zlog_warn ("zebra can't provide full functionality due to above error");
+      zlog_warn ("DR-5613:zebra can't provide full functionality due to above error");
       return;
     }
 
@@ -1635,9 +1635,9 @@ zebra_serv_un (const char *path)
   ret = bind (sock, (struct sockaddr *) &serv, len);
   if (ret < 0)
     {
-      zlog_warn ("Can't bind to unix socket %s: %s", 
+      zlog_warn ("DR-5614:Can't bind to unix socket %s: %s", 
                  path, safe_strerror (errno));
-      zlog_warn ("zebra can't provide full functionality due to above error");
+      zlog_warn ("DR-5613:zebra can't provide full functionality due to above error");
       close (sock);
       return;
     }
@@ -1645,9 +1645,9 @@ zebra_serv_un (const char *path)
   ret = listen (sock, 5);
   if (ret < 0)
     {
-      zlog_warn ("Can't listen to unix socket %s: %s", 
+      zlog_warn ("DR-5616:Can't listen to unix socket %s: %s", 
                  path, safe_strerror (errno));
-      zlog_warn ("zebra can't provide full functionality due to above error");
+      zlog_warn ("DR-5613:zebra can't provide full functionality due to above error");
       close (sock);
       return;
     }

@@ -811,7 +811,7 @@ zlookup_read (void)
   
   if (version != ZSERV_VERSION || marker != ZEBRA_HEADER_MARKER)
     {
-      zlog_err("%s: socket %d version mismatch, marker %d, version %d",
+      zlog_err("BGP-7250:%s: socket %d version mismatch, marker %d, version %d",
                __func__, zlookup->sock, marker, version);
       return NULL;
     }
@@ -881,14 +881,14 @@ zlookup_query (struct in_addr addr)
   ret = writen (zlookup->sock, s->data, stream_get_endp (s));
   if (ret < 0)
     {
-      zlog_err ("can't write to zlookup->sock");
+      zlog_err ("BGP-7251:can't write to zlookup->sock");
       close (zlookup->sock);
       zlookup->sock = -1;
       return NULL;
     }
   if (ret == 0)
     {
-      zlog_err ("zlookup->sock connection closed");
+      zlog_err ("BGP-7252:zlookup->sock connection closed");
       close (zlookup->sock);
       zlookup->sock = -1;
       return NULL;
@@ -924,7 +924,7 @@ zlookup_read_ipv6 (void)
   
   if (version != ZSERV_VERSION || marker != ZEBRA_HEADER_MARKER)
     {
-      zlog_err("%s: socket %d version mismatch, marker %d, version %d",
+      zlog_err("BGP-7250:%s: socket %d version mismatch, marker %d, version %d",
                __func__, zlookup->sock, marker, version);
       return NULL;
     }
@@ -995,14 +995,14 @@ zlookup_query_ipv6 (struct in6_addr *addr)
   ret = writen (zlookup->sock, s->data, stream_get_endp (s));
   if (ret < 0)
     {
-      zlog_err ("can't write to zlookup->sock");
+      zlog_err ("BGP-7251:can't write to zlookup->sock");
       close (zlookup->sock);
       zlookup->sock = -1;
       return NULL;
     }
   if (ret == 0)
     {
-      zlog_err ("zlookup->sock connection closed");
+      zlog_err ("BGP-7252:zlookup->sock connection closed");
       close (zlookup->sock);
       zlookup->sock = -1;
       return NULL;
@@ -1050,14 +1050,14 @@ bgp_import_check (struct prefix *p, u_int32_t *igpmetric,
 
   if (ret < 0)
     {
-      zlog_err ("can't write to zlookup->sock");
+      zlog_err ("BGP-7251:can't write to zlookup->sock");
       close (zlookup->sock);
       zlookup->sock = -1;
       return 1;
     }
   if (ret == 0)
     {
-      zlog_err ("zlookup->sock connection closed");
+      zlog_err ("BGP-7252:zlookup->sock connection closed");
       close (zlookup->sock);
       zlookup->sock = -1;
       return 1;
@@ -1078,7 +1078,7 @@ bgp_import_check (struct prefix *p, u_int32_t *igpmetric,
 
   if (version != ZSERV_VERSION || marker != ZEBRA_HEADER_MARKER)
     {
-      zlog_err("%s: socket %d version mismatch, marker %d, version %d",
+      zlog_err("BGP-7250:%s: socket %d version mismatch, marker %d, version %d",
                __func__, zlookup->sock, marker, version);
       return 0;
     }

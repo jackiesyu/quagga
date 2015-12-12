@@ -572,7 +572,7 @@ zlog_backtrace(int priority)
   size = backtrace(array, array_size(array));
   if (size <= 0 || (size_t)size > array_size(array))
     {
-      zlog_err("Cannot get backtrace, returned invalid # of frames %d "
+      zlog_err("DR-7200:Cannot get backtrace, returned invalid # of frames %d "
 	       "(valid range is between 1 and %lu)",
 	       size, (unsigned long)(array_size(array)));
       return;
@@ -580,7 +580,7 @@ zlog_backtrace(int priority)
   zlog(NULL, priority, "Backtrace for %d stack frames:", size);
   if (!(strings = backtrace_symbols(array, size)))
     {
-      zlog_err("Cannot get backtrace symbols (out of memory?)");
+      zlog_err("DR-7201:Cannot get backtrace symbols (out of memory?)");
       for (i = 0; i < size; i++)
 	zlog(NULL, priority, "[bt %d] %p",i,array[i]);
     }
@@ -810,7 +810,7 @@ zlog_rotate (struct zlog *zl)
       umask(oldumask);
       if (zl->fp == NULL)
         {
-	  zlog_err("Log rotate failed: cannot open file %s for append: %s",
+	  zlog_err("DR-7202:Log rotate failed: cannot open file %s for append: %s",
 	  	   zl->filename, safe_strerror(save_errno));
 	  return -1;
         }	
@@ -871,7 +871,7 @@ mes_lookup (const struct message *meslist, int max, int index,
 	  }
       }
   }
-  zlog_err("message index %d not found in %s (max is %d)", index, mesname, max);
+  zlog_err("DR-7203:message index %d not found in %s (max is %d)", index, mesname, max);
   assert (none);
   return none;
 }
@@ -921,7 +921,7 @@ zroute_lookup(u_int zroute)
 
   if (zroute >= array_size(route_types))
     {
-      zlog_err("unknown zebra route type: %u", zroute);
+      zlog_err("DR-7204:unknown zebra route type: %u", zroute);
       return &unknown;
     }
   if (zroute == route_types[zroute].type)
@@ -930,12 +930,12 @@ zroute_lookup(u_int zroute)
     {
       if (zroute == route_types[i].type)
         {
-	  zlog_warn("internal error: route type table out of order "
+	  zlog_warn("DR-4050:internal error: route type table out of order "
 		    "while searching for %u, please notify developers", zroute);
 	  return &route_types[i];
         }
     }
-  zlog_err("internal error: cannot find route type %u in table!", zroute);
+  zlog_err("DR-7205:internal error: cannot find route type %u in table!", zroute);
   return &unknown;
 }
 
@@ -956,7 +956,7 @@ zserv_command_string (unsigned int command)
 {
   if (command >= array_size(command_types))
     {
-      zlog_err ("unknown zserv command type: %u", command);
+      zlog_err ("DR-7206:unknown zserv command type: %u", command);
       return unknown.string;
     }
   return command_types[command].string;

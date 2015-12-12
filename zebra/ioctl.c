@@ -55,20 +55,20 @@ if_ioctl (u_long request, caddr_t buffer)
   int err;
 
   if (zserv_privs.change(ZPRIVS_RAISE))
-    zlog (NULL, LOG_ERR, "Can't raise privileges");
+    zlog (NULL, LOG_ERR, "DR-8000:Can't raise privileges");
   sock = socket (AF_INET, SOCK_DGRAM, 0);
   if (sock < 0)
     {
       int save_errno = errno;
       if (zserv_privs.change(ZPRIVS_LOWER))
-        zlog (NULL, LOG_ERR, "Can't lower privileges");
-      zlog_err("Cannot create UDP socket: %s", safe_strerror(save_errno));
+        zlog (NULL, LOG_ERR, "DR-8001:Can't lower privileges");
+      zlog_err("DR-7802:Cannot create UDP socket: %s", safe_strerror(save_errno));
       exit (1);
     }
   if ((ret = ioctl (sock, request, buffer)) < 0)
     err = errno;
   if (zserv_privs.change(ZPRIVS_LOWER))
-    zlog (NULL, LOG_ERR, "Can't lower privileges");
+    zlog (NULL, LOG_ERR, "DR-8001:Can't lower privileges");
   close (sock);
   
   if (ret < 0) 
@@ -88,14 +88,14 @@ if_ioctl_ipv6 (u_long request, caddr_t buffer)
   int err;
 
   if (zserv_privs.change(ZPRIVS_RAISE))
-    zlog (NULL, LOG_ERR, "Can't raise privileges");
+    zlog (NULL, LOG_ERR, "DR-8000:Can't raise privileges");
   sock = socket (AF_INET6, SOCK_DGRAM, 0);
   if (sock < 0)
     {
       int save_errno = errno;
       if (zserv_privs.change(ZPRIVS_LOWER))
-        zlog (NULL, LOG_ERR, "Can't lower privileges");
-      zlog_err("Cannot create IPv6 datagram socket: %s",
+        zlog (NULL, LOG_ERR, "DR-8001:Can't lower privileges");
+      zlog_err("DR-7806:Cannot create IPv6 datagram socket: %s",
 	       safe_strerror(save_errno));
       exit (1);
     }
@@ -103,7 +103,7 @@ if_ioctl_ipv6 (u_long request, caddr_t buffer)
   if ((ret = ioctl (sock, request, buffer)) < 0)
     err = errno;
   if (zserv_privs.change(ZPRIVS_LOWER))
-    zlog (NULL, LOG_ERR, "Can't lower privileges");
+    zlog (NULL, LOG_ERR, "DR-8001:Can't lower privileges");
   close (sock);
   
   if (ret < 0) 
@@ -148,7 +148,7 @@ if_get_mtu (struct interface *ifp)
 #if defined(SIOCGIFMTU)
   if (if_ioctl (SIOCGIFMTU, (caddr_t) & ifreq) < 0) 
     {
-      zlog_info ("Can't lookup mtu by ioctl(SIOCGIFMTU)");
+      zlog_info ("DR-1300:Can't lookup mtu by ioctl(SIOCGIFMTU)");
       ifp->mtu6 = ifp->mtu = -1;
       return;
     }
@@ -163,7 +163,7 @@ if_get_mtu (struct interface *ifp)
   zebra_interface_up_update(ifp);
 
 #else
-  zlog (NULL, LOG_INFO, "Can't lookup mtu on this system");
+  zlog (NULL, LOG_INFO, "DR-1301:Can't lookup mtu on this system");
   ifp->mtu6 = ifp->mtu = -1;
 #endif
 }
@@ -358,7 +358,7 @@ if_get_flags (struct interface *ifp)
   ret = if_ioctl (SIOCGIFFLAGS, (caddr_t) &ifreq);
   if (ret < 0) 
     {
-      zlog_err("if_ioctl(SIOCGIFFLAGS) failed: %s", safe_strerror(errno));
+      zlog_err("DR-7808:if_ioctl(SIOCGIFFLAGS) failed: %s", safe_strerror(errno));
       return;
     }
 #ifdef HAVE_BSD_LINK_DETECT /* Detect BSD link-state at start-up */
@@ -376,7 +376,7 @@ if_get_flags (struct interface *ifp)
       
       /* Seems not all interfaces implement this ioctl */
       if (if_ioctl(SIOCGIFMEDIA, (caddr_t) &ifmr) < 0)
-        zlog_err("if_ioctl(SIOCGIFMEDIA) failed: %s", safe_strerror(errno));
+        zlog_err("DR-7809:if_ioctl(SIOCGIFMEDIA) failed: %s", safe_strerror(errno));
       else if (ifmr.ifm_status & IFM_AVALID) /* Link state is valid */
         {
           if (ifmr.ifm_status & IFM_ACTIVE)
@@ -407,7 +407,7 @@ if_set_flags (struct interface *ifp, uint64_t flags)
 
   if (ret < 0)
     {
-      zlog_info ("can't set interface flags");
+      zlog_info ("DR-1302:can't set interface flags");
       return ret;
     }
   return 0;
@@ -430,7 +430,7 @@ if_unset_flags (struct interface *ifp, uint64_t flags)
 
   if (ret < 0)
     {
-      zlog_info ("can't unset interface flags");
+      zlog_info ("DR-1303:can't unset interface flags");
       return ret;
     }
   return 0;

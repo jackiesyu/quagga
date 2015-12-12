@@ -452,7 +452,7 @@ bgp_stop (struct peer *peer)
 
       /* bgp log-neighbor-changes of neighbor Down */
       if (bgp_flag_check (peer->bgp, BGP_FLAG_LOG_NEIGHBOR_CHANGES))
-	zlog_info ("%%ADJCHANGE: neighbor %s Down %s", peer->host,
+	zlog_info ("BGP-1100:%%ADJCHANGE: neighbor %s Down %s", peer->host,
                    peer_down_str [(int) peer->last_reset]);
 
       /* graceful restart */
@@ -603,7 +603,7 @@ bgp_stop_with_notify (struct peer *peer, u_char code, u_char sub_code)
   /* Sweep if it is temporary peer. */
   if (CHECK_FLAG (peer->sflags, PEER_STATUS_ACCEPT_PEER))
     {
-      zlog_info ("%s [Event] Accepting BGP peer is deleted", peer->host);
+      zlog_info ("BGP-1101:%s [Event] Accepting BGP peer is deleted", peer->host);
       peer_delete (peer);
       return -1;
     }
@@ -625,7 +625,7 @@ bgp_connect_success (struct peer *peer)
 {
   if (peer->fd < 0)
     {
-      zlog_err ("bgp_connect_success peer's fd is negative value %d",
+      zlog_err ("BGP-7050:bgp_connect_success peer's fd is negative value %d",
 		peer->fd);
       return -1;
     }
@@ -726,7 +726,7 @@ bgp_start (struct peer *peer)
 		   peer->host);
       if (peer->fd < 0)
 	{
-	  zlog_err ("bgp_start peer's fd is negative value %d",
+	  zlog_err ("BGP-7051:bgp_start peer's fd is negative value %d",
 		    peer->fd);
 	  return -1;
 	}
@@ -817,7 +817,7 @@ bgp_establish (struct peer *peer)
 
   /* bgp log-neighbor-changes of neighbor Up */
   if (bgp_flag_check (peer->bgp, BGP_FLAG_LOG_NEIGHBOR_CHANGES))
-    zlog_info ("%%ADJCHANGE: neighbor %s Up", peer->host);
+    zlog_info ("BGP-1102:%%ADJCHANGE: neighbor %s Up", peer->host);
 
   /* graceful restart */
   UNSET_FLAG (peer->sflags, PEER_STATUS_NSF_WAIT);

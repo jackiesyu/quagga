@@ -359,7 +359,7 @@ zebra_interface_address_add_update (struct interface *ifp,
     }
 
   if (!CHECK_FLAG(ifc->conf, ZEBRA_IFC_REAL))
-    zlog_warn("WARNING: advertising address to clients that is not yet usable.");
+    zlog_warn("DR-5300:WARNING: advertising address to clients that is not yet usable.");
 
   router_id_add_address(ifc);
 

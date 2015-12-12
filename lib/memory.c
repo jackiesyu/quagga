@@ -47,7 +47,7 @@ static const struct message mstr [] =
 static void __attribute__ ((noreturn))
 zerror (const char *fname, int type, size_t size)
 {
-  zlog_err ("%s : can't allocate memory for `%s' size %d: %s\n", 
+  zlog_err ("DR-7250:%s : can't allocate memory for `%s' size %d: %s\n", 
 	    fname, lookup (mstr, type), (int) size, safe_strerror(errno));
   log_memstats(LOG_WARNING);
   /* N.B. It might be preferable to call zlog_backtrace_sigsafe here, since

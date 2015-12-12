@@ -55,7 +55,7 @@ ifstat_update_sysctl (void)
   /* Query buffer size. */
   if (sysctl (mib, MIBSIZ, NULL, &bufsiz, NULL, 0) < 0) 
     {
-      zlog_warn ("sysctl() error by %s", safe_strerror (errno));
+      zlog_warn ("DR-4850:sysctl() error by %s", safe_strerror (errno));
       return;
     }
 
@@ -65,7 +65,7 @@ ifstat_update_sysctl (void)
   /* Fetch interface informations into allocated buffer. */
   if (sysctl (mib, MIBSIZ, buf, &bufsiz, NULL, 0) < 0) 
     {
-      zlog (NULL, LOG_WARNING, "sysctl error by %s", safe_strerror (errno));
+      zlog (NULL, LOG_WARNING, "DR-4851:sysctl error by %s", safe_strerror (errno));
       return;
     }
 
@@ -109,7 +109,7 @@ interface_list ()
   /* Query buffer size. */
   if (sysctl (mib, MIBSIZ, NULL, &bufsiz, NULL, 0) < 0) 
     {
-      zlog (NULL, LOG_WARNING, "sysctl() error by %s", safe_strerror (errno));
+      zlog (NULL, LOG_WARNING, "DR-4850:sysctl() error by %s", safe_strerror (errno));
       return;
     }
 
@@ -119,7 +119,7 @@ interface_list ()
   /* Fetch interface informations into allocated buffer. */
   if (sysctl (mib, MIBSIZ, buf, &bufsiz, NULL, 0) < 0) 
     {
-      zlog (NULL, LOG_WARNING, "sysctl error by %s", safe_strerror (errno));
+      zlog (NULL, LOG_WARNING, "DR-4851:sysctl error by %s", safe_strerror (errno));
       return;
     }
 
@@ -137,7 +137,7 @@ interface_list ()
 	  ifam_read ((struct ifa_msghdr *) ifm);
 	  break;
 	default:
-	  zlog_info ("interfaces_list(): unexpected message type");
+	  zlog_info ("DR-1250:interfaces_list(): unexpected message type");
 	  XFREE (MTYPE_TMP, ref);
 	  return;
 	  break;

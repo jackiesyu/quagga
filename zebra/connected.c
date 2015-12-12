@@ -237,7 +237,7 @@ connected_add_ipv4 (struct interface *ifp, int flags, struct in_addr *addr,
       if (CONNECTED_PEER(ifc))
         {
 	  if (IPV4_ADDR_SAME(addr,broad))
-	    zlog_warn("warning: interface %s has same local and peer "
+	    zlog_warn("DR-4700:warning: interface %s has same local and peer "
 		      "address %s, routing protocols may malfunction",
 		      ifp->name,inet_ntoa(*addr));
         }
@@ -262,7 +262,7 @@ connected_add_ipv4 (struct interface *ifp, int flags, struct in_addr *addr,
     {
       if (CHECK_FLAG(ifc->flags, ZEBRA_IFA_PEER))
         {
-	  zlog_warn("warning: %s called for interface %s "
+	  zlog_warn("DR-4701:warning: %s called for interface %s "
 		    "with peer flag set, but no peer address supplied",
 		    __func__, ifp->name);
 	  UNSET_FLAG(ifc->flags, ZEBRA_IFA_PEER);
@@ -270,7 +270,7 @@ connected_add_ipv4 (struct interface *ifp, int flags, struct in_addr *addr,
 
       /* no broadcast or destination address was supplied */
       if ((prefixlen == IPV4_MAX_PREFIXLEN) && if_is_pointopoint(ifp))
-	zlog_warn("warning: PtP interface %s with addr %s/%d needs a "
+	zlog_warn("DR-4702:warning: PtP interface %s with addr %s/%d needs a "
 		  "peer address",ifp->name,inet_ntoa(*addr),prefixlen);
     }
 
@@ -387,7 +387,7 @@ connected_add_ipv6 (struct interface *ifp, int flags, struct in6_addr *addr,
   if (broad)
     {
       if (IN6_IS_ADDR_UNSPECIFIED(broad))
-	zlog_warn("warning: %s called for interface %s with unspecified "
+	zlog_warn("DR-4703:warning: %s called for interface %s with unspecified "
 		  "destination address; ignoring!", __func__, ifp->name);
       else
 	{
@@ -400,7 +400,7 @@ connected_add_ipv6 (struct interface *ifp, int flags, struct in6_addr *addr,
     }
   if (CHECK_FLAG(ifc->flags, ZEBRA_IFA_PEER) && !ifc->destination)
     {
-      zlog_warn("warning: %s called for interface %s "
+      zlog_warn("DR-4704:warning: %s called for interface %s "
 		"with peer flag set, but no peer address supplied",
 		__func__, ifp->name);
       UNSET_FLAG(ifc->flags, ZEBRA_IFA_PEER);

@@ -739,7 +739,7 @@ bgp_zebra_announce (struct prefix *p, struct bgp_info *info, struct bgp *bgp, sa
       newsize = stream_resize (bgp_nexthop_buf, newsize);
       if (newsize == oldsize)
 	{
-	  zlog_err ("can't resize nexthop buffer");
+	  zlog_err ("BGP-7450:can't resize nexthop buffer");
 	  return;
 	}
     }

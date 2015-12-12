@@ -66,7 +66,7 @@ bgp_md5_set_socket (int socket, union sockunion *su, const char *password)
 #endif /* HAVE_TCP_MD5SIG */
   
   if (ret < 0)
-    zlog (NULL, LOG_WARNING, "can't set TCP_MD5SIG option on socket %d: %s",
+    zlog (NULL, LOG_WARNING, "BGP-4150:can't set TCP_MD5SIG option on socket %d: %s",
           socket, safe_strerror (en));
 
   return ret;
@@ -81,14 +81,14 @@ bgp_md5_set_connect (int socket, union sockunion *su, const char *password)
 #if HAVE_DECL_TCP_MD5SIG  
   if ( bgpd_privs.change (ZPRIVS_RAISE) )
     {
-      zlog_err ("%s: could not raise privs", __func__);
+      zlog_err ("BGP-7200:%s: could not raise privs", __func__);
       return ret;
     }
   
   ret = bgp_md5_set_socket (socket, su, password);
 
   if (bgpd_privs.change (ZPRIVS_LOWER) )
-    zlog_err ("%s: could not lower privs", __func__);
+    zlog_err ("BGP-7201:%s: could not lower privs", __func__);
 #endif /* HAVE_TCP_MD5SIG */
   
   return ret;
@@ -103,7 +103,7 @@ bgp_md5_set (struct peer *peer)
 
   if ( bgpd_privs.change (ZPRIVS_RAISE) )
     {
-      zlog_err ("%s: could not raise privs", __func__);
+      zlog_err ("BGP-7200:%s: could not raise privs", __func__);
       return -1;
     }
   
@@ -118,7 +118,7 @@ bgp_md5_set (struct peer *peer)
       }
 
   if (bgpd_privs.change (ZPRIVS_LOWER) )
-    zlog_err ("%s: could not lower privs", __func__);
+    zlog_err ("BGP-7201:%s: could not lower privs", __func__);
   
   return ret;
 }
@@ -133,14 +133,14 @@ bgp_update_sock_send_buffer_size (int fd)
 
   if (getsockopt(fd, SOL_SOCKET, SO_SNDBUF, &optval, &optlen) < 0)
     {
-      zlog_err("getsockopt of SO_SNDBUF failed %s\n", safe_strerror(errno));
+      zlog_err("BGP-7204:getsockopt of SO_SNDBUF failed %s\n", safe_strerror(errno));
       return;
     }
   if (optval < size)
     {
       if (setsockopt(fd, SOL_SOCKET, SO_SNDBUF, &size, sizeof(size)) < 0)
         {
-          zlog_err("Couldn't increase send buffer: %s\n", safe_strerror(errno));
+          zlog_err("BGP-7205:Couldn't increase send buffer: %s\n", safe_strerror(errno));
         }
     }
 }
@@ -157,7 +157,7 @@ bgp_set_socket_ttl (struct peer *peer, int bgp_sock)
       ret = sockopt_ttl (peer->su.sa.sa_family, bgp_sock, peer->ttl);
       if (ret)
 	{
-	  zlog_err ("%s: Can't set TxTTL on peer (rtrid %s) socket, err = %d",
+	  zlog_err ("BGP-7206:%s: Can't set TxTTL on peer (rtrid %s) socket, err = %d",
 		    __func__,
 		    inet_ntop (AF_INET, &peer->remote_id, buf, sizeof(buf)),
 		    errno);
@@ -171,7 +171,7 @@ bgp_set_socket_ttl (struct peer *peer, int bgp_sock)
       ret = sockopt_ttl (peer->su.sa.sa_family, bgp_sock, MAXTTL);
       if (ret)
 	{
-	  zlog_err ("%s: Can't set TxTTL on peer (rtrid %s) socket, err = %d",
+	  zlog_err ("BGP-7206:%s: Can't set TxTTL on peer (rtrid %s) socket, err = %d",
 		    __func__,
 		    inet_ntop (AF_INET, &peer->remote_id, buf, sizeof(buf)),
 		    errno);
@@ -180,7 +180,7 @@ bgp_set_socket_ttl (struct peer *peer, int bgp_sock)
 			    MAXTTL + 1 - peer->gtsm_hops);
       if (ret)
 	{
-	  zlog_err ("%s: Can't set MinTTL on peer (rtrid %s) socket, err = %d",
+	  zlog_err ("BGP-7208:%s: Can't set MinTTL on peer (rtrid %s) socket, err = %d",
 		    __func__,
 		    inet_ntop (AF_INET, &peer->remote_id, buf, sizeof(buf)),
 		    errno);
@@ -204,7 +204,7 @@ bgp_accept (struct thread *thread)
   accept_sock = THREAD_FD (thread);
   if (accept_sock < 0)
     {
-      zlog_err ("accept_sock is nevative value %d", accept_sock);
+      zlog_err ("BGP-7209:accept_sock is nevative value %d", accept_sock);
       return -1;
     }
   listener->thread = thread_add_read (master, bgp_accept, listener, accept_sock);
@@ -213,7 +213,7 @@ bgp_accept (struct thread *thread)
   bgp_sock = sockunion_accept (accept_sock, &su);
   if (bgp_sock < 0)
     {
-      zlog_err ("[Error] BGP socket accept failed (%s)", safe_strerror (errno));
+      zlog_err ("BGP-7210:[Error] BGP socket accept failed (%s)", safe_strerror (errno));
       return -1;
     }
   set_nonblocking (bgp_sock);
@@ -283,17 +283,17 @@ bgp_bind (struct peer *peer)
   strncpy ((char *)&ifreq.ifr_name, peer->ifname, sizeof (ifreq.ifr_name));
 
   if ( bgpd_privs.change (ZPRIVS_RAISE) )
-  	zlog_err ("bgp_bind: could not raise privs");
+  	zlog_err ("BGP-7211:bgp_bind: could not raise privs");
   
   ret = setsockopt (peer->fd, SOL_SOCKET, SO_BINDTODEVICE, 
 		    &ifreq, sizeof (ifreq));
 
   if (bgpd_privs.change (ZPRIVS_LOWER) )
-    zlog_err ("bgp_bind: could not lower privs");
+    zlog_err ("BGP-7212:bgp_bind: could not lower privs");
 
   if (ret < 0)
     {
-      zlog (peer->log, LOG_INFO, "bind to interface %s failed", peer->ifname);
+      zlog (peer->log, LOG_INFO, "BGP-1250:bind to interface %s failed", peer->ifname);
       return ret;
     }
 #endif /* SO_BINDTODEVICE */
@@ -381,7 +381,7 @@ bgp_connect (struct peer *peer)
   
 #ifdef IPTOS_PREC_INTERNETCONTROL
   if (bgpd_privs.change (ZPRIVS_RAISE))
-    zlog_err ("%s: could not raise privs", __func__);
+    zlog_err ("BGP-7200:%s: could not raise privs", __func__);
   if (sockunion_family (&peer->su) == AF_INET)
     setsockopt_ipv4_tos (peer->fd, IPTOS_PREC_INTERNETCONTROL);
 # ifdef HAVE_IPV6
@@ -389,7 +389,7 @@ bgp_connect (struct peer *peer)
     setsockopt_ipv6_tclass (peer->fd, IPTOS_PREC_INTERNETCONTROL);
 # endif
   if (bgpd_privs.change (ZPRIVS_LOWER))
-    zlog_err ("%s: could not lower privs", __func__);
+    zlog_err ("BGP-7201:%s: could not lower privs", __func__);
 #endif
 
   if (peer->password)
@@ -447,7 +447,7 @@ bgp_listener (int sock, struct sockaddr *sa, socklen_t salen)
   sockopt_reuseport (sock);
 
   if (bgpd_privs.change (ZPRIVS_RAISE))
-    zlog_err ("%s: could not raise privs", __func__);
+    zlog_err ("BGP-7200:%s: could not raise privs", __func__);
 
 #ifdef IPTOS_PREC_INTERNETCONTROL
   if (sa->sa_family == AF_INET)
@@ -463,18 +463,18 @@ bgp_listener (int sock, struct sockaddr *sa, socklen_t salen)
   ret = bind (sock, sa, salen);
   en = errno;
   if (bgpd_privs.change (ZPRIVS_LOWER))
-    zlog_err ("%s: could not lower privs", __func__);
+    zlog_err ("BGP-7201:%s: could not lower privs", __func__);
 
   if (ret < 0)
     {
-      zlog_err ("bind: %s", safe_strerror (en));
+      zlog_err ("BGP-7217:bind: %s", safe_strerror (en));
       return ret;
     }
 
   ret = listen (sock, 3);
   if (ret < 0)
     {
-      zlog_err ("listen: %s", safe_strerror (errno));
+      zlog_err ("BGP-7218:listen: %s", safe_strerror (errno));
       return ret;
     }
 
@@ -508,7 +508,7 @@ bgp_socket (unsigned short port, const char *address)
   ret = getaddrinfo (address, port_str, &req, &ainfo_save);
   if (ret != 0)
     {
-      zlog_err ("getaddrinfo: %s", gai_strerror (ret));
+      zlog_err ("BGP-7219:getaddrinfo: %s", gai_strerror (ret));
       return -1;
     }
 
@@ -523,7 +523,7 @@ bgp_socket (unsigned short port, const char *address)
       sock = socket (ainfo->ai_family, ainfo->ai_socktype, ainfo->ai_protocol);
       if (sock < 0)
 	{
-	  zlog_err ("socket: %s", safe_strerror (errno));
+	  zlog_err ("BGP-7220:socket: %s", safe_strerror (errno));
 	  continue;
 	}
 	
@@ -539,7 +539,7 @@ bgp_socket (unsigned short port, const char *address)
   freeaddrinfo (ainfo_save);
   if (count == 0)
     {
-      zlog_err ("%s: no usable addresses", __func__);
+      zlog_err ("BGP-7221:%s: no usable addresses", __func__);
       return -1;
     }
 
@@ -558,7 +558,7 @@ bgp_socket (unsigned short port, const char *address)
   sock = socket (AF_INET, SOCK_STREAM, 0);
   if (sock < 0)
     {
-      zlog_err ("socket: %s", safe_strerror (errno));
+      zlog_err ("BGP-7220:socket: %s", safe_strerror (errno));
       return sock;
     }
 
@@ -572,7 +572,7 @@ bgp_socket (unsigned short port, const char *address)
 
   if (address && ((ret = inet_aton(address, &sin.sin_addr)) < 1))
     {
-      zlog_err("bgp_socket: could not parse ip address %s: %s",
+      zlog_err("BGP-7223:bgp_socket: could not parse ip address %s: %s",
                 address, safe_strerror (errno));
       return ret;
     }
