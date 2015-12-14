@@ -89,7 +89,7 @@ quagga_sigevent_process (void)
    
   if ( (sigprocmask (SIG_BLOCK, &newmask, &oldmask)) < 0)
     {
-      zlog_err ("DR-7400:quagga_signal_timer: couldnt block signals!");
+      zlog_err ("DR7400:quagga_signal_timer: couldnt block signals!");
       return -1;
     }
 #endif /* SIGEVENT_BLOCK_SIGNALS */
@@ -326,7 +326,7 @@ trap_default_signals(void)
 #endif
 	        }
 	      if (sigaction(sigmap[i].sigs[j],&act,NULL) < 0)
-	        zlog_warn("DR-4300:Unable to set signal handler for signal %d: %s",
+	        zlog_warn("DR4300:Unable to set signal handler for signal %d: %s",
 			  sigmap[i].sigs[j],safe_strerror(errno));
 
 	    }

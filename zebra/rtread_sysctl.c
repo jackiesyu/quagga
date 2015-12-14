@@ -51,7 +51,7 @@ route_read (void)
   /* Get buffer size. */
   if (sysctl (mib, MIBSIZ, NULL, &bufsiz, NULL, 0) < 0) 
     {
-      zlog_warn ("DR-5500:sysctl fail: %s", safe_strerror (errno));
+      zlog_warn ("DR5500:sysctl fail: %s", safe_strerror (errno));
       return;
     }
 
@@ -61,7 +61,7 @@ route_read (void)
   /* Read routing table information by calling sysctl(). */
   if (sysctl (mib, MIBSIZ, buf, &bufsiz, NULL, 0) < 0) 
     {
-      zlog_warn ("DR-5501:sysctl() fail by %s", safe_strerror (errno));
+      zlog_warn ("DR5501:sysctl() fail by %s", safe_strerror (errno));
       return;
     }
 

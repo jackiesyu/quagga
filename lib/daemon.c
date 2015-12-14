@@ -36,7 +36,7 @@ daemon (int nochdir, int noclose)
   /* In case of fork is error. */
   if (pid < 0)
     {
-      zlog_err ("DR-7100:fork failed: %s", safe_strerror(errno));
+      zlog_err ("DR7100:fork failed: %s", safe_strerror(errno));
       return -1;
     }
 
@@ -49,7 +49,7 @@ daemon (int nochdir, int noclose)
 
   if (pid == -1)
     {
-      zlog_err ("DR-7101:setsid failed: %s", safe_strerror(errno));
+      zlog_err ("DR7101:setsid failed: %s", safe_strerror(errno));
       return -1;
     }
 

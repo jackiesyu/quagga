@@ -380,7 +380,7 @@ ifm_read (struct if_msghdr *ifm)
   /* paranoia: sanity check structure */
   if (ifm->ifm_msglen < sizeof(struct if_msghdr))
     {
-      zlog_err ("DR-8150:ifm_read: ifm->ifm_msglen %d too short\n",
+      zlog_err ("DR8150:ifm_read: ifm->ifm_msglen %d too short\n",
 		ifm->ifm_msglen);
       return -1;
     }
@@ -463,7 +463,7 @@ ifm_read (struct if_msghdr *ifm)
        */
       if (!ifnlen)
 	{
-	  zlog_warn ("DR-5250:Interface index %d (new) missing ifname\n",
+	  zlog_warn ("DR5250:Interface index %d (new) missing ifname\n",
 		     ifm->ifm_index);
 	  return -1;
 	}
@@ -538,7 +538,7 @@ ifm_read (struct if_msghdr *ifm)
     {
       if (ifp->ifindex != ifm->ifm_index)
         {
-          zlog_warn ("DR-5251:%s: index mismatch, ifname %s, ifp index %d, "
+          zlog_warn ("DR5251:%s: index mismatch, ifname %s, ifp index %d, "
                      "ifm index %d", 
                      __func__, ifp->name, ifp->ifindex, ifm->ifm_index);
           return -1;
@@ -677,7 +677,7 @@ ifam_read_mesg (struct ifa_msghdr *ifm,
 
   /* Assert read up end point matches to end point */
   if (pnt != end)
-    zlog_warn ("DR-5252:ifam_read() doesn't read all socket data");
+    zlog_warn ("DR5252:ifam_read() doesn't read all socket data");
 }
 
 /* Interface's address information get. */
@@ -698,7 +698,7 @@ ifam_read (struct ifa_msghdr *ifam)
   
   if ((ifp = if_lookup_by_index(ifam->ifam_index)) == NULL)
     {
-      zlog_warn ("DR-5253:%s: no interface for ifname %s, index %d", 
+      zlog_warn ("DR5253:%s: no interface for ifname %s, index %d", 
                  __func__, ifname, ifam->ifam_index);
       return -1;
     }
@@ -800,7 +800,7 @@ rtm_read_mesg (struct rt_msghdr *rtm,
   /* rt_msghdr version check. */
   if (rtm->rtm_version != RTM_VERSION) 
       zlog (NULL, LOG_WARNING,
-	      "DR-5254:Routing message version different %d should be %d."
+	      "DR5254:Routing message version different %d should be %d."
 	      "This may cause problem\n", rtm->rtm_version, RTM_VERSION);
   
   /* Be sure structure is cleared */
@@ -825,7 +825,7 @@ rtm_read_mesg (struct rt_msghdr *rtm,
 
   /* Assert read up to the end of pointer. */
   if (pnt != end) 
-      zlog (NULL, LOG_WARNING, "DR-5255:rtm_read() doesn't read all socket data.");
+      zlog (NULL, LOG_WARNING, "DR5255:rtm_read() doesn't read all socket data.");
 
   return rtm->rtm_flags;
 }
@@ -1092,7 +1092,7 @@ rtm_write (int message,
             inet_ntop (AF_INET, &dest->sin.sin_addr, dest_buf, INET_ADDRSTRLEN);
           if (mask)
             inet_ntop (AF_INET, &mask->sin.sin_addr, mask_buf, INET_ADDRSTRLEN);
-          zlog_warn ("DR-5256:%s: %s/%s: gate == NULL and no gateway found for ifindex %d",
+          zlog_warn ("DR5256:%s: %s/%s: gate == NULL and no gateway found for ifindex %d",
             __func__, dest_buf, mask_buf, index);
           return -1;
         }
@@ -1152,7 +1152,7 @@ rtm_write (int message,
       if (errno == ESRCH)
 	return ZEBRA_ERR_RTNOEXIST;
       
-      zlog_warn ("DR-5257:%s: write : %s (%d)", __func__, safe_strerror (errno), errno);
+      zlog_warn ("DR5257:%s: write : %s (%d)", __func__, safe_strerror (errno), errno);
       return ZEBRA_ERR_KERNEL;
     }
   return ZEBRA_ERR_NOERROR;
@@ -1240,7 +1240,7 @@ kernel_read (struct thread *thread)
   if (nbytes <= 0)
     {
       if (nbytes < 0 && errno != EWOULDBLOCK && errno != EAGAIN)
-	zlog_warn ("DR-5258:routing socket error: %s", safe_strerror (errno));
+	zlog_warn ("DR5258:routing socket error: %s", safe_strerror (errno));
       return 0;
     }
 
@@ -1257,7 +1257,7 @@ kernel_read (struct thread *thread)
    */
   if (rtm->rtm_msglen != nbytes)
     {
-      zlog_warn ("DR-5259:kernel_read: rtm->rtm_msglen %d, nbytes %d, type %d\n",
+      zlog_warn ("DR5259:kernel_read: rtm->rtm_msglen %d, nbytes %d, type %d\n",
 		 rtm->rtm_msglen, nbytes, rtm->rtm_type);
       return -1;
     }
@@ -1294,15 +1294,15 @@ static void
 routing_socket (void)
 {
   if ( zserv_privs.change (ZPRIVS_RAISE) )
-    zlog_err ("DR-8253:routing_socket: Can't raise privileges");
+    zlog_err ("DR8253:routing_socket: Can't raise privileges");
 
   routing_sock = socket (AF_ROUTE, SOCK_RAW, 0);
 
   if (routing_sock < 0) 
     {
       if ( zserv_privs.change (ZPRIVS_LOWER) )
-        zlog_err ("DR-8254:routing_socket: Can't lower privileges");
-      zlog_warn ("DR-5260:Can't init kernel routing socket");
+        zlog_err ("DR8254:routing_socket: Can't lower privileges");
+      zlog_warn ("DR5260:Can't init kernel routing socket");
       return;
     }
 
@@ -1311,10 +1311,10 @@ routing_socket (void)
    * For now, socket must be blocking.
    */
   /*if (fcntl (routing_sock, F_SETFL, O_NONBLOCK) < 0) 
-    zlog_warn ("DR-5261:Can't set O_NONBLOCK to routing socket");*/
+    zlog_warn ("DR5261:Can't set O_NONBLOCK to routing socket");*/
     
   if ( zserv_privs.change (ZPRIVS_LOWER) )
-    zlog_err ("DR-8254:routing_socket: Can't lower privileges");
+    zlog_err ("DR8254:routing_socket: Can't lower privileges");
 
   /* kernel_read needs rewrite. */
   thread_add_read (zebrad.master, kernel_read, NULL, routing_sock);

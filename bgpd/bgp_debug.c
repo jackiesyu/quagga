@@ -278,7 +278,7 @@ bgp_notify_print(struct peer *peer, struct bgp_notify *bgp_notify,
     }
 
   if (bgp_flag_check (peer->bgp, BGP_FLAG_LOG_NEIGHBOR_CHANGES))
-    zlog_info ("BGP-1050:%%NOTIFICATION: %s neighbor %s %d/%d (%s%s) %d bytes %s",
+    zlog_info ("BGP1050:%%NOTIFICATION: %s neighbor %s %d/%d (%s%s) %d bytes %s",
               strcmp (direct, "received") == 0 ? "received from" : "sent to",
               peer->host, bgp_notify->code, bgp_notify->subcode,
               code_str, subcode_str, bgp_notify->length,

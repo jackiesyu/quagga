@@ -184,7 +184,7 @@ kernel_rtm_ipv4 (int cmd, struct prefix *p, struct rib *rib, int family)
               */
              case ZEBRA_ERR_RTEXIST:
                if (cmd != RTM_ADD)
-                 zlog_err ("DR-8300:%s: rtm_write() returned %d for command %d",
+                 zlog_err ("DR8300:%s: rtm_write() returned %d for command %d",
                    __func__, error, cmd);
                continue;
                break;
@@ -198,7 +198,7 @@ kernel_rtm_ipv4 (int cmd, struct prefix *p, struct rib *rib, int family)
                /* This point is reachable regardless of debugging mode. */
                if (!IS_ZEBRA_DEBUG_RIB)
                  inet_ntop (AF_INET, &p->u.prefix, prefix_buf, INET_ADDRSTRLEN);
-               zlog_err ("DR-8301:%s: %s/%d: rtm_write() unexpectedly returned %d for command %s",
+               zlog_err ("DR8301:%s: %s/%d: rtm_write() unexpectedly returned %d for command %s",
                  __func__, prefix_buf, p->prefixlen, error, lookup (rtm_type_str, cmd));
                break;
            }
@@ -222,10 +222,10 @@ kernel_add_ipv4 (struct prefix *p, struct rib *rib)
   int route;
 
   if (zserv_privs.change(ZPRIVS_RAISE))
-    zlog (NULL, LOG_ERR, "DR-8000:Can't raise privileges");
+    zlog (NULL, LOG_ERR, "DR8000:Can't raise privileges");
   route = kernel_rtm_ipv4 (RTM_ADD, p, rib, AF_INET);
   if (zserv_privs.change(ZPRIVS_LOWER))
-    zlog (NULL, LOG_ERR, "DR-8001:Can't lower privileges");
+    zlog (NULL, LOG_ERR, "DR8001:Can't lower privileges");
 
   return route;
 }
@@ -236,10 +236,10 @@ kernel_delete_ipv4 (struct prefix *p, struct rib *rib)
   int route;
 
   if (zserv_privs.change(ZPRIVS_RAISE))
-    zlog (NULL, LOG_ERR, "DR-8000:Can't raise privileges");
+    zlog (NULL, LOG_ERR, "DR8000:Can't raise privileges");
   route = kernel_rtm_ipv4 (RTM_DELETE, p, rib, AF_INET);
   if (zserv_privs.change(ZPRIVS_LOWER))
-    zlog (NULL, LOG_ERR, "DR-8001:Can't lower privileges");
+    zlog (NULL, LOG_ERR, "DR8001:Can't lower privileges");
 
   return route;
 }
@@ -428,7 +428,7 @@ kernel_rtm_ipv6_multipath (int cmd, struct prefix *p, struct rib *rib,
 #if 0
       if (error)
 	{
-	  zlog_info ("DR-1550:kernel_rtm_ipv6_multipath(): nexthop %d add error=%d.",
+	  zlog_info ("DR1550:kernel_rtm_ipv6_multipath(): nexthop %d add error=%d.",
 	    nexthop_num, error);
 	}
 #endif
@@ -453,10 +453,10 @@ kernel_add_ipv6 (struct prefix *p, struct rib *rib)
   int route;
 
   if (zserv_privs.change(ZPRIVS_RAISE))
-    zlog (NULL, LOG_ERR, "DR-8000:Can't raise privileges");
+    zlog (NULL, LOG_ERR, "DR8000:Can't raise privileges");
   route =  kernel_rtm_ipv6_multipath (RTM_ADD, p, rib, AF_INET6);
   if (zserv_privs.change(ZPRIVS_LOWER))
-    zlog (NULL, LOG_ERR, "DR-8001:Can't lower privileges");
+    zlog (NULL, LOG_ERR, "DR8001:Can't lower privileges");
 
   return route;
 }
@@ -467,10 +467,10 @@ kernel_delete_ipv6 (struct prefix *p, struct rib *rib)
   int route;
 
   if (zserv_privs.change(ZPRIVS_RAISE))
-    zlog (NULL, LOG_ERR, "DR-8000:Can't raise privileges");
+    zlog (NULL, LOG_ERR, "DR8000:Can't raise privileges");
   route =  kernel_rtm_ipv6_multipath (RTM_DELETE, p, rib, AF_INET6);
   if (zserv_privs.change(ZPRIVS_LOWER))
-    zlog (NULL, LOG_ERR, "DR-8001:Can't lower privileges");
+    zlog (NULL, LOG_ERR, "DR8001:Can't lower privileges");
 
   return route;
 }

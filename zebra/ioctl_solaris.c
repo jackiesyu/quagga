@@ -51,15 +51,15 @@ if_ioctl (u_long request, caddr_t buffer)
   int err;
 
   if (zserv_privs.change(ZPRIVS_RAISE))
-    zlog (NULL, LOG_ERR, "DR-8000:Can't raise privileges");
+    zlog (NULL, LOG_ERR, "DR8000:Can't raise privileges");
     
   sock = socket (AF_INET, SOCK_DGRAM, 0);
   if (sock < 0)
     {
       int save_errno = errno;
       if (zserv_privs.change(ZPRIVS_LOWER))
-        zlog (NULL, LOG_ERR, "DR-8001:Can't lower privileges");
-      zlog_err("DR-7802:Cannot create UDP socket: %s", safe_strerror(save_errno));
+        zlog (NULL, LOG_ERR, "DR8001:Can't lower privileges");
+      zlog_err("DR7802:Cannot create UDP socket: %s", safe_strerror(save_errno));
       exit (1);
     }
 
@@ -67,7 +67,7 @@ if_ioctl (u_long request, caddr_t buffer)
     err = errno;
   
   if (zserv_privs.change(ZPRIVS_LOWER))
-    zlog (NULL, LOG_ERR, "DR-8001:Can't lower privileges");
+    zlog (NULL, LOG_ERR, "DR8001:Can't lower privileges");
 
   close (sock);
 
@@ -89,15 +89,15 @@ if_ioctl_ipv6 (u_long request, caddr_t buffer)
   int err;
 
   if (zserv_privs.change(ZPRIVS_RAISE))
-    zlog (NULL, LOG_ERR, "DR-8000:Can't raise privileges");
+    zlog (NULL, LOG_ERR, "DR8000:Can't raise privileges");
 
   sock = socket (AF_INET6, SOCK_DGRAM, 0);
   if (sock < 0)
     {
       int save_errno = errno;
       if (zserv_privs.change(ZPRIVS_LOWER))
-        zlog (NULL, LOG_ERR, "DR-8001:Can't lower privileges");
-      zlog_err("DR-7806:Cannot create IPv6 datagram socket: %s",
+        zlog (NULL, LOG_ERR, "DR8001:Can't lower privileges");
+      zlog_err("DR7806:Cannot create IPv6 datagram socket: %s",
 	       safe_strerror(save_errno));
       exit (1);
     }
@@ -106,7 +106,7 @@ if_ioctl_ipv6 (u_long request, caddr_t buffer)
     err = errno;
 
   if (zserv_privs.change(ZPRIVS_LOWER))
-    zlog (NULL, LOG_ERR, "DR-8001:Can't lower privileges");
+    zlog (NULL, LOG_ERR, "DR8001:Can't lower privileges");
 
   close (sock);
 
@@ -164,7 +164,7 @@ if_get_mtu (struct interface *ifp)
       ret = AF_IOCTL (AF_INET, SIOCGLIFMTU, (caddr_t) & lifreq);
       if (ret < 0)
         {
-          zlog_info ("DR-1350:Can't lookup mtu on %s by ioctl(SIOCGLIFMTU)",
+          zlog_info ("DR1350:Can't lookup mtu on %s by ioctl(SIOCGLIFMTU)",
                      ifp->name);
           ifp->mtu = -1;
         }
@@ -184,7 +184,7 @@ if_get_mtu (struct interface *ifp)
     ret = AF_IOCTL (AF_INET6, SIOCGLIFMTU, (caddr_t) & lifreq);
     if (ret < 0)
     {
-      zlog_info ("DR-1351:Can't lookup mtu6 on %s by ioctl(SIOCGIFMTU)", ifp->name);
+      zlog_info ("DR1351:Can't lookup mtu6 on %s by ioctl(SIOCGIFMTU)", ifp->name);
       ifp->mtu6 = -1;
     }
     else
@@ -366,7 +366,7 @@ if_set_flags (struct interface *ifp, uint64_t flags)
     ret = -1;
 
   if (ret < 0)
-    zlog_info ("DR-1352:can't set interface flags on %s: %s", ifp->name,
+    zlog_info ("DR1352:can't set interface flags on %s: %s", ifp->name,
                safe_strerror (errno));
   else
     ret = 0;
@@ -394,7 +394,7 @@ if_unset_flags (struct interface *ifp, uint64_t flags)
     ret = -1;
 
   if (ret < 0)
-    zlog_info ("DR-1303:can't unset interface flags");
+    zlog_info ("DR1303:can't unset interface flags");
   else
     ret = 0;
   
@@ -411,7 +411,7 @@ if_prefix_add_ipv6 (struct interface *ifp, struct connected *ifc)
 
   inet_ntop (AF_INET6, &(((struct prefix_ipv6 *) (ifc->address))->prefix),
              addrbuf, sizeof (addrbuf));
-  zlog_warn ("DR-4950:Can't set %s on interface %s", addrbuf, ifp->name);
+  zlog_warn ("DR4950:Can't set %s on interface %s", addrbuf, ifp->name);
 
   return 0;
 
@@ -424,7 +424,7 @@ if_prefix_delete_ipv6 (struct interface *ifp, struct connected *ifc)
 
   inet_ntop (AF_INET6, &(((struct prefix_ipv6 *) (ifc->address))->prefix),
              addrbuf, sizeof (addrbuf));
-  zlog_warn ("DR-4951:Can't delete %s on interface %s", addrbuf, ifp->name);
+  zlog_warn ("DR4951:Can't delete %s on interface %s", addrbuf, ifp->name);
 
   return 0;
 

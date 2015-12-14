@@ -84,18 +84,18 @@ irdp_sock_init (void)
   int sock;
 
   if ( zserv_privs.change (ZPRIVS_RAISE) )
-       zlog_err ("DR-8050:irdp_sock_init: could not raise privs, %s",
+       zlog_err ("DR8050:irdp_sock_init: could not raise privs, %s",
                   safe_strerror (errno) );
 
   sock = socket (AF_INET, SOCK_RAW, IPPROTO_ICMP);
   save_errno = errno;
 
   if ( zserv_privs.change (ZPRIVS_LOWER) )
-       zlog_err ("DR-8051:irdp_sock_init: could not lower privs, %s",
+       zlog_err ("DR8051:irdp_sock_init: could not lower privs, %s",
              safe_strerror (errno) );
 
   if (sock < 0) {
-    zlog_warn ("DR-5150:IRDP: can't create irdp socket %s", safe_strerror(save_errno));
+    zlog_warn ("DR5150:IRDP: can't create irdp socket %s", safe_strerror(save_errno));
     return sock;
   };
   
@@ -103,14 +103,14 @@ irdp_sock_init (void)
   ret = setsockopt (sock, IPPROTO_IP, IP_TTL, 
                         (void *) &i, sizeof (i));
   if (ret < 0) {
-    zlog_warn ("DR-5151:IRDP: can't do irdp sockopt %s", safe_strerror(errno));
+    zlog_warn ("DR5151:IRDP: can't do irdp sockopt %s", safe_strerror(errno));
     close(sock);
     return ret;
   };
   
   ret = setsockopt_ifindex (AF_INET, sock, 1);
   if (ret < 0) {
-    zlog_warn ("DR-5151:IRDP: can't do irdp sockopt %s", safe_strerror(errno));
+    zlog_warn ("DR5151:IRDP: can't do irdp sockopt %s", safe_strerror(errno));
     close(sock);
     return ret;
   };
@@ -311,7 +311,7 @@ void irdp_finish()
   struct zebra_if *zi;
   struct irdp_interface *irdp;
 
-  zlog_info("DR-1400:IRDP: Received shutdown notification.");
+  zlog_info("DR1400:IRDP: Received shutdown notification.");
   
   for (ALL_LIST_ELEMENTS (iflist, node, nnode, ifp))
     {

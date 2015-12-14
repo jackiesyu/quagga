@@ -3674,14 +3674,14 @@ set_log_file(struct vty *vty, const char *fname, int loglevel)
       
       if (getcwd (cwd, MAXPATHLEN) == NULL)
         {
-          zlog_err ("DR-7050:config_log_file: Unable to alloc mem!");
+          zlog_err ("DR7050:config_log_file: Unable to alloc mem!");
           return CMD_WARNING;
         }
       
       if ( (p = XMALLOC (MTYPE_TMP, strlen (cwd) + strlen (fname) + 2))
           == NULL)
         {
-          zlog_err ("DR-7050:config_log_file: Unable to alloc mem!");
+          zlog_err ("DR7050:config_log_file: Unable to alloc mem!");
           return CMD_WARNING;
         }
       sprintf (p, "%s/%s", cwd, fname);

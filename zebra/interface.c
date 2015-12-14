@@ -162,7 +162,7 @@ if_subnet_delete (struct interface *ifp, struct connected *ifc)
   rn = route_node_lookup (zebra_if->ipv4_subnets, ifc->address);
   if (! (rn && rn->info))
     {
-      zlog_warn("DR-4900:Trying to remove an address from an unknown subnet."
+      zlog_warn("DR4900:Trying to remove an address from an unknown subnet."
                 " (please report this bug)");
       return -1;
     }
@@ -176,7 +176,7 @@ if_subnet_delete (struct interface *ifp, struct connected *ifc)
    * is unknown. */
   if (!listnode_lookup(addr_list, ifc))
     {
-      zlog_warn("DR-4901:Trying to remove an address from a subnet where it is not"
+      zlog_warn("DR4901:Trying to remove an address from a subnet where it is not"
                 " currently registered. (please report this bug)");
       return -1;
     }
@@ -323,7 +323,7 @@ if_addr_wakeup (struct interface *ifp)
 	      ret = if_set_prefix (ifp, ifc);
 	      if (ret < 0)
 		{
-		  zlog_warn ("DR-4902:Can't set interface's address: %s", 
+		  zlog_warn ("DR4902:Can't set interface's address: %s", 
 			     safe_strerror(errno));
 		  continue;
 		}
@@ -346,7 +346,7 @@ if_addr_wakeup (struct interface *ifp)
 	      ret = if_prefix_add_ipv6 (ifp, ifc);
 	      if (ret < 0)
 		{
-		  zlog_warn ("DR-4902:Can't set interface's address: %s", 
+		  zlog_warn ("DR4902:Can't set interface's address: %s", 
 			     safe_strerror(errno));
 		  continue;
 		}
@@ -412,7 +412,7 @@ if_delete_update (struct interface *ifp)
 
   if (if_is_up(ifp))
     {
-      zlog_err ("DR-7750:interface %s index %d is still up while being deleted.",
+      zlog_err ("DR7750:interface %s index %d is still up while being deleted.",
 	    ifp->name, ifp->ifindex);
       return;
     }

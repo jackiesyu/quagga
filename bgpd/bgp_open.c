@@ -308,7 +308,7 @@ bgp_capability_orf_entry (struct peer *peer, struct capability_header *hdr)
   /* Check AFI and SAFI. */
   if (!bgp_afi_safi_valid_indices (entry.mpc.afi, &safi))
     {
-      zlog_info ("BGP-1300:%s Addr-family %d/%d not supported."
+      zlog_info ("BGP1300:%s Addr-family %d/%d not supported."
                  " Ignoring the ORF capability",
                  peer->host, entry.mpc.afi, entry.mpc.safi);
       return 0;
@@ -317,7 +317,7 @@ bgp_capability_orf_entry (struct peer *peer, struct capability_header *hdr)
   /* validate number field */
   if (sizeof (struct capability_orf_entry) + (entry.num * 2) > hdr->length)
     {
-      zlog_info ("BGP-1301:%s ORF Capability entry length error,"
+      zlog_info ("BGP1301:%s ORF Capability entry length error,"
                  " Cap length %u, num %u",
                  peer->host, hdr->length, entry.num);
       bgp_notify_send (peer, BGP_NOTIFY_CEASE, 0);
@@ -488,7 +488,7 @@ bgp_capability_as4 (struct peer *peer, struct capability_header *hdr)
   
   if (hdr->length != CAPABILITY_CODE_AS4_LEN)
     {
-      zlog_err ("BGP-7300:%s AS4 capability has incorrect data length %d",
+      zlog_err ("BGP7300:%s AS4 capability has incorrect data length %d",
                 peer->host, hdr->length);
       return 0;
     }
@@ -555,7 +555,7 @@ bgp_capability_parse (struct peer *peer, size_t length, int *mp_capability,
       /* We need at least capability code and capability length. */
       if (stream_get_getp(s) + 2 > end)
 	{
-	  zlog_info ("BGP-1302:%s Capability length error (< header)", peer->host);
+	  zlog_info ("BGP1302:%s Capability length error (< header)", peer->host);
 	  bgp_notify_send (peer, BGP_NOTIFY_CEASE, 0);
 	  return -1;
 	}
@@ -567,7 +567,7 @@ bgp_capability_parse (struct peer *peer, size_t length, int *mp_capability,
       /* Capability length check sanity check. */
       if (start + caphdr.length > end)
 	{
-	  zlog_info ("BGP-1303:%s Capability length error (< length)", peer->host);
+	  zlog_info ("BGP1303:%s Capability length error (< length)", peer->host);
 	  bgp_notify_send (peer, BGP_NOTIFY_CEASE, 0);
 	  return -1;
 	}
@@ -593,7 +593,7 @@ bgp_capability_parse (struct peer *peer, size_t length, int *mp_capability,
               /* Check length. */
               if (caphdr.length < cap_minsizes[caphdr.code])
                 {
-                  zlog_info ("BGP-1304:%s %s Capability length error: got %u,"
+                  zlog_info ("BGP1304:%s %s Capability length error: got %u,"
                              " expected at least %u",
                              peer->host, 
                              LOOKUP (capcode_str, caphdr.code),
@@ -665,12 +665,12 @@ bgp_capability_parse (struct peer *peer, size_t length, int *mp_capability,
               {
                 /* We don't send Notification for unknown vendor specific
                    capabilities.  It seems reasonable for now...  */
-                zlog_warn ("BGP-4200:%s Vendor specific capability %d",
+                zlog_warn ("BGP4200:%s Vendor specific capability %d",
                            peer->host, caphdr.code);
               }
             else
               {
-                zlog_warn ("BGP-4201:%s unrecognized capability code: %d - ignored",
+                zlog_warn ("BGP4201:%s unrecognized capability code: %d - ignored",
                            peer->host, caphdr.code);
                 memcpy (*error, sp, caphdr.length + 2);
                 *error += caphdr.length + 2;
@@ -679,7 +679,7 @@ bgp_capability_parse (struct peer *peer, size_t length, int *mp_capability,
       if (stream_get_getp(s) != (start + caphdr.length))
         {
           if (stream_get_getp(s) > (start + caphdr.length))
-            zlog_warn ("BGP-4202:%s Cap-parser for %s read past cap-length, %u!",
+            zlog_warn ("BGP4202:%s Cap-parser for %s read past cap-length, %u!",
                        peer->host, LOOKUP (capcode_str, caphdr.code),
                        caphdr.length);
           stream_set_getp (s, start + caphdr.length);
@@ -725,7 +725,7 @@ peek_for_as4_capability (struct peer *peer, u_char length)
     return 0;
 
   if (BGP_DEBUG (as4, AS4))
-    zlog_info ("BGP-1305:%s [AS4] rcv OPEN w/ OPTION parameter len: %u,"
+    zlog_info ("BGP1305:%s [AS4] rcv OPEN w/ OPTION parameter len: %u,"
                 " peeking for as4",
 	        peer->host, length);
   /* the error cases we DONT handle, we ONLY try to read as4 out of
@@ -771,7 +771,7 @@ peek_for_as4_capability (struct peer *peer, u_char length)
 	      if (hdr.code == CAPABILITY_CODE_AS4)
 	        {
 	          if (BGP_DEBUG (as4, AS4))
-	            zlog_info ("BGP-1306:[AS4] found AS4 capability, about to parse");
+	            zlog_info ("BGP1306:[AS4] found AS4 capability, about to parse");
 	          as4 = bgp_capability_as4 (peer, &hdr);
 	          
 	          goto end;
@@ -815,7 +815,7 @@ bgp_open_option_parse (struct peer *peer, u_char length, int *mp_capability)
       /* Must have at least an OPEN option header */
       if (STREAM_READABLE(s) < 2)
 	{
-	  zlog_info ("BGP-1307:%s Option length error", peer->host);
+	  zlog_info ("BGP1307:%s Option length error", peer->host);
 	  bgp_notify_send (peer, BGP_NOTIFY_CEASE, 0);
 	  return -1;
 	}
@@ -827,7 +827,7 @@ bgp_open_option_parse (struct peer *peer, u_char length, int *mp_capability)
       /* Option length check. */
       if (STREAM_READABLE (s) < opt_length)
 	{
-	  zlog_info ("BGP-1307:%s Option length error", peer->host);
+	  zlog_info ("BGP1307:%s Option length error", peer->host);
 	  bgp_notify_send (peer, BGP_NOTIFY_CEASE, 0);
 	  return -1;
 	}

@@ -177,7 +177,7 @@ rtadv_send_packet (int sock, struct interface *ifp)
       adata = malloc(CMSG_SPACE(sizeof(struct in6_pktinfo)));
 	   
       if (adata == NULL)
-	zlog_err("DR-8350:rtadv_send_packet: can't malloc control data\n");
+	zlog_err("DR8350:rtadv_send_packet: can't malloc control data\n");
     }
 
   /* Logging of packet. */
@@ -381,7 +381,7 @@ rtadv_send_packet (int sock, struct interface *ifp)
   ret = sendmsg (sock, &msg, 0);
   if (ret < 0)
     {
-      zlog_err ("DR-8351:rtadv_send_packet: sendmsg %d (%s)\n",
+      zlog_err ("DR8351:rtadv_send_packet: sendmsg %d (%s)\n",
 		errno, safe_strerror(errno));
     }
 }
@@ -431,7 +431,7 @@ rtadv_timer (struct thread *thread)
 static void
 rtadv_process_solicit (struct interface *ifp)
 {
-  zlog_info ("DR-1600:Router solicitation received on %s", ifp->name);
+  zlog_info ("DR1600:Router solicitation received on %s", ifp->name);
 
   rtadv_send_packet (rtadv->sock, ifp);
 }
@@ -439,7 +439,7 @@ rtadv_process_solicit (struct interface *ifp)
 static void
 rtadv_process_advert (void)
 {
-  zlog_info ("DR-1601:Router advertisement received");
+  zlog_info ("DR1601:Router advertisement received");
 }
 
 static void
@@ -453,7 +453,7 @@ rtadv_process_packet (u_char *buf, unsigned int len, unsigned int ifindex, int h
   ifp = if_lookup_by_index (ifindex);
   if (ifp == NULL)
     {
-      zlog_warn ("DR-5400:Unknown interface index: %d", ifindex);
+      zlog_warn ("DR5400:Unknown interface index: %d", ifindex);
       return;
     }
 
@@ -468,7 +468,7 @@ rtadv_process_packet (u_char *buf, unsigned int len, unsigned int ifindex, int h
   /* ICMP message length check. */
   if (len < sizeof (struct icmp6_hdr))
     {
-      zlog_warn ("DR-5401:Invalid ICMPV6 packet length: %d", len);
+      zlog_warn ("DR5401:Invalid ICMPV6 packet length: %d", len);
       return;
     }
 
@@ -478,14 +478,14 @@ rtadv_process_packet (u_char *buf, unsigned int len, unsigned int ifindex, int h
   if (icmph->icmp6_type != ND_ROUTER_SOLICIT &&
       icmph->icmp6_type != ND_ROUTER_ADVERT)
     {
-      zlog_warn ("DR-5402:Unwanted ICMPV6 message type: %d", icmph->icmp6_type);
+      zlog_warn ("DR5402:Unwanted ICMPV6 message type: %d", icmph->icmp6_type);
       return;
     }
 
   /* Hoplimit check. */
   if (hoplimit >= 0 && hoplimit != 255)
     {
-      zlog_warn ("DR-5403:Invalid hoplimit %d for router advertisement ICMP packet",
+      zlog_warn ("DR5403:Invalid hoplimit %d for router advertisement ICMP packet",
 		 hoplimit);
       return;
     }
@@ -519,7 +519,7 @@ rtadv_read (struct thread *thread)
 
   if (len < 0) 
     {
-      zlog_warn ("DR-5404:router solicitation recv failed: %s.", safe_strerror (errno));
+      zlog_warn ("DR5404:router solicitation recv failed: %s.", safe_strerror (errno));
       return len;
     }
 
@@ -536,13 +536,13 @@ rtadv_make_socket (void)
   struct icmp6_filter filter;
 
   if ( zserv_privs.change (ZPRIVS_RAISE) )
-       zlog_err ("DR-8352:rtadv_make_socket: could not raise privs, %s",
+       zlog_err ("DR8352:rtadv_make_socket: could not raise privs, %s",
                   safe_strerror (errno) );
                   
   sock = socket (AF_INET6, SOCK_RAW, IPPROTO_ICMPV6);
 
   if ( zserv_privs.change (ZPRIVS_LOWER) )
-       zlog_err ("DR-8353:rtadv_make_socket: could not lower privs, %s",
+       zlog_err ("DR8353:rtadv_make_socket: could not lower privs, %s",
        			 safe_strerror (errno) );
 
   /* When we can't make ICMPV6 socket simply back.  Router
@@ -574,7 +574,7 @@ rtadv_make_socket (void)
 		    sizeof (struct icmp6_filter));
   if (ret < 0)
     {
-      zlog_info ("DR-1602:ICMP6_FILTER set fail: %s", safe_strerror (errno));
+      zlog_info ("DR1602:ICMP6_FILTER set fail: %s", safe_strerror (errno));
       return ret;
     }
 
@@ -1747,9 +1747,9 @@ if_join_all_router (int sock, struct interface *ifp)
   ret = setsockopt (sock, IPPROTO_IPV6, IPV6_JOIN_GROUP, 
 		    (char *) &mreq, sizeof mreq);
   if (ret < 0)
-    zlog_warn ("DR-5405:can't setsockopt IPV6_JOIN_GROUP: %s", safe_strerror (errno));
+    zlog_warn ("DR5405:can't setsockopt IPV6_JOIN_GROUP: %s", safe_strerror (errno));
 
-  zlog_info ("DR-1603:rtadv: %s join to all-routers multicast group", ifp->name);
+  zlog_info ("DR1603:rtadv: %s join to all-routers multicast group", ifp->name);
 
   return 0;
 }
@@ -1768,9 +1768,9 @@ if_leave_all_router (int sock, struct interface *ifp)
   ret = setsockopt (sock, IPPROTO_IPV6, IPV6_LEAVE_GROUP, 
 		    (char *) &mreq, sizeof mreq);
   if (ret < 0)
-    zlog_warn ("DR-5406:can't setsockopt IPV6_LEAVE_GROUP: %s", safe_strerror (errno));
+    zlog_warn ("DR5406:can't setsockopt IPV6_LEAVE_GROUP: %s", safe_strerror (errno));
 
-  zlog_info ("DR-1604:rtadv: %s leave from all-routers multicast group", ifp->name);
+  zlog_info ("DR1604:rtadv: %s leave from all-routers multicast group", ifp->name);
 
   return 0;
 }

@@ -192,7 +192,7 @@ vty_log_out (struct vty *vty, const char *level, const char *proto_str,
 	return -1;
       /* Fatal I/O error. */
       vty->monitor = 0; /* disable monitoring to avoid infinite recursion */
-      zlog_warn("DR-4600:%s: write failed to vty client fd %d, closing: %s",
+      zlog_warn("DR4600:%s: write failed to vty client fd %d, closing: %s",
 		__func__, vty->fd, safe_strerror(errno));
       buffer_reset(vty->obuf);
       /* cannot call vty_close, because a parent routine may still try
@@ -212,7 +212,7 @@ vty_time_print (struct vty *vty, int cr)
   
   if (quagga_timestamp(0, buf, sizeof(buf)) == 0)
     {
-      zlog (NULL, LOG_INFO, "DR-1200:quagga_timestamp error");
+      zlog (NULL, LOG_INFO, "DR1200:quagga_timestamp error");
       return;
     }
   if (cr)
@@ -429,7 +429,7 @@ vty_command (struct vty *vty, char *buf)
     if ((realtime = thread_consumed_time(&after, &before, &cputime)) >
     	CONSUMED_TIME_CHECK)
       /* Warn about CPU hog that must be fixed. */
-      zlog_warn("DR-4601:SLOW COMMAND: command took %lums (cpu time %lums): %s",
+      zlog_warn("DR4601:SLOW COMMAND: command took %lums (cpu time %lums): %s",
       		realtime/1000, cputime/1000, buf);
   }
 #endif /* CONSUMED_TIME_CHECK */
@@ -1238,11 +1238,11 @@ vty_telnet_option (struct vty *vty, unsigned char *buf, int nbytes)
 	  {
 	  case TELOPT_NAWS:
 	    if (vty->sb_len != TELNET_NAWS_SB_LEN)
-	      zlog_warn("DR-4602:RFC 1073 violation detected: telnet NAWS option "
+	      zlog_warn("DR4602:RFC 1073 violation detected: telnet NAWS option "
 			"should send %d characters, but we received %lu",
 			TELNET_NAWS_SB_LEN, (u_long)vty->sb_len);
 	    else if (sizeof(vty->sb_buf) < TELNET_NAWS_SB_LEN)
-	      zlog_err("DR-7500:Bug detected: sizeof(vty->sb_buf) %lu < %d, "
+	      zlog_err("DR7500:Bug detected: sizeof(vty->sb_buf) %lu < %d, "
 		       "too small to handle the telnet NAWS option",
 		       (u_long)sizeof(vty->sb_buf), TELNET_NAWS_SB_LEN);
 	    else
@@ -1361,7 +1361,7 @@ vty_read (struct thread *thread)
 	      return 0;
 	    }
 	  vty->monitor = 0; /* disable monitoring to avoid infinite recursion */
-	  zlog_warn("DR-4603:%s: read error on vty client fd %d, closing: %s",
+	  zlog_warn("DR4603:%s: read error on vty client fd %d, closing: %s",
 		    __func__, vty->fd, safe_strerror(errno));
 	}
       buffer_reset(vty->obuf);
@@ -1584,7 +1584,7 @@ vty_flush (struct thread *thread)
     {
     case BUFFER_ERROR:
       vty->monitor = 0; /* disable monitoring to avoid infinite recursion */
-      zlog_warn("DR-4604:buffer_flush failed on vty client fd %d, closing",
+      zlog_warn("DR4604:buffer_flush failed on vty client fd %d, closing",
 		vty->fd);
       buffer_reset(vty->obuf);
       vty_close(vty);
@@ -1711,7 +1711,7 @@ vty_accept (struct thread *thread)
   vty_sock = sockunion_accept (accept_sock, &su);
   if (vty_sock < 0)
     {
-      zlog_warn ("DR-4605:can't accept vty socket : %s", safe_strerror (errno));
+      zlog_warn ("DR4605:can't accept vty socket : %s", safe_strerror (errno));
       return -1;
     }
   set_nonblocking(vty_sock);
@@ -1724,7 +1724,7 @@ vty_accept (struct thread *thread)
       if ((acl = access_list_lookup (AFI_IP, vty_accesslist_name)) &&
 	  (access_list_apply (acl, p) == FILTER_DENY))
 	{
-	  zlog (NULL, LOG_INFO, "DR-1201:Vty connection refused from %s",
+	  zlog (NULL, LOG_INFO, "DR1201:Vty connection refused from %s",
 		sockunion2str (&su, buf, SU_ADDRSTRLEN));
 	  close (vty_sock);
 	  
@@ -1744,7 +1744,7 @@ vty_accept (struct thread *thread)
       if ((acl = access_list_lookup (AFI_IP6, vty_ipv6_accesslist_name)) &&
 	  (access_list_apply (acl, p) == FILTER_DENY))
 	{
-	  zlog (NULL, LOG_INFO, "DR-1201:Vty connection refused from %s",
+	  zlog (NULL, LOG_INFO, "DR1201:Vty connection refused from %s",
 		sockunion2str (&su, buf, SU_ADDRSTRLEN));
 	  close (vty_sock);
 	  
@@ -1764,10 +1764,10 @@ vty_accept (struct thread *thread)
   ret = setsockopt (vty_sock, IPPROTO_TCP, TCP_NODELAY, 
 		    (char *) &on, sizeof (on));
   if (ret < 0)
-    zlog (NULL, LOG_INFO, "DR-1203:can't set sockopt to vty_sock : %s", 
+    zlog (NULL, LOG_INFO, "DR1203:can't set sockopt to vty_sock : %s", 
 	  safe_strerror (errno));
 
-  zlog (NULL, LOG_INFO, "DR-1204:Vty connection from %s",
+  zlog (NULL, LOG_INFO, "DR1204:Vty connection from %s",
 	sockunion2str (&su, buf, SU_ADDRSTRLEN));
 
   vty_create (vty_sock, &su);
@@ -1870,11 +1870,11 @@ vty_serv_sock_family (const char* addr, unsigned short port, int family)
     switch(inet_pton(family,addr,naddr))
     {
       case -1:
-        zlog_err("DR-7501:bad address %s",addr);
+        zlog_err("DR7501:bad address %s",addr);
 	naddr=NULL;
 	break;
       case 0:
-        zlog_err("DR-7502:error translating address %s: %s",addr,safe_strerror(errno));
+        zlog_err("DR7502:error translating address %s: %s",addr,safe_strerror(errno));
 	naddr=NULL;
     }
 
@@ -1891,7 +1891,7 @@ vty_serv_sock_family (const char* addr, unsigned short port, int family)
   ret = sockunion_bind (accept_sock, &su, port, naddr);
   if (ret < 0)
     {
-      zlog_warn("DR-4606:can't bind socket");
+      zlog_warn("DR4606:can't bind socket");
       close (accept_sock);	/* Avoid sd leak. */
       return;
     }
@@ -1900,7 +1900,7 @@ vty_serv_sock_family (const char* addr, unsigned short port, int family)
   ret = listen (accept_sock, 3);
   if (ret < 0) 
     {
-      zlog (NULL, LOG_WARNING, "DR-4607:can't listen socket");
+      zlog (NULL, LOG_WARNING, "DR4607:can't listen socket");
       close (accept_sock);	/* Avoid sd leak. */
       return;
     }
@@ -1934,7 +1934,7 @@ vty_serv_un (const char *path)
   sock = socket (AF_UNIX, SOCK_STREAM, 0);
   if (sock < 0)
     {
-      zlog_err("DR-7503:Cannot create unix stream socket: %s", safe_strerror(errno));
+      zlog_err("DR7503:Cannot create unix stream socket: %s", safe_strerror(errno));
       return;
     }
 
@@ -1951,7 +1951,7 @@ vty_serv_un (const char *path)
   ret = bind (sock, (struct sockaddr *) &serv, len);
   if (ret < 0)
     {
-      zlog_err("DR-7504:Cannot bind path %s: %s", path, safe_strerror(errno));
+      zlog_err("DR7504:Cannot bind path %s: %s", path, safe_strerror(errno));
       close (sock);	/* Avoid sd leak. */
       return;
     }
@@ -1959,7 +1959,7 @@ vty_serv_un (const char *path)
   ret = listen (sock, 5);
   if (ret < 0)
     {
-      zlog_err("DR-7505:listen(fd %d) failed: %s", sock, safe_strerror(errno));
+      zlog_err("DR7505:listen(fd %d) failed: %s", sock, safe_strerror(errno));
       close (sock);	/* Avoid sd leak. */
       return;
     }
@@ -1973,7 +1973,7 @@ vty_serv_un (const char *path)
       /* set group of socket */
       if ( chown (path, -1, ids.gid_vty) )
         {
-          zlog_err ("DR-7506:vty_serv_un: could chown socket, %s",
+          zlog_err ("DR7506:vty_serv_un: could chown socket, %s",
                      safe_strerror (errno) );
         }
     }
@@ -2004,13 +2004,13 @@ vtysh_accept (struct thread *thread)
 
   if (sock < 0)
     {
-      zlog_warn ("DR-4605:can't accept vty socket : %s", safe_strerror (errno));
+      zlog_warn ("DR4605:can't accept vty socket : %s", safe_strerror (errno));
       return -1;
     }
 
   if (set_nonblocking(sock) < 0)
     {
-      zlog_warn ("DR-4609:vtysh_accept: could not set vty socket %d to non-blocking,"
+      zlog_warn ("DR4609:vtysh_accept: could not set vty socket %d to non-blocking,"
                  " %s, closing", sock, safe_strerror (errno));
       close (sock);
       return -1;
@@ -2040,7 +2040,7 @@ vtysh_flush(struct vty *vty)
       break;
     case BUFFER_ERROR:
       vty->monitor = 0; /* disable monitoring to avoid infinite recursion */
-      zlog_warn("DR-4610:%s: write error to fd %d, closing", __func__, vty->fd);
+      zlog_warn("DR4610:%s: write error to fd %d, closing", __func__, vty->fd);
       buffer_reset(vty->obuf);
       vty_close(vty);
       return -1;
@@ -2076,7 +2076,7 @@ vtysh_read (struct thread *thread)
 	      return 0;
 	    }
 	  vty->monitor = 0; /* disable monitoring to avoid infinite recursion */
-	  zlog_warn("DR-4611:%s: read failed on vtysh client fd %d, closing: %s",
+	  zlog_warn("DR4611:%s: read failed on vtysh client fd %d, closing: %s",
 		    __func__, sock, safe_strerror(errno));
 	}
       buffer_reset(vty->obuf);

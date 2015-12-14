@@ -81,13 +81,13 @@ set_nonblocking(int fd)
      never be negative. */
   if ((flags = fcntl(fd, F_GETFL)) < 0)
     {
-      zlog_warn("DR-4100:fcntl(F_GETFL) failed for fd %d: %s",
+      zlog_warn("DR4100:fcntl(F_GETFL) failed for fd %d: %s",
       		fd, safe_strerror(errno));
       return -1;
     }
   if (fcntl(fd, F_SETFL, (flags | O_NONBLOCK)) < 0)
     {
-      zlog_warn("DR-4101:fcntl failed setting fd %d non-blocking: %s",
+      zlog_warn("DR4101:fcntl failed setting fd %d non-blocking: %s",
       		fd, safe_strerror(errno));
       return -1;
     }

@@ -114,7 +114,7 @@ bgp_dump_open_file (struct bgp_dump *bgp_dump)
 
   if (ret == 0)
     {
-      zlog_warn ("BGP-4100:bgp_dump_open_file: strftime error");
+      zlog_warn ("BGP4100:bgp_dump_open_file: strftime error");
       return NULL;
     }
 
@@ -127,7 +127,7 @@ bgp_dump_open_file (struct bgp_dump *bgp_dump)
 
   if (bgp_dump->fp == NULL)
     {
-      zlog_warn ("BGP-4101:bgp_dump_open_file: %s: %s", realpath, strerror (errno));
+      zlog_warn ("BGP4101:bgp_dump_open_file: %s: %s", realpath, strerror (errno));
       umask(oldumask);
       return NULL;
     }

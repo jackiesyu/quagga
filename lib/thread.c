@@ -703,7 +703,7 @@ funcname_thread_add_read (struct thread_master *m,
 
   if (FD_ISSET (fd, &m->readfd))
     {
-      zlog (NULL, LOG_WARNING, "DR-4550:There is already read fd [%d]", fd);
+      zlog (NULL, LOG_WARNING, "DR4550:There is already read fd [%d]", fd);
       return NULL;
     }
 
@@ -727,7 +727,7 @@ funcname_thread_add_write (struct thread_master *m,
 
   if (FD_ISSET (fd, &m->writefd))
     {
-      zlog (NULL, LOG_WARNING, "DR-4551:There is already write fd [%d]", fd);
+      zlog (NULL, LOG_WARNING, "DR4551:There is already write fd [%d]", fd);
       return NULL;
     }
 
@@ -1119,7 +1119,7 @@ thread_fetch (struct thread_master *m, struct thread *fetch)
         {
           if (errno == EINTR)
             continue; /* signal received - process it */
-          zlog_warn ("DR-4552:select() error: %s", safe_strerror (errno));
+          zlog_warn ("DR4552:select() error: %s", safe_strerror (errno));
             return NULL;
         }
 
@@ -1275,7 +1275,7 @@ thread_call (struct thread *thread)
        * Whinge about it now, so we're aware this is yet another task
        * to fix.
        */
-      zlog_warn ("DR-4553:SLOW THREAD: task %s (%lx) ran for %lums (cpu time %lums)",
+      zlog_warn ("DR4553:SLOW THREAD: task %s (%lx) ran for %lums (cpu time %lums)",
 		 thread->funcname,
 		 (unsigned long) thread->func,
 		 realtime/1000, cputime/1000);

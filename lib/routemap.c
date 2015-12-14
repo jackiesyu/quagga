@@ -782,7 +782,7 @@ route_map_apply (struct route_map *map, struct prefix *prefix,
   if (recursion > RMAP_RECURSION_LIMIT)
     {
       zlog (NULL, LOG_WARNING,
-            "DR-4250:route-map recursion limit (%d) reached, discarding route",
+            "DR4250:route-map recursion limit (%d) reached, discarding route",
             RMAP_RECURSION_LIMIT);
       recursion = 0;
       return RMAP_DENYMATCH;

@@ -113,7 +113,7 @@ bgp_nlri_parse_vpnv4 (struct peer *peer, struct attr *attr,
 
       if (prefixlen < 88)
 	{
-	  zlog_err ("BGP-7150:prefix length is less than 88: %d", prefixlen);
+	  zlog_err ("BGP7150:prefix length is less than 88: %d", prefixlen);
 	  return -1;
 	}
 	
@@ -136,7 +136,7 @@ bgp_nlri_parse_vpnv4 (struct peer *peer, struct attr *attr,
 	decode_rd_ip (pnt + 5, &rd_ip);
       else
 	{
-	  zlog_err ("BGP-7151:Invalid RD type %d", type);
+	  zlog_err ("BGP7151:Invalid RD type %d", type);
 	  return -1;
 	}
 
@@ -145,10 +145,10 @@ bgp_nlri_parse_vpnv4 (struct peer *peer, struct attr *attr,
 
 #if 0
       if (type == RD_TYPE_AS)
-	zlog_info ("BGP-1200:prefix %ld:%ld:%ld:%s/%d", label, rd_as.as, rd_as.val,
+	zlog_info ("BGP1200:prefix %ld:%ld:%ld:%s/%d", label, rd_as.as, rd_as.val,
 		   inet_ntoa (p.u.prefix4), p.prefixlen);
       else if (type == RD_TYPE_IP)
-	zlog_info ("BGP-1201:prefix %ld:%s:%ld:%s/%d", label, inet_ntoa (rd_ip.ip),
+	zlog_info ("BGP1201:prefix %ld:%s:%ld:%s/%d", label, inet_ntoa (rd_ip.ip),
 		   rd_ip.val, inet_ntoa (p.u.prefix4), p.prefixlen);
 #endif /* 0 */
 

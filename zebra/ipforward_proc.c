@@ -78,13 +78,13 @@ ipforward_on (void)
   FILE *fp;
   
   if ( zserv_privs.change(ZPRIVS_RAISE) )
-  	zlog_err ("DR-7900:Can't raise privileges, %s", safe_strerror (errno) );
+  	zlog_err ("DR7900:Can't raise privileges, %s", safe_strerror (errno) );
 
   fp = fopen (proc_ipv4_forwarding, "w");
 
   if (fp == NULL) {
     if ( zserv_privs.change(ZPRIVS_LOWER) )
-      zlog_err ("DR-7901:Can't lower privileges, %s", safe_strerror (errno));
+      zlog_err ("DR7901:Can't lower privileges, %s", safe_strerror (errno));
     return -1;
   }
 
@@ -93,7 +93,7 @@ ipforward_on (void)
   fclose (fp);
 
   if ( zserv_privs.change(ZPRIVS_LOWER) )
-    zlog_err ("DR-7901:Can't lower privileges, %s", safe_strerror (errno));
+    zlog_err ("DR7901:Can't lower privileges, %s", safe_strerror (errno));
 
   return ipforward ();
 }
@@ -104,13 +104,13 @@ ipforward_off (void)
   FILE *fp;
 
   if ( zserv_privs.change(ZPRIVS_RAISE) )
-  	zlog_err ("DR-7900:Can't raise privileges, %s", safe_strerror (errno));
+  	zlog_err ("DR7900:Can't raise privileges, %s", safe_strerror (errno));
 
   fp = fopen (proc_ipv4_forwarding, "w");
 
   if (fp == NULL) {
     if ( zserv_privs.change(ZPRIVS_LOWER) )
-      zlog_err ("DR-7901:Can't lower privileges, %s", safe_strerror (errno));
+      zlog_err ("DR7901:Can't lower privileges, %s", safe_strerror (errno));
     return -1;
   }
 
@@ -119,7 +119,7 @@ ipforward_off (void)
   fclose (fp);
 
   if ( zserv_privs.change(ZPRIVS_LOWER) )
-    zlog_err ("DR-7901:Can't lower privileges, %s", safe_strerror (errno));
+    zlog_err ("DR7901:Can't lower privileges, %s", safe_strerror (errno));
 
   return ipforward ();
 }
@@ -152,13 +152,13 @@ ipforward_ipv6_on (void)
   FILE *fp;
 
   if ( zserv_privs.change(ZPRIVS_RAISE) )
-  	zlog_err ("DR-7900:Can't raise privileges, %s", safe_strerror (errno));
+  	zlog_err ("DR7900:Can't raise privileges, %s", safe_strerror (errno));
 
   fp = fopen (proc_ipv6_forwarding, "w");
 
   if (fp == NULL) {
     if ( zserv_privs.change(ZPRIVS_LOWER) )
-      zlog_err ("DR-7901:Can't lower privileges, %s", safe_strerror (errno));
+      zlog_err ("DR7901:Can't lower privileges, %s", safe_strerror (errno));
     return -1;
   }
 
@@ -167,7 +167,7 @@ ipforward_ipv6_on (void)
   fclose (fp);
 
   if ( zserv_privs.change(ZPRIVS_LOWER) )
-    zlog_err ("DR-7901:Can't lower privileges, %s", safe_strerror (errno));
+    zlog_err ("DR7901:Can't lower privileges, %s", safe_strerror (errno));
 
   return ipforward_ipv6 ();
 }
@@ -178,13 +178,13 @@ ipforward_ipv6_off (void)
   FILE *fp;
 
   if ( zserv_privs.change(ZPRIVS_RAISE) )
-  	zlog_err ("DR-7900:Can't raise privileges, %s", safe_strerror (errno));
+  	zlog_err ("DR7900:Can't raise privileges, %s", safe_strerror (errno));
 
   fp = fopen (proc_ipv6_forwarding, "w");
 
   if (fp == NULL) {
     if ( zserv_privs.change(ZPRIVS_LOWER) )
-      zlog_err ("DR-7901:Can't lower privileges, %s", safe_strerror (errno));
+      zlog_err ("DR7901:Can't lower privileges, %s", safe_strerror (errno));
     return -1;
   }
 
@@ -193,7 +193,7 @@ ipforward_ipv6_off (void)
   fclose (fp);
 
   if ( zserv_privs.change(ZPRIVS_LOWER) )
-    zlog_err ("DR-7901:Can't lower privileges, %s", safe_strerror (errno));
+    zlog_err ("DR7901:Can't lower privileges, %s", safe_strerror (errno));
 
   return ipforward_ipv6 ();
 }

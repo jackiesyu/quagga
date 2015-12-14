@@ -52,7 +52,7 @@
  * using stream_put..._at() functions.
  */
 #define STREAM_WARN_OFFSETS(S) \
-  zlog_warn ("DR-4500:&(struct stream): %p, size: %lu, getp: %lu, endp: %lu\n", \
+  zlog_warn ("DR4500:&(struct stream): %p, size: %lu, getp: %lu, endp: %lu\n", \
              (S), \
              (unsigned long) (S)->size, \
              (unsigned long) (S)->getp, \
@@ -68,7 +68,7 @@
 
 #define STREAM_BOUND_WARN(S, WHAT) \
   do { \
-    zlog_warn ("DR-4501:%s: Attempt to %s out of bounds", __func__, (WHAT)); \
+    zlog_warn ("DR4501:%s: Attempt to %s out of bounds", __func__, (WHAT)); \
     STREAM_WARN_OFFSETS(S); \
     assert (0); \
   } while (0)
@@ -78,7 +78,7 @@
   do { \
     if (((S)->endp + (Z)) > (S)->size) \
       { \
-        zlog_warn ("DR-4502:CHECK_SIZE: truncating requested size %lu\n", \
+        zlog_warn ("DR4502:CHECK_SIZE: truncating requested size %lu\n", \
                    (unsigned long) (Z)); \
         STREAM_WARN_OFFSETS(S); \
         (Z) = (S)->size - (S)->endp; \
@@ -95,7 +95,7 @@ stream_new (size_t size)
   
   if (size == 0)
     {
-      zlog_warn ("DR-4503:stream_new(): called with 0 size!");
+      zlog_warn ("DR4503:stream_new(): called with 0 size!");
       return NULL;
     }
   
@@ -777,7 +777,7 @@ stream_read_try(struct stream *s, int fd, size_t size)
   /* Error: was it transient (return -2) or fatal (return -1)? */
   if (ERRNO_IO_RETRY(errno))
     return -2;
-  zlog_warn("DR-4504:%s: read failed on fd %d: %s", __func__, fd, safe_strerror(errno));
+  zlog_warn("DR4504:%s: read failed on fd %d: %s", __func__, fd, safe_strerror(errno));
   return -1;
 }
 
@@ -809,7 +809,7 @@ stream_recvfrom (struct stream *s, int fd, size_t size, int flags,
   /* Error: was it transient (return -2) or fatal (return -1)? */
   if (ERRNO_IO_RETRY(errno))
     return -2;
-  zlog_warn("DR-4504:%s: read failed on fd %d: %s", __func__, fd, safe_strerror(errno));
+  zlog_warn("DR4504:%s: read failed on fd %d: %s", __func__, fd, safe_strerror(errno));
   return -1;
 }
 

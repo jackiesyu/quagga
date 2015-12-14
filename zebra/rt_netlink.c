@@ -84,7 +84,7 @@ set_ifindex(struct interface *ifp, unsigned int ifi_index)
   if (((oifp = if_lookup_by_index(ifi_index)) != NULL) && (oifp != ifp))
     {
       if (ifi_index == IFINDEX_INTERNAL)
-        zlog_err("DR-8250:Netlink is setting interface %s ifindex to reserved "
+        zlog_err("DR8250:Netlink is setting interface %s ifindex to reserved "
 		 "internal value %u", ifp->name, ifi_index);
       else
         {
@@ -92,7 +92,7 @@ set_ifindex(struct interface *ifp, unsigned int ifi_index)
 	    zlog_debug("interface index %d was renamed from %s to %s",
 	    	       ifi_index, oifp->name, ifp->name);
 	  if (if_is_up(oifp))
-	    zlog_err("DR-8251:interface rename detected on up interface: index %d "
+	    zlog_err("DR8251:interface rename detected on up interface: index %d "
 		     "was renamed from %s to %s, results are uncertain!", 
 	    	     ifi_index, oifp->name, ifp->name);
 	  if_delete_update(oifp);
@@ -116,24 +116,24 @@ netlink_recvbuf (struct nlsock *nl, uint32_t newsize)
   ret = getsockopt(nl->sock, SOL_SOCKET, SO_RCVBUF, &oldsize, &oldlen);
   if (ret < 0)
     {
-      zlog (NULL, LOG_ERR, "DR-8252:Can't get %s receive buffer size: %s", nl->name,
+      zlog (NULL, LOG_ERR, "DR8252:Can't get %s receive buffer size: %s", nl->name,
 	    safe_strerror (errno));
       return -1;
     }
 
   /* Try force option (linux >= 2.6.14) and fall back to normal set */
   if ( zserv_privs.change (ZPRIVS_RAISE) )
-    zlog_err ("DR-8253:routing_socket: Can't raise privileges");
+    zlog_err ("DR8253:routing_socket: Can't raise privileges");
   ret = setsockopt(nl->sock, SOL_SOCKET, SO_RCVBUFFORCE, &nl_rcvbufsize,
 		   sizeof(nl_rcvbufsize));
   if ( zserv_privs.change (ZPRIVS_LOWER) )
-    zlog_err ("DR-8254:routing_socket: Can't lower privileges");
+    zlog_err ("DR8254:routing_socket: Can't lower privileges");
   if (ret < 0)
      ret = setsockopt(nl->sock, SOL_SOCKET, SO_RCVBUF, &nl_rcvbufsize,
 		      sizeof(nl_rcvbufsize));
   if (ret < 0)
     {
-      zlog (NULL, LOG_ERR, "DR-8255:Can't set %s receive buffer size: %s", nl->name,
+      zlog (NULL, LOG_ERR, "DR8255:Can't set %s receive buffer size: %s", nl->name,
 	    safe_strerror (errno));
       return -1;
     }
@@ -141,13 +141,13 @@ netlink_recvbuf (struct nlsock *nl, uint32_t newsize)
   ret = getsockopt(nl->sock, SOL_SOCKET, SO_RCVBUF, &newsize, &newlen);
   if (ret < 0)
     {
-      zlog (NULL, LOG_ERR, "DR-8252:Can't get %s receive buffer size: %s", nl->name,
+      zlog (NULL, LOG_ERR, "DR8252:Can't get %s receive buffer size: %s", nl->name,
 	    safe_strerror (errno));
       return -1;
     }
 
   zlog (NULL, LOG_INFO,
-	"DR-1500:Setting netlink socket receive buffer size: %u -> %u",
+	"DR1500:Setting netlink socket receive buffer size: %u -> %u",
 	oldsize, newsize);
   return 0;
 }
@@ -164,14 +164,14 @@ netlink_socket (struct nlsock *nl, unsigned long groups)
 
   if (zserv_privs.change (ZPRIVS_RAISE))
     {
-      zlog (NULL, LOG_ERR, "DR-8000:Can't raise privileges");
+      zlog (NULL, LOG_ERR, "DR8000:Can't raise privileges");
       return -1;
     }
 
   sock = socket (AF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
   if (sock < 0)
     {
-      zlog (NULL, LOG_ERR, "DR-8258:Can't open %s socket: %s", nl->name,
+      zlog (NULL, LOG_ERR, "DR8258:Can't open %s socket: %s", nl->name,
             safe_strerror (errno));
       return -1;
     }
@@ -184,11 +184,11 @@ netlink_socket (struct nlsock *nl, unsigned long groups)
   ret = bind (sock, (struct sockaddr *) &snl, sizeof snl);
   save_errno = errno;
   if (zserv_privs.change (ZPRIVS_LOWER))
-    zlog (NULL, LOG_ERR, "DR-8001:Can't lower privileges");
+    zlog (NULL, LOG_ERR, "DR8001:Can't lower privileges");
 
   if (ret < 0)
     {
-      zlog (NULL, LOG_ERR, "DR-8260:Can't bind %s socket to group 0x%x: %s",
+      zlog (NULL, LOG_ERR, "DR8260:Can't bind %s socket to group 0x%x: %s",
             nl->name, snl.nl_groups, safe_strerror (save_errno));
       close (sock);
       return -1;
@@ -199,7 +199,7 @@ netlink_socket (struct nlsock *nl, unsigned long groups)
   ret = getsockname (sock, (struct sockaddr *) &snl, (socklen_t *) &namelen);
   if (ret < 0 || namelen != sizeof snl)
     {
-      zlog (NULL, LOG_ERR, "DR-8261:Can't get %s socket name: %s", nl->name,
+      zlog (NULL, LOG_ERR, "DR8261:Can't get %s socket name: %s", nl->name,
             safe_strerror (errno));
       close (sock);
       return -1;
@@ -228,7 +228,7 @@ netlink_request (int family, int type, struct nlsock *nl)
   /* Check netlink socket. */
   if (nl->sock < 0)
     {
-      zlog (NULL, LOG_ERR, "DR-8262:%s socket isn't active.", nl->name);
+      zlog (NULL, LOG_ERR, "DR8262:%s socket isn't active.", nl->name);
       return -1;
     }
 
@@ -248,7 +248,7 @@ netlink_request (int family, int type, struct nlsock *nl)
    */
   if (zserv_privs.change (ZPRIVS_RAISE))
     {
-      zlog (NULL, LOG_ERR, "DR-8000:Can't raise privileges");
+      zlog (NULL, LOG_ERR, "DR8000:Can't raise privileges");
       return -1;
     }
 
@@ -257,11 +257,11 @@ netlink_request (int family, int type, struct nlsock *nl)
   save_errno = errno;
 
   if (zserv_privs.change (ZPRIVS_LOWER))
-    zlog (NULL, LOG_ERR, "DR-8001:Can't lower privileges");
+    zlog (NULL, LOG_ERR, "DR8001:Can't lower privileges");
 
   if (ret < 0)
     {
-      zlog (NULL, LOG_ERR, "DR-8265:%s sendto failed: %s", nl->name,
+      zlog (NULL, LOG_ERR, "DR8265:%s sendto failed: %s", nl->name,
             safe_strerror (save_errno));
       return -1;
     }
@@ -302,20 +302,20 @@ netlink_parse_info (int (*filter) (struct sockaddr_nl *, struct nlmsghdr *),
             continue;
           if (errno == EWOULDBLOCK || errno == EAGAIN)
             break;
-          zlog (NULL, LOG_ERR, "DR-8266:%s recvmsg overrun: %s",
+          zlog (NULL, LOG_ERR, "DR8266:%s recvmsg overrun: %s",
 	  	nl->name, safe_strerror(errno));
           continue;
         }
 
       if (status == 0)
         {
-          zlog (NULL, LOG_ERR, "DR-8267:%s EOF", nl->name);
+          zlog (NULL, LOG_ERR, "DR8267:%s EOF", nl->name);
           return -1;
         }
 
       if (msg.msg_namelen != sizeof snl)
         {
-          zlog (NULL, LOG_ERR, "DR-8268:%s sender address length error: length %d",
+          zlog (NULL, LOG_ERR, "DR8268:%s sender address length error: length %d",
                 nl->name, msg.msg_namelen);
           return -1;
         }
@@ -356,7 +356,7 @@ netlink_parse_info (int (*filter) (struct sockaddr_nl *, struct nlmsghdr *),
 
               if (h->nlmsg_len < NLMSG_LENGTH (sizeof (struct nlmsgerr)))
                 {
-                  zlog (NULL, LOG_ERR, "DR-8269:%s error: message truncated",
+                  zlog (NULL, LOG_ERR, "DR8269:%s error: message truncated",
                         nl->name);
                   return -1;
                 }
@@ -375,7 +375,7 @@ netlink_parse_info (int (*filter) (struct sockaddr_nl *, struct nlmsghdr *),
 		  return 0;
 		}
 
-	      zlog_err ("DR-8270:%s error: %s, type=%s(%u), seq=%u, pid=%u",
+	      zlog_err ("DR8270:%s error: %s, type=%s(%u), seq=%u, pid=%u",
 			nl->name, safe_strerror (-errnum),
 			lookup (nlmsg_str, msg_type),
 			msg_type, err->msg.nlmsg_seq, err->msg.nlmsg_pid);
@@ -404,7 +404,7 @@ netlink_parse_info (int (*filter) (struct sockaddr_nl *, struct nlmsghdr *),
           error = (*filter) (&snl, h);
           if (error < 0)
             {
-              zlog (NULL, LOG_ERR, "DR-8271:%s filter function error", nl->name);
+              zlog (NULL, LOG_ERR, "DR8271:%s filter function error", nl->name);
               ret = error;
             }
         }
@@ -412,12 +412,12 @@ netlink_parse_info (int (*filter) (struct sockaddr_nl *, struct nlmsghdr *),
       /* After error care. */
       if (msg.msg_flags & MSG_TRUNC)
         {
-          zlog (NULL, LOG_ERR, "DR-8269:%s error: message truncated", nl->name);
+          zlog (NULL, LOG_ERR, "DR8269:%s error: message truncated", nl->name);
           continue;
         }
       if (status)
         {
-          zlog (NULL, LOG_ERR, "DR-8273:%s error: data remnant size %d", nl->name,
+          zlog (NULL, LOG_ERR, "DR8273:%s error: data remnant size %d", nl->name,
                 status);
           return -1;
         }
@@ -451,7 +451,7 @@ netlink_interface_update_hw_addr (struct rtattr **tb, struct interface *ifp)
       hw_addr_len = RTA_PAYLOAD (tb[IFLA_ADDRESS]);
 
       if (hw_addr_len > INTERFACE_HWADDR_MAX)
-        zlog_warn ("DR-5350:Hardware address is too large: %d", hw_addr_len);
+        zlog_warn ("DR5350:Hardware address is too large: %d", hw_addr_len);
       else
         {
           ifp->hw_addr_len = hw_addr_len;
@@ -558,7 +558,7 @@ netlink_interface_addr (struct sockaddr_nl *snl, struct nlmsghdr *h)
   ifp = if_lookup_by_index (ifa->ifa_index);
   if (ifp == NULL)
     {
-      zlog_err ("DR-8274:netlink_interface_addr can't find interface by index %d",
+      zlog_err ("DR8274:netlink_interface_addr can't find interface by index %d",
                 ifa->ifa_index);
       return -1;
     }
@@ -854,7 +854,7 @@ netlink_route_change (struct sockaddr_nl *snl, struct nlmsghdr *h)
   if (!(h->nlmsg_type == RTM_NEWROUTE || h->nlmsg_type == RTM_DELROUTE))
     {
       /* If this is not route add/delete message print warning. */
-      zlog_warn ("DR-5351:Kernel message: %d\n", h->nlmsg_type);
+      zlog_warn ("DR5351:Kernel message: %d\n", h->nlmsg_type);
       return 0;
     }
 
@@ -897,7 +897,7 @@ netlink_route_change (struct sockaddr_nl *snl, struct nlmsghdr *h)
 
   if (rtm->rtm_src_len != 0)
     {
-      zlog_warn ("DR-5352:netlink_route_change(): no src len");
+      zlog_warn ("DR5352:netlink_route_change(): no src len");
       return 0;
     }
 
@@ -1052,7 +1052,7 @@ netlink_link_change (struct sockaddr_nl *snl, struct nlmsghdr *h)
   if (!(h->nlmsg_type == RTM_NEWLINK || h->nlmsg_type == RTM_DELLINK))
     {
       /* If this is not link add/delete message so print warning. */
-      zlog_warn ("DR-5353:netlink_link_change: wrong kernel message %d\n",
+      zlog_warn ("DR5353:netlink_link_change: wrong kernel message %d\n",
                  h->nlmsg_type);
       return 0;
     }
@@ -1132,7 +1132,7 @@ netlink_link_change (struct sockaddr_nl *snl, struct nlmsghdr *h)
 
       if (ifp == NULL)
         {
-          zlog (NULL, LOG_WARNING, "DR-5354:interface %s is deleted but can't find",
+          zlog (NULL, LOG_WARNING, "DR5354:interface %s is deleted but can't find",
                 name);
           return 0;
         }
@@ -1149,7 +1149,7 @@ netlink_information_fetch (struct sockaddr_nl *snl, struct nlmsghdr *h)
   /* JF: Ignore messages that aren't from the kernel */
   if ( snl->nl_pid != 0 )
     {
-      zlog ( NULL, LOG_ERR, "DR-8275:Ignoring message from pid %u", snl->nl_pid );
+      zlog ( NULL, LOG_ERR, "DR8275:Ignoring message from pid %u", snl->nl_pid );
       return 0;
     }
 
@@ -1174,7 +1174,7 @@ netlink_information_fetch (struct sockaddr_nl *snl, struct nlmsghdr *h)
       return netlink_interface_addr (snl, h);
       break;
     default:
-      zlog_warn ("DR-5355:Unknown netlink nlmsg_type %d\n", h->nlmsg_type);
+      zlog_warn ("DR5355:Unknown netlink nlmsg_type %d\n", h->nlmsg_type);
       break;
     }
   return 0;
@@ -1310,7 +1310,7 @@ addattr32 (struct nlmsghdr *n, size_t maxlen, int type, int data)
 static int
 netlink_talk_filter (struct sockaddr_nl *snl, struct nlmsghdr *h)
 {
-  zlog_warn ("DR-5356:netlink_talk: ignoring message type 0x%04x", h->nlmsg_type);
+  zlog_warn ("DR5356:netlink_talk: ignoring message type 0x%04x", h->nlmsg_type);
   return 0;
 }
 
@@ -1347,15 +1347,15 @@ netlink_talk (struct nlmsghdr *n, struct nlsock *nl)
 
   /* Send message to netlink interface. */
   if (zserv_privs.change (ZPRIVS_RAISE))
-    zlog (NULL, LOG_ERR, "DR-8000:Can't raise privileges");
+    zlog (NULL, LOG_ERR, "DR8000:Can't raise privileges");
   status = sendmsg (nl->sock, &msg, 0);
   save_errno = errno;
   if (zserv_privs.change (ZPRIVS_LOWER))
-    zlog (NULL, LOG_ERR, "DR-8001:Can't lower privileges");
+    zlog (NULL, LOG_ERR, "DR8001:Can't lower privileges");
 
   if (status < 0)
     {
-      zlog (NULL, LOG_ERR, "DR-8278:netlink_talk sendmsg() error: %s",
+      zlog (NULL, LOG_ERR, "DR8278:netlink_talk sendmsg() error: %s",
             safe_strerror (save_errno));
       return -1;
     }
@@ -1960,7 +1960,7 @@ static void netlink_install_filter (int sock, __u32 pid)
   };
 
   if (setsockopt(sock, SOL_SOCKET, SO_ATTACH_FILTER, &prog, sizeof(prog)) < 0)
-    zlog_warn ("DR-5357:Can't install socket filter: %s\n", safe_strerror(errno));
+    zlog_warn ("DR5357:Can't install socket filter: %s\n", safe_strerror(errno));
 }
 
 /* Exported interface function.  This function simply calls
@@ -1982,7 +1982,7 @@ kernel_init (void)
     {
       /* Only want non-blocking on the netlink event socket */
       if (fcntl (netlink.sock, F_SETFL, O_NONBLOCK) < 0)
-	zlog (NULL, LOG_ERR, "DR-8279:Can't set %s socket flags: %s", netlink.name,
+	zlog (NULL, LOG_ERR, "DR8279:Can't set %s socket flags: %s", netlink.name,
 		safe_strerror (errno));
 
       /* Set receive buffer size if it's set from command line */

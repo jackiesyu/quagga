@@ -50,7 +50,7 @@ interface_list_ioctl (void)
   sock = socket (AF_INET, SOCK_DGRAM, 0);
   if (sock < 0) 
     {
-      zlog_warn ("DR-4750:Can't make AF_INET socket stream: %s", safe_strerror (errno));
+      zlog_warn ("DR4750:Can't make AF_INET socket stream: %s", safe_strerror (errno));
       return -1;
     }
 
@@ -79,7 +79,7 @@ interface_list_ioctl (void)
 
       if (ret < 0) 
 	{
-	  zlog_warn ("DR-4751:SIOCGIFCONF: %s", safe_strerror(errno));
+	  zlog_warn ("DR4751:SIOCGIFCONF: %s", safe_strerror(errno));
 	  goto end;
 	}
       /* Repeatedly get info til buffer fails to grow. */
@@ -222,7 +222,7 @@ if_getaddrs (void)
   ret = getifaddrs (&ifap); 
   if (ret != 0)
     {
-      zlog_err ("DR-7650:getifaddrs(): %s", safe_strerror (errno));
+      zlog_err ("DR7650:getifaddrs(): %s", safe_strerror (errno));
       return -1;
     }
 
@@ -230,7 +230,7 @@ if_getaddrs (void)
     {
       if (ifap->ifa_addr == NULL)
         {
-          zlog_err ("DR-7651:%s: nonsensical ifaddr with NULL ifa_addr, ifname %s",
+          zlog_err ("DR7651:%s: nonsensical ifaddr with NULL ifa_addr, ifname %s",
                     __func__, (ifap->ifa_name ? ifap->ifa_name : "(null)"));
           continue;
         }
@@ -238,7 +238,7 @@ if_getaddrs (void)
       ifp = if_lookup_by_name (ifap->ifa_name);
       if (ifp == NULL)
 	{
-	  zlog_err ("DR-7652:if_getaddrs(): Can't lookup interface %s\n",
+	  zlog_err ("DR7652:if_getaddrs(): Can't lookup interface %s\n",
 		    ifap->ifa_name);
 	  continue;
 	}
@@ -355,7 +355,7 @@ if_get_addr (struct interface *ifp)
     {
       if (errno != EADDRNOTAVAIL)
 	{
-	  zlog_warn ("DR-4752:SIOCGIFADDR fail: %s", safe_strerror (errno));
+	  zlog_warn ("DR4752:SIOCGIFADDR fail: %s", safe_strerror (errno));
 	  return ret;
 	}
       return 0;
@@ -368,7 +368,7 @@ if_get_addr (struct interface *ifp)
     {
       if (errno != EADDRNOTAVAIL) 
 	{
-	  zlog_warn ("DR-4753:SIOCGIFNETMASK fail: %s", safe_strerror (errno));
+	  zlog_warn ("DR4753:SIOCGIFNETMASK fail: %s", safe_strerror (errno));
 	  return ret;
 	}
       return 0;
@@ -387,7 +387,7 @@ if_get_addr (struct interface *ifp)
   if (ret < 0) 
     {
       if (errno != EADDRNOTAVAIL) 
-	zlog_warn ("DR-4754:SIOCGIFDSTADDR fail: %s", safe_strerror (errno));
+	zlog_warn ("DR4754:SIOCGIFDSTADDR fail: %s", safe_strerror (errno));
     }
   else if (!IPV4_ADDR_SAME(&addr.sin_addr, &ifreq.ifr_dstaddr.sin_addr))
     {
@@ -401,7 +401,7 @@ if_get_addr (struct interface *ifp)
       if (ret < 0) 
 	{
 	  if (errno != EADDRNOTAVAIL) 
-	    zlog_warn ("DR-4755:SIOCGIFBRDADDR fail: %s", safe_strerror (errno));
+	    zlog_warn ("DR4755:SIOCGIFBRDADDR fail: %s", safe_strerror (errno));
 	}
       else if (!IPV4_ADDR_SAME(&addr.sin_addr, &ifreq.ifr_broadaddr.sin_addr))
         {

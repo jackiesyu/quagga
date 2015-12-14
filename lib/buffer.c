@@ -246,7 +246,7 @@ buffer_flush_window (struct buffer *b, int fd, int width, int height,
 
   if (height < 1)
     {
-      zlog_warn("DR-4000:%s called with non-positive window height %d, forcing to 1",
+      zlog_warn("DR4000:%s called with non-positive window height %d, forcing to 1",
       		__func__, height);
       height = 1;
     }
@@ -254,7 +254,7 @@ buffer_flush_window (struct buffer *b, int fd, int width, int height,
     height--;
   if (width < 1)
     {
-      zlog_warn("DR-4001:%s called with non-positive window width %d, forcing to 1",
+      zlog_warn("DR4001:%s called with non-positive window width %d, forcing to 1",
       		__func__, width);
       width = 1;
     }
@@ -312,7 +312,7 @@ buffer_flush_window (struct buffer *b, int fd, int width, int height,
 	  iov_alloc *= 2;
 	  if (iov != small_iov)
 	    {
-	      zlog_warn("DR-4002:%s: growing iov array to %d; "
+	      zlog_warn("DR4002:%s: growing iov array to %d; "
 			"width %d, height %d, size %lu",
 			__func__, iov_alloc, width, height, (u_long)b->size);
 	      iov = XREALLOC(MTYPE_TMP, iov, iov_alloc*sizeof(*iov));
@@ -320,7 +320,7 @@ buffer_flush_window (struct buffer *b, int fd, int width, int height,
 	  else
 	    {
 	      /* This should absolutely never occur. */
-	      zlog_err("DR-7000:%s: corruption detected: iov_small overflowed; "
+	      zlog_err("DR7000:%s: corruption detected: iov_small overflowed; "
 		       "head %p, tail %p, head->next %p",
 		       __func__, b->head, b->tail, b->head->next);
 	      iov = XMALLOC(MTYPE_TMP, iov_alloc*sizeof(*iov));
@@ -352,7 +352,7 @@ buffer_flush_window (struct buffer *b, int fd, int width, int height,
 	 iov_size = ((iov_index > IOV_MAX) ? IOV_MAX : iov_index);
 	 if ((nbytes = writev(fd, c_iov, iov_size)) < 0)
 	   {
-	     zlog_warn("DR-4003:%s: writev to fd %d failed: %s",
+	     zlog_warn("DR4003:%s: writev to fd %d failed: %s",
 		       __func__, fd, safe_strerror(errno));
 	     break;
 	   }
@@ -364,7 +364,7 @@ buffer_flush_window (struct buffer *b, int fd, int width, int height,
   }
 #else  /* IOV_MAX */
    if ((nbytes = writev (fd, iov, iov_index)) < 0)
-     zlog_warn("DR-4003:%s: writev to fd %d failed: %s",
+     zlog_warn("DR4003:%s: writev to fd %d failed: %s",
 	       __func__, fd, safe_strerror(errno));
 #endif /* IOV_MAX */
 
@@ -426,7 +426,7 @@ in one shot. */
       if (ERRNO_IO_RETRY(errno))
 	/* Calling code should try again later. */
         return BUFFER_PENDING;
-      zlog_warn("DR-4005:%s: write error on fd %d: %s",
+      zlog_warn("DR4005:%s: write error on fd %d: %s",
 		__func__, fd, safe_strerror(errno));
       return BUFFER_ERROR;
     }
@@ -437,7 +437,7 @@ in one shot. */
       struct buffer_data *d;
       if (!(d = b->head))
         {
-          zlog_err("DR-7001:%s: corruption detected: buffer queue empty, "
+          zlog_err("DR7001:%s: corruption detected: buffer queue empty, "
 		   "but written is %lu", __func__, (u_long)written);
 	  break;
         }
@@ -481,7 +481,7 @@ buffer_write(struct buffer *b, int fd, const void *p, size_t size)
         nbytes = 0;
       else
         {
-	  zlog_warn("DR-4005:%s: write error on fd %d: %s",
+	  zlog_warn("DR4005:%s: write error on fd %d: %s",
 		    __func__, fd, safe_strerror(errno));
 	  return BUFFER_ERROR;
 	}
