@@ -182,12 +182,12 @@ Report bugs to %s\n", progname, ZEBRA_BUG_ADDRESS);
 void 
 sighup (void)
 {
-  zlog (NULL, LOG_INFO, "SIGHUP received");
+  zlog (NULL, LOG_INFO, "BGP1150:SIGHUP received");
 
   /* Terminate all thread. */
   bgp_terminate ();
   bgp_reset ();
-  zlog_info ("bgpd restarting!");
+  zlog_info ("BGP1151:bgpd restarting!");
 
   /* Reload config file. */
   vty_read_config (config_file, config_default);
@@ -202,7 +202,7 @@ sighup (void)
 void
 sigint (void)
 {
-  zlog_notice ("Terminating on signal");
+  zlog_notice ("BGP1152:Terminating on signal");
 
   if (! retain_mode)
     bgp_terminate ();
@@ -247,7 +247,7 @@ bgp_exit (int status)
   for (ALL_LIST_ELEMENTS_RO(bm->listen_sockets, node, socket))
     {
       if (close ((int)(long)socket) == -1)
-        zlog_err ("close (%d): %s", (int)(long)socket, safe_strerror (errno));
+        zlog_err ("BGP7100:close (%d): %s", (int)(long)socket, safe_strerror (errno));
     }
   list_delete (bm->listen_sockets);
 
@@ -454,7 +454,7 @@ main (int argc, char **argv)
   /* Turn into daemon if daemon_mode is set. */
   if (daemon_mode && daemon (0, 0) < 0)
     {
-      zlog_err("BGPd daemon failed: %s", strerror(errno));
+      zlog_err("BGP7101:BGPd daemon failed: %s", strerror(errno));
       return (1);
     }
 
@@ -466,7 +466,7 @@ main (int argc, char **argv)
   vty_serv_sock (vty_addr, vty_port, vty_file);
 
   /* Print banner. */
-  zlog_notice ("BGPd %s starting: vty@%d, bgp@%s:%d", QUAGGA_VERSION,
+  zlog_notice ("BGP1153:BGPd %s starting: vty@%d, bgp@%s:%d", QUAGGA_VERSION,
 	       vty_port, 
 	       (bm->address ? bm->address : "<all>"),
 	       bm->port);

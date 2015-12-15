@@ -132,7 +132,7 @@ work_queue_add (struct work_queue *wq, void *data)
 
   if (!(item = work_queue_item_new (wq)))
     {
-      zlog_err ("%s: unable to get new queue item", __func__);
+      zlog_err ("DR7550:%s: unable to get new queue item", __func__);
       return;
     }
   

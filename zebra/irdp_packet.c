@@ -102,13 +102,13 @@ parse_irdp_packet(char *p,
 
   if (len != iplen)
     {
-      zlog_err ("IRDP: RX length doesnt match IP length");
+      zlog_err ("DR8100:IRDP: RX length doesnt match IP length");
       return;
     }
 
   if (iplen < ICMP_MINLEN) 
     {
-      zlog_err ("IRDP: RX ICMP packet too short from %s\n",
+      zlog_err ("DR8101:IRDP: RX ICMP packet too short from %s\n",
   	      inet_ntoa (src));
       return;
     }
@@ -118,7 +118,7 @@ parse_irdp_packet(char *p,
    len of IP-header) 14+20 */
   if (iplen > IRDP_RX_BUF-34) 
     {
-      zlog_err ("IRDP: RX ICMP packet too long from %s\n",
+      zlog_err ("DR8102:IRDP: RX ICMP packet too long from %s\n",
 	        inet_ntoa (src));
       return;
     }
@@ -128,7 +128,7 @@ parse_irdp_packet(char *p,
   /* check icmp checksum */    
   if (in_cksum (icmp, datalen) != icmp->checksum) 
     {
-      zlog_warn ("IRDP: RX ICMP packet from %s. Bad checksum, silently ignored",
+      zlog_warn ("DR5200:IRDP: RX ICMP packet from %s. Bad checksum, silently ignored",
                  inet_ntoa (src));
       return;
     }
@@ -140,7 +140,7 @@ parse_irdp_packet(char *p,
   
   if (icmp->code != 0) 
     {
-      zlog_warn ("IRDP: RX packet type %d from %s. Bad ICMP type code,"
+      zlog_warn ("DR5201:IRDP: RX packet type %d from %s. Bad ICMP type code,"
                  " silently ignored",
                  icmp->type, inet_ntoa (src));
       return;
@@ -152,14 +152,14 @@ parse_irdp_packet(char *p,
         (ntohl (ip->ip_dst.s_addr) == INADDR_ALLRTRS_GROUP
          && !(irdp->flags & IF_BROADCAST)))
     {
-      zlog_warn ("IRDP: RX illegal from %s to %s while %s operates in %s\n",
+      zlog_warn ("DR5202:IRDP: RX illegal from %s to %s while %s operates in %s\n",
                  inet_ntoa (src),
                  ntohl (ip->ip_dst.s_addr) == INADDR_ALLRTRS_GROUP ?
                  "multicast" : inet_ntoa (ip->ip_dst),
                  ifp->name,
                  irdp->flags & IF_BROADCAST ? "broadcast" : "multicast");
 
-      zlog_warn ("IRDP: Please correct settings\n");
+      zlog_warn ("DR5203:IRDP: Please correct settings\n");
       return;
     }
 
@@ -179,7 +179,7 @@ parse_irdp_packet(char *p,
       break;
 
     default:
-      zlog_warn ("IRDP: RX type %d from %s. Bad ICMP type, silently ignored",
+      zlog_warn ("DR5204:IRDP: RX type %d from %s. Bad ICMP type, silently ignored",
 		 icmp->type,
 		 inet_ntoa (src));
     }
@@ -205,16 +205,16 @@ irdp_recvmsg (int sock, u_char *buf, int size, int *ifindex)
 
   ret = recvmsg (sock, &msg, 0);
   if (ret < 0) {
-    zlog_warn("IRDP: recvmsg: read error %s", safe_strerror(errno));
+    zlog_warn("DR5205:IRDP: recvmsg: read error %s", safe_strerror(errno));
     return ret;
   }
 
   if (msg.msg_flags & MSG_TRUNC) {
-    zlog_warn("IRDP: recvmsg: truncated message");
+    zlog_warn("DR5206:IRDP: recvmsg: truncated message");
     return ret;
   }
   if (msg.msg_flags & MSG_CTRUNC) {
-    zlog_warn("IRDP: recvmsg: truncated control message");
+    zlog_warn("DR5207:IRDP: recvmsg: truncated control message");
     return ret;
   }
 
@@ -313,21 +313,21 @@ send_packet(struct interface *ifp,
   on = 1;
   if (setsockopt(irdp_sock, IPPROTO_IP, IP_HDRINCL,
 		 (char *) &on, sizeof(on)) < 0)
-    zlog_warn("sendto %s", safe_strerror (errno));
+    zlog_warn("DR5208:sendto %s", safe_strerror (errno));
 
 
   if(dst == INADDR_BROADCAST ) {
     on = 1;
     if (setsockopt(irdp_sock, SOL_SOCKET, SO_BROADCAST,
 		   (char *) &on, sizeof(on)) < 0)
-      zlog_warn("sendto %s", safe_strerror (errno));
+      zlog_warn("DR5208:sendto %s", safe_strerror (errno));
   }
 
   if(dst !=  INADDR_BROADCAST) {
       on = 0; 
       if( setsockopt(irdp_sock,IPPROTO_IP, IP_MULTICAST_LOOP, 
 		     (char *)&on,sizeof(on)) < 0)
-	zlog_warn("sendto %s", safe_strerror (errno));
+	zlog_warn("DR5208:sendto %s", safe_strerror (errno));
   }
 
   memset(&sockdst,0,sizeof(sockdst));
@@ -356,7 +356,7 @@ send_packet(struct interface *ifp,
   sockopt_iphdrincl_swab_htosys (ip);
   
   if (sendmsg(irdp_sock, msg, 0) < 0) {
-    zlog_warn("sendto %s", safe_strerror (errno));
+    zlog_warn("DR5208:sendto %s", safe_strerror (errno));
   }
   /*   printf("TX on %s idx %d\n", ifp->name, ifp->ifindex); */
 }

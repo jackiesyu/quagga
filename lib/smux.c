@@ -177,7 +177,7 @@ smux_socket (void)
     }
   if (gai)
     {
-      zlog_warn("Cannot locate loopback service smux");
+      zlog_warn("DR4350:Cannot locate loopback service smux");
       return -1;
     }
   for(res=res0; res; res=res->ai_next)
@@ -205,12 +205,12 @@ smux_socket (void)
     }
   freeaddrinfo(res0);
   if (sock < 0)
-    zlog_warn ("Can't connect to SNMP agent with SMUX");
+    zlog_warn ("DR4351:Can't connect to SNMP agent with SMUX");
 #else
   sock = socket (AF_INET, SOCK_STREAM, 0);
   if (sock < 0)
     {
-      zlog_warn ("Can't make socket for SNMP");
+      zlog_warn ("DR4352:Can't make socket for SNMP");
       return -1;
     }
 
@@ -236,7 +236,7 @@ smux_socket (void)
     {
       close (sock);
       smux_sock = -1;
-      zlog_warn ("Can't connect to SNMP agent with SMUX");
+      zlog_warn ("DR4351:Can't connect to SNMP agent with SMUX");
       return -1;
     }
 #endif
@@ -729,7 +729,7 @@ smux_parse_close (u_char *ptr, int len)
       reason = (reason << 8) | (long) *ptr;
       ptr++;
     }
-  zlog_info ("SMUX_CLOSE with reason: %ld", reason);
+  zlog_info ("DR1050:SMUX_CLOSE with reason: %ld", reason);
 }
 
 /* SMUX_RRSP message. */
@@ -773,12 +773,12 @@ process_rest: /* see note below: YYY */
     {
     case SMUX_OPEN:
       /* Open must be not send from SNMP agent. */
-      zlog_warn ("SMUX_OPEN received: resetting connection.");
+      zlog_warn ("DR4354:SMUX_OPEN received: resetting connection.");
       return -1;
       break;
     case SMUX_RREQ:
       /* SMUX_RREQ message is invalid for us. */
-      zlog_warn ("SMUX_RREQ received: resetting connection.");
+      zlog_warn ("DR4355:SMUX_RREQ received: resetting connection.");
       return -1;
       break;
     case SMUX_SOUT:
@@ -792,7 +792,7 @@ process_rest: /* see note below: YYY */
           sout_save_len = 0;
         }
       else
-        zlog_warn ("SMUX_SOUT sout_save_len=%d - invalid", (int) sout_save_len);
+        zlog_warn ("DR4356:SMUX_SOUT sout_save_len=%d - invalid", (int) sout_save_len);
 
       if (len_income > 3) 
         {
@@ -813,7 +813,7 @@ process_rest: /* see note below: YYY */
       break;
     case SMUX_GETRSP:
       /* SMUX_GETRSP message is invalid for us. */
-      zlog_warn ("SMUX_GETRSP received: resetting connection.");
+      zlog_warn ("DR4357:SMUX_GETRSP received: resetting connection.");
       return -1;
       break;
     case SMUX_CLOSE:
@@ -852,7 +852,7 @@ process_rest: /* see note below: YYY */
       smux_parse_set (ptr, len, RESERVE1);
       break;
     default:
-      zlog_info ("Unknown type: %d", type);
+      zlog_info ("DR1051:Unknown type: %d", type);
       break;
     }
   return 0;
@@ -879,7 +879,7 @@ smux_read (struct thread *t)
 
   if (len < 0)
     {
-      zlog_warn ("Can't read all SMUX packet: %s", safe_strerror (errno));
+      zlog_warn ("DR4358:Can't read all SMUX packet: %s", safe_strerror (errno));
       close (sock);
       smux_sock = -1;
       smux_event (SMUX_CONNECT, 0);
@@ -888,7 +888,7 @@ smux_read (struct thread *t)
 
   if (len == 0)
     {
-      zlog_warn ("SMUX connection closed: %d", sock);
+      zlog_warn ("DR4359:SMUX connection closed: %d", sock);
       close (sock);
       smux_sock = -1;
       smux_event (SMUX_CONNECT, 0);
@@ -1076,7 +1076,7 @@ smux_trap (struct variable *vp, size_t vp_len,
               smux_oid_dump ("Trap", iname, inamelen);
             }
           smux_oid_dump ("Trap", oid, oid_len);
-          zlog_info ("BUFSIZ: %d // oid_len: %lu", BUFSIZ, (u_long)oid_len);
+          zlog_info ("DR1052:BUFSIZ: %d // oid_len: %lu", BUFSIZ, (u_long)oid_len);
       }
 
       ret = smux_get (oid, &oid_len, 1, &val_type, &val, &val_len);
@@ -1182,7 +1182,7 @@ smux_connect (struct thread *t)
   ret = smux_open (smux_sock);
   if (ret < 0)
     {
-      zlog_warn ("SMUX open message send failed: %s", safe_strerror (errno));
+      zlog_warn ("DR4360:SMUX open message send failed: %s", safe_strerror (errno));
       close (smux_sock);
       smux_sock = -1;
       if (++fail < SMUX_MAX_FAILURE)
@@ -1194,7 +1194,7 @@ smux_connect (struct thread *t)
   ret = smux_register (smux_sock);
   if (ret < 0)
     {
-      zlog_warn ("SMUX register message send failed: %s", safe_strerror (errno));
+      zlog_warn ("DR4361:SMUX register message send failed: %s", safe_strerror (errno));
       close (smux_sock);
       smux_sock = -1;
       if (++fail < SMUX_MAX_FAILURE)
