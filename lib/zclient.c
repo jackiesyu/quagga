@@ -254,7 +254,7 @@ zclient_flush_data(struct thread *thread)
   switch (buffer_flush_available(zclient->wb, zclient->sock))
     {
     case BUFFER_ERROR:
-      zlog_warn("%s: buffer_flush_available failed on zclient fd %d, closing",
+      zlog_warn("DR4650:%s: buffer_flush_available failed on zclient fd %d, closing",
       		__func__, zclient->sock);
       return zclient_failed(zclient);
       break;
@@ -277,7 +277,7 @@ zclient_send_message(struct zclient *zclient)
 		       stream_get_endp(zclient->obuf)))
     {
     case BUFFER_ERROR:
-      zlog_warn("%s: buffer_write failed to zclient fd %d, closing",
+      zlog_warn("DR4651:%s: buffer_write failed to zclient fd %d, closing",
       		 __func__, zclient->sock);
       return zclient_failed(zclient);
       break;
@@ -368,7 +368,7 @@ zclient_start (struct zclient *zclient)
     }
 
   if (set_nonblocking(zclient->sock) < 0)
-    zlog_warn("%s: set_nonblocking(%d) failed", __func__, zclient->sock);
+    zlog_warn("DR4652:%s: set_nonblocking(%d) failed", __func__, zclient->sock);
 
   /* Clear fail count. */
   zclient->fail = 0;
@@ -768,7 +768,7 @@ zebra_interface_bfd_read (struct stream *s, struct prefix *p)
   ifp = if_lookup_by_index (ifindex);
   if (ifp == NULL)
     {
-      zlog_warn ("zebra_interface_bfd_read: "
+      zlog_warn ("DR4653:zebra_interface_bfd_read: "
                  "Can't find interface by ifindex: %d ", ifindex);
       return NULL;
     }
@@ -805,7 +805,7 @@ zebra_interface_address_read (int type, struct stream *s)
   ifp = if_lookup_by_index (ifindex);
   if (ifp == NULL)
     {
-      zlog_warn ("zebra_interface_address_read(%s): "
+      zlog_warn ("DR4654:zebra_interface_address_read(%s): "
                  "Can't find interface by ifindex: %d ",
                  (type == ZEBRA_INTERFACE_ADDRESS_ADD? "ADD" : "DELETE"),
                  ifindex);
@@ -841,7 +841,7 @@ zebra_interface_address_read (int type, struct stream *s)
 	       /* carp interfaces on OpenBSD with 0.0.0.0/0 as "peer" */
 	       char buf[BUFSIZ];
 	       prefix2str (ifc->address, buf, sizeof(buf));
-	       zlog_warn("warning: interface %s address %s "
+	       zlog_warn("DR4655:warning: interface %s address %s "
 		    "with peer flag set, but no peer address!",
 		    ifp->name, buf);
 	       UNSET_FLAG(ifc->flags, ZEBRA_IFA_PEER);
@@ -903,14 +903,14 @@ zclient_read (struct thread *thread)
   
   if (marker != ZEBRA_HEADER_MARKER || version != ZSERV_VERSION)
     {
-      zlog_err("%s: socket %d version mismatch, marker %d, version %d",
+      zlog_err("DR8450:%s: socket %d version mismatch, marker %d, version %d",
                __func__, zclient->sock, marker, version);
       return zclient_failed(zclient);
     }
   
   if (length < ZEBRA_HEADER_SIZE) 
     {
-      zlog_err("%s: socket %d message length %u is less than %d ",
+      zlog_err("DR7601:%s: socket %d message length %u is less than %d ",
 	       __func__, zclient->sock, length, ZEBRA_HEADER_SIZE);
       return zclient_failed(zclient);
     }
@@ -919,7 +919,7 @@ zclient_read (struct thread *thread)
   if (length > STREAM_SIZE(zclient->ibuf))
     {
       struct stream *ns;
-      zlog_warn("%s: message size %u exceeds buffer size %lu, expanding...",
+      zlog_warn("DR4656:%s: message size %u exceeds buffer size %lu, expanding...",
 	        __func__, length, (u_long)STREAM_SIZE(zclient->ibuf));
       ns = stream_new(length);
       stream_copy(ns, zclient->ibuf);
@@ -1116,13 +1116,13 @@ zclient_serv_path_set (char *path)
   /* test if `path' is socket. don't set it otherwise. */
   if (stat(path, &sb) == -1)
     {
-      zlog_warn ("%s: zebra socket `%s' does not exist", __func__, path);
+      zlog_warn ("DR4657:%s: zebra socket `%s' does not exist", __func__, path);
       return;
     }
 
   if ((sb.st_mode & S_IFMT) != S_IFSOCK)
     {
-      zlog_warn ("%s: `%s' is not unix socket, sir", __func__, path);
+      zlog_warn ("DR4658:%s: `%s' is not unix socket, sir", __func__, path);
       return;
     }
 

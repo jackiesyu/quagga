@@ -224,7 +224,7 @@ zprivs_state_caps (void)
       if ( cap_get_flag (zprivs_state.caps, zprivs_state.syscaps_p->caps[i], 
                          CAP_EFFECTIVE, &val) )
         {
-          zlog_warn ("zprivs_state_caps: could not cap_get_flag, %s",
+          zlog_warn ("DR4200:zprivs_state_caps: could not cap_get_flag, %s",
                      safe_strerror (errno) );
           return ZPRIVS_UNKNOWN;
         }

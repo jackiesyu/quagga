@@ -1688,7 +1688,7 @@ rib_queue_add (struct zebra_t *zebra, struct route_node *rn)
 
   if (zebra->ribq == NULL)
     {
-      zlog_err ("%s: work_queue does not exist!", __func__);
+      zlog_err ("DR8400:%s: work_queue does not exist!", __func__);
       return;
     }
 
@@ -1741,7 +1741,7 @@ rib_queue_init (struct zebra_t *zebra)
   if (! (zebra->ribq = work_queue_new (zebra->master, 
                                        "route_node processing")))
     {
-      zlog_err ("%s: could not initialise work queue!", __func__);
+      zlog_err ("DR8401:%s: could not initialise work queue!", __func__);
       return;
     }
 
@@ -1754,7 +1754,7 @@ rib_queue_init (struct zebra_t *zebra)
   
   if (!(zebra->mq = meta_queue_new ()))
   {
-    zlog_err ("%s: could not initialise meta queue!", __func__);
+    zlog_err ("DR8402:%s: could not initialise meta queue!", __func__);
     return;
   }
   return;
@@ -2072,7 +2072,7 @@ void rib_lookup_and_dump (struct prefix_ipv4 * p)
   table = vrf_table (AFI_IP, SAFI_UNICAST, 0);
   if (! table)
   {
-    zlog_err ("%s: vrf_table() returned NULL", __func__);
+    zlog_err ("DR8403:%s: vrf_table() returned NULL", __func__);
     return;
   }
 
@@ -2120,7 +2120,7 @@ void rib_lookup_and_pushup (struct prefix_ipv4 * p)
 
   if (NULL == (table = vrf_table (AFI_IP, SAFI_UNICAST, 0)))
   {
-    zlog_err ("%s: vrf_table() returned NULL", __func__);
+    zlog_err ("DR8403:%s: vrf_table() returned NULL", __func__);
     return;
   }
 

@@ -109,7 +109,7 @@ if_group (struct interface *ifp,
   p = irdp_get_prefix(ifp);
 
   if(!p) {
-        zlog_warn ("IRDP: can't get address for %s", ifp->name);
+        zlog_warn ("DR5100:IRDP: can't get address for %s", ifp->name);
 	return 1;
   }
 
@@ -118,7 +118,7 @@ if_group (struct interface *ifp,
   ret = setsockopt (sock, IPPROTO_IP, add_leave,
 		    (char *) &m, sizeof (struct ip_mreq));
   if (ret < 0)
-    zlog_warn ("IRDP: %s can't setsockopt %s: %s",
+    zlog_warn ("DR5101:IRDP: %s can't setsockopt %s: %s",
 	       add_leave == IP_ADD_MEMBERSHIP? "join group":"leave group", 
 	       inet_2a(group, b1),
 	       safe_strerror (errno));
@@ -199,11 +199,11 @@ irdp_if_start(struct interface *ifp, int multicast, int set_defaults)
   u_int32_t timer, seed;
 
   if (irdp->flags & IF_ACTIVE ) {
-    zlog_warn("IRDP: Interface is already active %s", ifp->name);
+    zlog_warn("DR5102:IRDP: Interface is already active %s", ifp->name);
     return;
   }
   if ((irdp_sock < 0) && ((irdp_sock = irdp_sock_init()) < 0)) {
-    zlog_warn("IRDP: Cannot activate interface %s (cannot create "
+    zlog_warn("DR5103:IRDP: Cannot activate interface %s (cannot create "
 	      "IRDP socket)", ifp->name);
     return;
   }
@@ -215,7 +215,7 @@ irdp_if_start(struct interface *ifp, int multicast, int set_defaults)
   if_add_update(ifp);
 
   if (! (ifp->flags & IFF_UP)) {
-    zlog_warn("IRDP: Interface is down %s", ifp->name);
+    zlog_warn("DR5104:IRDP: Interface is down %s", ifp->name);
   }
 
   /* Shall we cancel if_start if if_add_group fails? */
@@ -224,7 +224,7 @@ irdp_if_start(struct interface *ifp, int multicast, int set_defaults)
     if_add_group(ifp);
     
     if (! (ifp->flags & (IFF_MULTICAST|IFF_ALLMULTI))) {
-      zlog_warn("IRDP: Interface not multicast enabled %s", ifp->name);
+      zlog_warn("DR5105:IRDP: Interface not multicast enabled %s", ifp->name);
     }
   }
 
@@ -275,12 +275,12 @@ irdp_if_stop(struct interface *ifp)
   struct irdp_interface *irdp=&zi->irdp;
   
   if (irdp == NULL) {
-    zlog_warn ("Interface %s structure is NULL", ifp->name);
+    zlog_warn ("DR5106:Interface %s structure is NULL", ifp->name);
     return;
   }
 
   if (! (irdp->flags & IF_ACTIVE )) {
-    zlog_warn("Interface is not active %s", ifp->name);
+    zlog_warn("DR5107:Interface is not active %s", ifp->name);
     return;
   }
 
@@ -303,7 +303,7 @@ irdp_if_shutdown(struct interface *ifp)
   struct irdp_interface *irdp = &zi->irdp;
 
   if (irdp->flags & IF_SHUTDOWN ) {
-    zlog_warn("IRDP: Interface is already shutdown %s", ifp->name);
+    zlog_warn("DR5108:IRDP: Interface is already shutdown %s", ifp->name);
     return;
   }
 
@@ -324,7 +324,7 @@ irdp_if_no_shutdown(struct interface *ifp)
   struct irdp_interface *irdp = &zi->irdp;
 
   if (! (irdp->flags & IF_SHUTDOWN )) {
-    zlog_warn("IRDP: Interface is not shutdown %s", ifp->name);
+    zlog_warn("DR5109:IRDP: Interface is not shutdown %s", ifp->name);
     return;
   }
 

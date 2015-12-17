@@ -118,7 +118,7 @@ bgp_connect_check (struct peer *peer)
   /* If getsockopt is fail, this is fatal error. */
   if (ret < 0)
     {
-      zlog (peer->log, LOG_INFO, "can't get sockopt for nonblocking connect");
+      zlog (peer->log, LOG_INFO, "BGP1350:can't get sockopt for nonblocking connect");
       BGP_EVENT_ADD (peer, TCP_fatal_error);
       return;
     }      
@@ -991,22 +991,22 @@ bgp_notify_send_with_data (struct peer *peer, u_char code, u_char sub_code,
       if (sub_code == BGP_NOTIFY_CEASE_ADMIN_RESET)
       {
         peer->last_reset = PEER_DOWN_USER_RESET;
-        zlog_info ("Notification sent to neighbor %s: User reset", peer->host);
+        zlog_info ("BGP1351:Notification sent to neighbor %s: User reset", peer->host);
       }
       else if (sub_code == BGP_NOTIFY_CEASE_ADMIN_SHUTDOWN)
       {
         peer->last_reset = PEER_DOWN_USER_SHUTDOWN;
-        zlog_info ("Notification sent to neighbor %s: shutdown", peer->host);
+        zlog_info ("BGP1352:Notification sent to neighbor %s: shutdown", peer->host);
       }
       else
       {
         peer->last_reset = PEER_DOWN_NOTIFY_SEND;
-        zlog_info ("Notification sent to neighbor %s: type %u/%u",
+        zlog_info ("BGP1353:Notification sent to neighbor %s: type %u/%u",
                    peer->host, code, sub_code);
       }
     }
   else
-     zlog_info ("Notification sent to neighbor %s: configuration change",
+     zlog_info ("BGP1354:Notification sent to neighbor %s: configuration change",
                 peer->host);
 
   /* Call immediately. */
@@ -1283,7 +1283,7 @@ bgp_open_receive (struct peer *peer, bgp_size_t size)
   /* Just in case we have a silly peer who sends AS4 capability set to 0 */
   if (CHECK_FLAG (peer->cap, PEER_CAP_AS4_RCV) && !as4)
     {
-      zlog_err ("%s bad OPEN, got AS4 capability, but AS4 set to 0",
+      zlog_err ("BGP7350:%s bad OPEN, got AS4 capability, but AS4 set to 0",
                 peer->host);
       bgp_notify_send (peer, BGP_NOTIFY_OPEN_ERR,
                        BGP_NOTIFY_OPEN_BAD_PEER_AS);
@@ -1298,7 +1298,7 @@ bgp_open_receive (struct peer *peer, bgp_size_t size)
 	   */
       if (as4 == BGP_AS_TRANS)
         {
-          zlog_err ("%s [AS4] NEW speaker using AS_TRANS for AS4, not allowed",
+          zlog_err ("BGP7351:%s [AS4] NEW speaker using AS_TRANS for AS4, not allowed",
                     peer->host);
           bgp_notify_send (peer, BGP_NOTIFY_OPEN_ERR,
                  BGP_NOTIFY_OPEN_BAD_PEER_AS);
@@ -1322,7 +1322,7 @@ bgp_open_receive (struct peer *peer, bgp_size_t size)
           && as4 != remote_as)
         {
 	  /* raise error, log this, close session */
-	  zlog_err ("%s bad OPEN, got AS4 capability, but remote_as %u"
+	  zlog_err ("BGP7352:%s bad OPEN, got AS4 capability, but remote_as %u"
 	            " mismatch with 16bit 'myasn' %u in open",
 	            peer->host, as4, remote_as);
 	  bgp_notify_send (peer, BGP_NOTIFY_OPEN_ERR,
@@ -1466,7 +1466,7 @@ bgp_open_receive (struct peer *peer, bgp_size_t size)
       bgp_open_send (peer);
       if (peer->fd < 0)
 	{
-	  zlog_err ("bgp_open_receive peer's fd is negative value %d",
+	  zlog_err ("BGP7353:bgp_open_receive peer's fd is negative value %d",
 		    peer->fd);
 	  return -1;
 	}
@@ -1616,7 +1616,7 @@ bgp_update_receive (struct peer *peer, bgp_size_t size)
   /* Status must be Established. */
   if (peer->status != Established) 
     {
-      zlog_err ("%s [FSM] Update packet received under status %s",
+      zlog_err ("BGP7354:%s [FSM] Update packet received under status %s",
 		peer->host, LOOKUP (bgp_status_msg, peer->status));
       bgp_notify_send (peer, BGP_NOTIFY_FSM_ERR, 0);
       return -1;
@@ -1640,7 +1640,7 @@ bgp_update_receive (struct peer *peer, bgp_size_t size)
      Subcode is set to Malformed Attribute List.  */
   if (stream_pnt (s) + 2 > end)
     {
-      zlog_err ("%s [Error] Update packet error"
+      zlog_err ("BGP7355:%s [Error] Update packet error"
 		" (packet length is short for unfeasible length)",
 		peer->host);
       bgp_notify_send (peer, BGP_NOTIFY_UPDATE_ERR, 
@@ -1654,7 +1654,7 @@ bgp_update_receive (struct peer *peer, bgp_size_t size)
   /* Unfeasible Route Length check. */
   if (stream_pnt (s) + withdraw_len > end)
     {
-      zlog_err ("%s [Error] Update packet error"
+      zlog_err ("BGP7356:%s [Error] Update packet error"
 		" (packet unfeasible length overflow %d)",
 		peer->host, withdraw_len);
       bgp_notify_send (peer, BGP_NOTIFY_UPDATE_ERR, 
@@ -1682,7 +1682,7 @@ bgp_update_receive (struct peer *peer, bgp_size_t size)
   /* Attribute total length check. */
   if (stream_pnt (s) + 2 > end)
     {
-      zlog_warn ("%s [Error] Packet Error"
+      zlog_warn ("BGP4250:%s [Error] Packet Error"
 		 " (update packet is short for attribute length)",
 		 peer->host);
       bgp_notify_send (peer, BGP_NOTIFY_UPDATE_ERR, 
@@ -1696,7 +1696,7 @@ bgp_update_receive (struct peer *peer, bgp_size_t size)
   /* Attribute length check. */
   if (stream_pnt (s) + attribute_len > end)
     {
-      zlog_warn ("%s [Error] Packet Error"
+      zlog_warn ("BGP4251:%s [Error] Packet Error"
 		 " (update packet attribute length overflow %d)",
 		 peer->host, attribute_len);
       bgp_notify_send (peer, BGP_NOTIFY_UPDATE_ERR, 
@@ -1742,7 +1742,7 @@ bgp_update_receive (struct peer *peer, bgp_size_t size)
       
       if (attr_parse_ret == BGP_ATTR_PARSE_WITHDRAW)
         zlog (peer->log, LOG_ERR,
-              "%s rcvd UPDATE with errors in attr(s)!! Withdrawing route.",
+              "BGP7357:%s rcvd UPDATE with errors in attr(s)!! Withdrawing route.",
               peer->host);
 
       if (ret)
@@ -2089,7 +2089,7 @@ bgp_route_refresh_receive (struct peer *peer, bgp_size_t size)
 
       if (size - (BGP_MSG_ROUTE_REFRESH_MIN_SIZE - BGP_HEADER_SIZE) < 5)
         {
-          zlog_info ("%s ORF route refresh length error", peer->host);
+          zlog_info ("BGP1355:%s ORF route refresh length error", peer->host);
           bgp_notify_send (peer, BGP_NOTIFY_CEASE, 0);
           return;
         }
@@ -2248,7 +2248,7 @@ bgp_capability_msg_parse (struct peer *peer, u_char *pnt, bgp_size_t length)
       /* We need at least action, capability code and capability length. */
       if (pnt + 3 > end)
         {
-          zlog_info ("%s Capability length error", peer->host);
+          zlog_info ("BGP1356:%s Capability length error", peer->host);
           bgp_notify_send (peer, BGP_NOTIFY_CEASE, 0);
           return -1;
         }
@@ -2259,7 +2259,7 @@ bgp_capability_msg_parse (struct peer *peer, u_char *pnt, bgp_size_t length)
       if (action != CAPABILITY_ACTION_SET
 	  && action != CAPABILITY_ACTION_UNSET)
         {
-          zlog_info ("%s Capability Action Value error %d",
+          zlog_info ("BGP1357:%s Capability Action Value error %d",
 		     peer->host, action);
           bgp_notify_send (peer, BGP_NOTIFY_CEASE, 0);
           return -1;
@@ -2272,7 +2272,7 @@ bgp_capability_msg_parse (struct peer *peer, u_char *pnt, bgp_size_t length)
       /* Capability length check. */
       if ((pnt + hdr->length + 3) > end)
         {
-          zlog_info ("%s Capability length error", peer->host);
+          zlog_info ("BGP1356:%s Capability length error", peer->host);
           bgp_notify_send (peer, BGP_NOTIFY_CEASE, 0);
           return -1;
         }
@@ -2328,7 +2328,7 @@ bgp_capability_msg_parse (struct peer *peer, u_char *pnt, bgp_size_t length)
         }
       else
         {
-          zlog_warn ("%s unrecognized capability code: %d - ignored",
+          zlog_warn ("BGP4201:%s unrecognized capability code: %d - ignored",
                      peer->host, hdr->code);
         }
       pnt += hdr->length + 3;
@@ -2491,7 +2491,7 @@ bgp_read (struct thread *thread)
     {
       if (peer->fd < 0)
 	{
-	  zlog_err ("bgp_read peer's fd is negative value %d", peer->fd);
+	  zlog_err ("BGP7358:bgp_read peer's fd is negative value %d", peer->fd);
 	  return -1;
 	}
       BGP_READ_ON (peer->t_read, bgp_read, peer->fd);

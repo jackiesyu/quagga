@@ -154,7 +154,7 @@ test_cmd_init (void)
 static void 
 sighup (void)
 {
-  zlog_info ("SIGHUP received");
+  zlog_info ("DR1450:SIGHUP received");
 
   /* Reload of config file. */
   ;
@@ -164,7 +164,7 @@ sighup (void)
 static void
 sigint (void)
 {
-  zlog_notice ("Terminating on signal");
+  zlog_notice ("DR1451:Terminating on signal");
 
   exit (0);
 }
@@ -322,7 +322,7 @@ main (int argc, char **argv)
   vty_serv_sock (vty_addr, vty_port, "/tmp/test_zebra");
 
   /* Print banner. */
-  zlog_notice ("Zebra %s starting: vty@%d", QUAGGA_VERSION, vty_port);
+  zlog_notice ("DR1452:Zebra %s starting: vty@%d", QUAGGA_VERSION, vty_port);
 
   while (thread_fetch (zebrad.master, &thread))
     thread_call (&thread);
