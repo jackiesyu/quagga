@@ -164,7 +164,7 @@ usage (char *progname, int status)
 static void 
 sighup (void)
 {
-  zlog_info ("SIGHUP received");
+  zlog_info ("DR1450:SIGHUP received");
 
   /* Reload of config file. */
   ;
@@ -174,7 +174,7 @@ sighup (void)
 static void
 sigint (void)
 {
-  zlog_notice ("Terminating on signal");
+  zlog_notice ("DR1451:Terminating on signal");
 
   if (!retain_mode)
     rib_close ();
@@ -391,7 +391,7 @@ main (int argc, char **argv)
   /* Daemonize. */
   if (daemon_mode && daemon (0, 0) < 0)
     {
-      zlog_err("Zebra daemon failed: %s", strerror(errno));
+      zlog_err("DR8200:Zebra daemon failed: %s", strerror(errno));
       exit (1);
     }
 
@@ -419,7 +419,7 @@ main (int argc, char **argv)
   vty_serv_sock (vty_addr, vty_port, vty_file);
 
   /* Print banner. */
-  zlog_notice ("Zebra %s starting: vty@%d", QUAGGA_VERSION, vty_port);
+  zlog_notice ("DR1452:Zebra %s starting: vty@%d", QUAGGA_VERSION, vty_port);
 
   while (thread_fetch (zebrad.master, &thread))
     thread_call (&thread);

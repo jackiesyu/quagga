@@ -1480,7 +1480,7 @@ aspath_reconcile_as4 ( struct aspath *aspath, struct aspath *as4path)
   if (hops < 0)
     {
       if (BGP_DEBUG (as4, AS4))
-        zlog_warn ("[AS4] Fewer hops in AS_PATH than NEW_AS_PATH");
+        zlog_warn ("BGP4000:[AS4] Fewer hops in AS_PATH than NEW_AS_PATH");
       /* Something's gone wrong. The RFC says we should now ignore AS4_PATH,
        * which is daft behaviour - it contains vital loop-detection
        * information which must have been removed from AS_PATH.

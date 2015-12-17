@@ -214,7 +214,7 @@ sockunion_socket (union sockunion *su)
   sock = socket (su->sa.sa_family, SOCK_STREAM, 0);
   if (sock < 0)
     {
-      zlog (NULL, LOG_WARNING, "Can't make socket : %s", safe_strerror (errno));
+      zlog (NULL, LOG_WARNING, "DR4450:Can't make socket : %s", safe_strerror (errno));
       return -1;
     }
 
@@ -332,7 +332,7 @@ sockunion_connect (int fd, union sockunion *peersu, unsigned short port,
       if (errno != EINPROGRESS)
 	{
 	  char str[SU_ADDRSTRLEN];
-	  zlog_info ("can't connect to %s fd %d : %s",
+	  zlog_info ("DR1150:can't connect to %s fd %d : %s",
 		     sockunion_log (&su, str, sizeof str),
 		     fd, safe_strerror (errno));
 	  return connect_error;
@@ -356,7 +356,7 @@ sockunion_stream_socket (union sockunion *su)
   sock = socket (su->sa.sa_family, SOCK_STREAM, 0);
 
   if (sock < 0)
-    zlog (NULL, LOG_WARNING, "can't make socket sockunion_stream_socket");
+    zlog (NULL, LOG_WARNING, "DR4451:can't make socket sockunion_stream_socket");
 
   return sock;
 }
@@ -401,7 +401,7 @@ sockunion_bind (int sock, union sockunion *su, unsigned short port,
 
   ret = bind (sock, (struct sockaddr *)su, size);
   if (ret < 0)
-    zlog (NULL, LOG_WARNING, "can't bind socket : %s", safe_strerror (errno));
+    zlog (NULL, LOG_WARNING, "DR4452:can't bind socket : %s", safe_strerror (errno));
 
   return ret;
 }
@@ -416,7 +416,7 @@ sockopt_reuseaddr (int sock)
 		    (void *) &on, sizeof (on));
   if (ret < 0)
     {
-      zlog (NULL, LOG_WARNING, "can't set sockopt SO_REUSEADDR to socket %d", sock);
+      zlog (NULL, LOG_WARNING, "DR4453:can't set sockopt SO_REUSEADDR to socket %d", sock);
       return -1;
     }
   return 0;
@@ -433,7 +433,7 @@ sockopt_reuseport (int sock)
 		    (void *) &on, sizeof (on));
   if (ret < 0)
     {
-      zlog (NULL, LOG_WARNING, "can't set sockopt SO_REUSEPORT to socket %d", sock);
+      zlog (NULL, LOG_WARNING, "DR4454:can't set sockopt SO_REUSEPORT to socket %d", sock);
       return -1;
     }
   return 0;
@@ -458,7 +458,7 @@ sockopt_ttl (int family, int sock, int ttl)
 			(void *) &ttl, sizeof (int));
       if (ret < 0)
 	{
-	  zlog (NULL, LOG_WARNING, "can't set sockopt IP_TTL %d to socket %d", ttl, sock);
+	  zlog (NULL, LOG_WARNING, "DR4455:can't set sockopt IP_TTL %d to socket %d", ttl, sock);
 	  return -1;
 	}
       return 0;
@@ -471,7 +471,7 @@ sockopt_ttl (int family, int sock, int ttl)
 			(void *) &ttl, sizeof (int));
       if (ret < 0)
 	{
-	  zlog (NULL, LOG_WARNING, "can't set sockopt IPV6_UNICAST_HOPS %d to socket %d",
+	  zlog (NULL, LOG_WARNING, "DR4456:can't set sockopt IPV6_UNICAST_HOPS %d to socket %d",
 		    ttl, sock);
 	  return -1;
 	}
@@ -500,7 +500,7 @@ sockopt_minttl (int family, int sock, int minttl)
       int ret = setsockopt (sock, IPPROTO_IP, IP_MINTTL, &minttl, sizeof(minttl));
       if (ret < 0)
 	  zlog (NULL, LOG_WARNING,
-		"can't set sockopt IP_MINTTL to %d on socket %d: %s",
+		"DR4457:can't set sockopt IP_MINTTL to %d on socket %d: %s",
 		minttl, sock, safe_strerror (errno));
       return ret;
     }
@@ -511,7 +511,7 @@ sockopt_minttl (int family, int sock, int minttl)
       int ret = setsockopt (sock, IPPROTO_IPV6, IPV6_MINHOPCNT, &minttl, sizeof(minttl));
       if (ret < 0)
 	  zlog (NULL, LOG_WARNING,
-		"can't set sockopt IPV6_MINHOPCNT to %d on socket %d: %s",
+		"DR4458:can't set sockopt IPV6_MINHOPCNT to %d on socket %d: %s",
 		minttl, sock, safe_strerror (errno));
       return ret;
     }
@@ -534,7 +534,7 @@ sockopt_v6only (int family, int sock)
 			(void *) &on, sizeof (int));
       if (ret < 0)
 	{
-	  zlog (NULL, LOG_WARNING, "can't set sockopt IPV6_V6ONLY "
+	  zlog (NULL, LOG_WARNING, "DR4459:can't set sockopt IPV6_V6ONLY "
 		    "to socket %d", sock);
 	  return -1;
 	}
@@ -596,7 +596,7 @@ sockunion_getsockname (int fd)
   ret = getsockname (fd, (struct sockaddr *)&name, &len);
   if (ret < 0)
     {
-      zlog_warn ("Can't get local address and port by getsockname: %s",
+      zlog_warn ("DR4460:Can't get local address and port by getsockname: %s",
 		 safe_strerror (errno));
       return NULL;
     }
@@ -641,7 +641,7 @@ sockunion_getpeername (int fd)
   ret = getpeername (fd, (struct sockaddr *)&name, &len);
   if (ret < 0)
     {
-      zlog (NULL, LOG_WARNING, "Can't get remote address and port: %s",
+      zlog (NULL, LOG_WARNING, "DR4461:Can't get remote address and port: %s",
 	    safe_strerror (errno));
       return NULL;
     }
