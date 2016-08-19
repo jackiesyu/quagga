@@ -1925,6 +1925,9 @@ rib_add_ipv4 (int type, int flags, struct prefix_ipv4 *p,
       /* iBGP distance is 200. */
       if (type == ZEBRA_ROUTE_BGP && CHECK_FLAG (flags, ZEBRA_FLAG_IBGP))
 	distance = 200;
+
+      if (type == ZEBRA_ROUTE_KERNEL)
+        distance = metric;
     }
 
   /* Lookup route node.*/
